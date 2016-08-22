@@ -37,4 +37,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _companion: http://www.my-favorite-documentation-test.rtfd.io
+.. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
