@@ -442,16 +442,3 @@ might look like:
    I do not support ``groups`` with Doxygen, as I assume if you have gone through the
    effort to group everything then you have a desire to manually control the output.
    Breathe already has an excellent ``doxygengroup`` directive, and you should use that.
-
-FAQ
-----------------------------------------------------------------------------------------
-
-Nothing is working, where did I go wrong?
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-Sorry to hear that.  Please try comparing how your documentation is set up with the
-companion_ website.
-
-If things look similar enough, or something isn't clear, raise an issue on GitHub.  I'll
-do my best to support what I can, and if similar questions come up then I can add them
-to this FAQ.

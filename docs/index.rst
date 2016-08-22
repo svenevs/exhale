@@ -29,6 +29,7 @@ located at the companion_ site.
    overview
    usage
    reference
+   faq
 
 Indices and tables
 ==================
