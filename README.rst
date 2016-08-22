@@ -30,9 +30,9 @@ Credit
 
 This project could not exist without the already excellent tools available: Doxygen,
 Sphinx, Breathe, and many others.  In particular, though, **all** files in the
-``_static`` directory were scraped from Stephen Morley's collapsibleLists_ thanks to his
-generous license_.  I make no claims to these files, and only host them here out of
-convenience for you.
+``treeView/_static`` directory were scraped from Stephen Morley's collapsibleLists_
+thanks to his generous license_.  I make no claims to these files, and only host them
+here out of convenience for you.
 
 .. _collapsibleLists: http://code.stephenmorley.org/javascript/collapsible-lists/
 .. _license: http://code.stephenmorley.org/about-this-site/copyright/
