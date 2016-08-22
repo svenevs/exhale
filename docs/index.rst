@@ -29,7 +29,6 @@ located at the companion_ site.
    overview
    usage
    reference
-   more_info
 
 Indices and tables
 ==================
