@@ -25,14 +25,12 @@ sys.path.insert(0, os.path.abspath('..')) # path to exhale.py
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.0'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
     'sphinx.ext.autodoc'
 ]
 
@@ -123,14 +121,6 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 
     html_context = {
         'css_files': [
-            '_static/theme_overrides.css'
-        ]
-    }
-else:
-    html_context = {
-        'css_files': [
-            '//media.readthedocs.org/css/sphinx_rtd_theme.css',
-            '//media.readthedocs.org/css/readthedocs-doc-embed.css',
             '_static/theme_overrides.css'
         ]
     }
