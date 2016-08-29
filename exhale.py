@@ -33,13 +33,15 @@ import sys
 import re
 import os
 import cStringIO
+import itertools
 
 __all__ = ['generate', 'ExhaleRoot', 'ExhaleNode', 'exclaimError', 'qualifyKind',
-           'kindAsBreatheDirective', 'specificationsForKind']
+           'kindAsBreatheDirective', 'specificationsForKind', 'EXHALE_FILE_HEADING',
+           'EXHALE_SECTION_HEADING', 'EXHALE_SUBSECTION_HEADING']
 __name__ = "exhale"
 __docformat__ = "reStructuredText"
 
-EXHALE_API_TOCTREE_MAX_DEPTH = 5
+EXHALE_API_TOCTREE_MAX_DEPTH = 5 # DO NOT EXPOSE
 '''
 The value used as ``:maxdepth:`` with restructured text ``.. toctree::`` directives.
 The default value is 5, as any larger will likely produce errors with a LaTeX build.
@@ -47,23 +49,31 @@ Change this value by specifying the proper value to the dictionary passed to the
 `generate` function.
 '''
 
-EXHALE_API_DOXY_OUTPUT_DIR = ""
+EXHALE_API_DOXY_OUTPUT_DIR = "" # DO NOT EXPOSE
 '''
 The path to the doxygen xml output **directory**, relative to ``conf.py`` (or whichever
 file is calling `generate`.  This value **must** be set for `generate` to be able to do
 anything.
 '''
 
+EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES = False # DO NOT EXPOSE
+'''
+Currently, Exhale (I...) do not know how to extract the documentation string for a given
+file being produced.  If True, then the breathe directive (``doxygenfile``) will be
+incorporated at the bottom of the file.  This will duplicate a lot of information, but
+will include the file's description at the beginning.
+'''
+
 EXHALE_FILE_HEADING = "=" * 88
-''' The restructured text file heading separator. '''
+''' The restructured text file heading separator (``"=" * 88``). '''
 
 EXHALE_SECTION_HEADING = "-" * 88
-''' The restructured text section heading separator. '''
+''' The restructured text section heading separator (``"-" * 88``). '''
 
 EXHALE_SUBSECTION_HEADING = "*" * 88
-''' The restructured text sub-section heading separator. '''
+''' The restructured text sub-section heading separator (``"*" * 88``).'''
 
-EXHALE_CUSTOM_SPECIFICATIONS_FUNCTION = None
+EXHALE_CUSTOM_SPECIFICATIONS_FUNCTION = None # DO NOT EXPOSE
 '''
 User specified override of `specificationsForKind`.  No safety checks are performed for
 externally provided functions.  Change the functionality of `specificationsForKind` by
@@ -166,7 +176,8 @@ def generate(exhaleArgs):
         For portability, the default value if not specified is ``False``, which will
         generate reStructuredText bulleted lists for the Class View and File View
         hierarchies.  If ``True``, raw html unordered lists will be generated.  Please
-        refer to the :ref:`usage_advanced_usage` section.
+        refer to the *Clickable Hierarchies* subsection of :ref:`usage_advanced_usage`
+        for more details.
 
     **key**: ``"fullToctreeMaxDepth"`` --- value type: ``int``
         Beneath the Class View and File View hierarchies a Full API listing is generated
@@ -178,6 +189,22 @@ def generate(exhaleArgs):
         value depending on the framework being documented.  This value must be greater
         than or equal to 1 (this is the value of ``:maxdepth:``).
 
+    **key**: ``"appendBreatheFileDirective"`` --- value type: ``bool``
+        Currently, I do not know how to reliably extract the brief / detailed file
+        descriptions for a given file node.  Therefore, if you have file level
+        documentation in your project that has meaning, it would otherwise be omitted.
+        As a temporary patch, if you specify this value as ``True`` then at the bottom
+        of the file page the full ``doxygenfile`` directive output from Breathe will
+        be appended to the file documentiation.  File level brief and detailed
+        descriptions will be included, followed by a large amount of duplication.  I
+        hope to remove this value soon, in place of either parsing the xml more
+        carefully or finding out how to extract this information directly from Breathe.
+
+        The default value of this behavior is ``False`` if it is not specified in the
+        dictionary passed as input for this method.  Please refer to the *Customizing
+        File Pages* subsection of :ref:`usage_customizing_file_pages` for more
+        information on what the impact of this variable is.
+
     **key**: ``"customSpecificationFunction"`` --- value type: ``function``
         The custom specification function to override the default behavior of exhale.
         Please refer to the :func:`exhale.specificationsForKind` documentation.
@@ -187,7 +214,7 @@ def generate(exhaleArgs):
         pairs are invalid.
 
     :raises RuntimeError:
-        If any error is caught during the generation of the API.
+        If any **fatal** error is caught during the generation of the API.
     '''
     if type(exhaleArgs) is not dict:
         raise ValueError("The type of 'exhaleArgs' must be a dictionary.")
@@ -247,6 +274,13 @@ def generate(exhaleArgs):
             raise ValueError("The type of the value for the key 'fullToctreeMaxDepth' must be an int.")
         global EXHALE_API_TOCTREE_MAX_DEPTH
         EXHALE_API_TOCTREE_MAX_DEPTH = fullToctreeMaxDepth
+
+    if "appendBreatheFileDirective" in exhaleArgs:
+        appendBreatheFileDirective = exhaleArgs["appendBreatheFileDirective"]
+        if type(appendBreatheFileDirective) is not bool:
+            raise ValueError("The type of the value for the key 'appendBreatheFileDirective' must be a boolean.")
+        global EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES
+        EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES = appendBreatheFileDirective
 
     if "customSpecificationFunction" in exhaleArgs:
         customSpecificationFunction = exhaleArgs["customSpecificationFunction"]
@@ -597,6 +631,19 @@ class ExhaleNode:
             children as it is impossible to rebuild that relationship without more
             Doxygen xml parsing.
 
+        ``parent`` (ExhaleNode)
+            If an ExhaleNode is determined to be a child of another ExhaleNode, this
+            node will be added to its parent's ``children`` list, and a reference to
+            the parent will be in this field.  Initialized to ``None``, make sure you
+            check that it is an object first.
+
+            .. warning::
+               Do not ever set the ``parent`` of a given node if the would-be parent's
+               kind is ``"file"``.  Doing so will break many important relationships,
+               such as nested class definitions.  Effectively, **every** node will be
+               added as a child to a file node at some point.  The file node will track
+               this, but the child should not.
+
         The following three member variables are stored internally, but managed
         externally by the :class:`exhale.ExhaleRoot` class:
 
@@ -667,6 +714,7 @@ class ExhaleNode:
         self.name     = breatheCompound.get_name()
         self.refid    = breatheCompound.get_refid()
         self.children = [] # ExhaleNodes
+        self.parent   = None # if reparented, will be an ExhaleNode
         # managed externally
         self.file_name = None
         self.link_name = None
@@ -744,6 +792,65 @@ class ExhaleNode:
         for c in self.children:
             c.findNestedDirectories(lst)
 
+    def findNestedClassLike(self, lst):
+        '''
+        Recursive helper function for finding nested classes and structs.  If this node
+        is a class or struct, it is appended to ``lst``.  Each node also calls each of
+        its child ``findNestedClassLike`` with the same list.
+
+        :Parameters:
+            ``lst`` (list)
+                The list each class or struct node is to be appended to.
+        '''
+        if self.kind == "class" or self.kind == "struct":
+            lst.append(self)
+        for c in self.children:
+            c.findNestedClassLike(lst)
+
+    def findNestedEnums(self, lst):
+        '''
+        Recursive helper function for finding nested enums.  If this node is a class or
+        struct it may have had an enum added to its child list.  When this occurred, the
+        enum was removed from ``self.enums`` in the :class:`exhale.ExhaleRoot` class and
+        needs to be rediscovered by calling this method on all of its children.  If this
+        node is an enum, it is because a parent class or struct called this method, in
+        which case it is added to ``lst``.
+
+        **Note**: this is used slightly differently than nested directories, namespaces,
+        and classes will be.  Refer to :func:`exhale.ExhaleRoot.generateNodeDocuments`
+        function for details.
+
+        :Parameters:
+            ``lst`` (list)
+                The list each enum is to be appended to.
+        '''
+        if self.kind == "enum":
+            lst.append(self)
+        for c in self.children:
+            c.findNestedEnums(lst)
+
+    def findNestedUnions(self, lst):
+        '''
+        Recursive helper function for finding nested unions.  If this node is a class or
+        struct it may have had a union added to its child list.  When this occurred, the
+        union was removed from ``self.unions`` in the :class:`exhale.ExhaleRoot` class
+        and needs to be rediscovered by calling this method on all of its children.  If
+        this node is a union, it is because a parent class or struct called this method,
+        in which case it is added to ``lst``.
+
+        **Note**: this is used slightly differently than nested directories, namespaces,
+        and classes will be.  Refer to :func:`exhale.ExhaleRoot.generateNodeDocuments`
+        function for details.
+
+        :Parameters:
+            ``lst`` (list)
+                The list each union is to be appended to.
+        '''
+        if self.kind == "union":
+            lst.append(self)
+        for c in self.children:
+            c.findNestedUnions(lst)
+
     def toConsole(self, level, printChildren=True):
         '''
         Debugging tool for printing hierarchies / ownership to the console.  Recursively
@@ -761,6 +868,7 @@ class ExhaleNode:
         '''
         indent = "  " * level
         print("{}- [{}]: {}".format(indent, self.kind, self.name))
+        # files are children of directories, the file section will print those children
         if self.kind == "dir":
             for c in self.children:
                 c.toConsole(level + 1, printChildren=False)
@@ -773,7 +881,18 @@ class ExhaleNode:
                     print("{}- included by: [{}]".format("  " * (level + 1), name))
                 for n in self.namespaces_used:
                     n.toConsole(level + 1, printChildren=False)
-            elif self.kind != "class" and self.kind != "struct" and self.kind != "union":
+                for c in self.children:
+                    c.toConsole(level + 1)
+            elif self.kind == "class" or self.kind == "struct":
+                relevant_children = []
+                for c in self.children:
+                    if c.kind == "class" or c.kind == "struct" or \
+                       c.kind == "enum"  or c.kind == "union":
+                        relevant_children.append(c)
+
+                for rc in sorted(relevant_children):
+                    rc.toConsole(level + 1)
+            elif self.kind != "union":
                 for c in self.children:
                     c.toConsole(level + 1)
 
@@ -857,7 +976,18 @@ class ExhaleNode:
                                                                     self.file_name.split('.rst')[0],
                                                                     html_link,
                                                                     link_title)
-                if self.kind == "namespace":
+                has_nested_children = False
+                if self.kind == "class" or self.kind == "struct":
+                    nested_enums      = []
+                    nested_unions     = []
+                    nested_class_like = []
+                    for c in self.children:
+                        c.findNestedEnums(nested_enums)
+                        c.findNestedUnions(nested_unions)
+                        c.findNestedClassLike(nested_class_like)
+                    has_nested_children = nested_enums or nested_unions or nested_class_like # <3 Python
+
+                if self.kind == "namespace" or has_nested_children:
                     next_indent = '  {}'.format(indent)
                     stream.write('{}{}\n{}{}\n{}<ul>\n'.format(indent, opening_li,
                                                                next_indent, html_link,
@@ -865,7 +995,7 @@ class ExhaleNode:
                 else:
                     stream.write('{}{}{}</li>\n'.format(indent, opening_li, html_link))
 
-            # include the relevant children (class like or nested namespaces)
+            # include the relevant children (class like or nested namespaces / classes)
             if self.kind == "namespace":
                 # pre-process and find everything that is relevant
                 kids    = []
@@ -888,12 +1018,31 @@ class ExhaleNode:
                 last_child_index = num_kids + num_nspaces - 1
                 child_idx = 0
 
-                for k in kids:
-                    k.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
+                # first all of the child class like, then any nested namespaces
+                for node in itertools.chain(kids, nspaces):
+                    node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
                     child_idx += 1
 
-                for n in nspaces:
-                    n.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
+                # now that all of the children haven been written, close the tags
+                if treeView:
+                    stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
+            # current node is a class or struct with nested children
+            elif has_nested_children:
+                nested_class_like.sort()
+                num_class_like = len(nested_class_like)
+
+                nested_enums.sort()
+                num_enums = len(nested_enums)
+
+                nested_unions.sort()
+                num_unions = len(nested_unions)
+
+                last_child_index = num_class_like + num_enums + num_unions - 1
+                child_idx = 0
+
+                # first all of the classes / structs, then enums, then unions
+                for node in itertools.chain(nested_class_like, nested_enums, nested_unions):
+                    node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
                     child_idx += 1
 
                 # now that all of the children haven been written, close the tags
@@ -1351,14 +1500,18 @@ class ExhaleRoot:
                     self.all_compounds.append(member)
                     # if we haven't seen this compound yet, make a node
                     child_node = ExhaleNode(member)
-                    # if the current node is a class, struct, union, or enum it's
-                    # ignore variables, functions, etc
-                    if node.kind != "class" and node.kind != "struct" and node.kind != "union":
+                    # if the current node is a class, struct, union, or enum ignore
+                    # its variables, functions, etc
+                    if node.kind == "class" or node.kind == "struct" or node.kind == "union":
+                        if child_node.kind == "enum" or child_node.kind == "union":
+                            nodesRemaining.append(child_node)
+                    else:
                         nodesRemaining.append(child_node)
-                    # the enum is also presented, no need for separate enumvals
+                    # the enum is presented separately, enumvals are haphazard and i hate them
                     # ... determining the enumvalue parent would be painful and i don't want to do it
                     if child_node.kind != "enumvalue":
                         node.children.append(child_node)
+                        child_node.parent = node
 
     def reparentAll(self):
         '''
@@ -1406,6 +1559,7 @@ class ExhaleRoot:
                     for cl in self.class_like:
                         if cl.name == potential_class:
                             cl.children.append(u)
+                            u.parent = cl
                             reparented = True
                             break
 
@@ -1418,6 +1572,7 @@ class ExhaleRoot:
                     for n in self.namespaces:
                         if namespace_name == n.name or alt_namespace_name == n.name:
                             n.children.append(u)
+                            u.parent = n
                             break
                 else:
                     name_or_class_name = "::".join(p for p in parts[:-1])
@@ -1428,6 +1583,7 @@ class ExhaleRoot:
                     for cl in self.class_like:
                         if cl.name == name_or_class_name:
                             cl.children.append(u)
+                            u.parent = cl
                             reparented = True
                             break
 
@@ -1439,6 +1595,7 @@ class ExhaleRoot:
                     for n in self.namespaces:
                         if n.name == name_or_class_name:
                             n.children.append(u)
+                            u.parent = n
                             break
 
         # remove the unions from self.unions that were declared in class_like objects
@@ -1449,17 +1606,39 @@ class ExhaleRoot:
         '''
         Helper method for :func:`exhale.ExhaleRoot.reparentAll`.  Iterates over the
         ``self.class_like`` list and adds each object as a child to a namespace if the
-        class or struct is a member of that namespace.  No structs or classes are
-        removed from the ``self.class_like`` list.
+        class, or struct is a member of that namespace.  Many classes / structs will be
+        reparented to a namespace node, these will remain in ``self.class_like``.
+        However, if a class or struct is reparented to a different class or struct (it
+        is a nested class / struct), it *will* be removed from so that the class view
+        hierarchy is generated correctly.
         '''
+        removals = []
         for cl in self.class_like:
             parts = cl.name.split("::")
             if len(parts) > 1:
+                # first try and reparent to namespaces
                 namespace_name = "::".join(parts[:-1])
+                parent_found = False
                 for n in self.namespaces:
                     if n.name == namespace_name:
                         n.children.append(cl)
+                        cl.parent = n
+                        parent_found = True
                         break
+
+                # if a namespace parent wasn not found, try and reparent to a class
+                if not parent_found:
+                    # parent class name would be namespace_name
+                    for p_cls in self.class_like:
+                        if p_cls.name == namespace_name:
+                            p_cls.children.append(cl)
+                            cl.parent = p_cls
+                            removals.append(cl)
+                            break
+
+        for rm in removals:
+            if rm in self.class_like:
+                self.class_like.remove(rm)
 
     def reparentDirectories(self):
         '''
@@ -1488,6 +1667,7 @@ class ExhaleRoot:
                 if p_rank == rank - 1:
                     if p_directory.name == "/".join(directory.name.split("/")[:-1]):
                         p_directory.children.append(directory)
+                        directory.parent = p_directory
                         if directory not in removals:
                             removals.append(directory)
                         break
@@ -1542,6 +1722,7 @@ class ExhaleRoot:
                 if p_rank == rank - 1:
                     if p_namespace.name == "::".join(namespace.name.split("::")[:-1]):
                         p_namespace.children.append(namespace)
+                        namespace.parent = p_namespace
                         if namespace not in removals:
                             removals.append(namespace)
                         break
@@ -1629,6 +1810,10 @@ class ExhaleRoot:
             except:
                 exclaimError("Unable to process doxygen xml for file [{}].\n".format(f.name))
 
+        #
+        # IMPORTANT: do not set the parent field of anything being added as a child to the file
+        #
+
         # now that we have parsed all the listed refid's in the doxygen xml, reparent
         # the nodes that we care about
         for f in self.files:
@@ -1660,21 +1845,24 @@ class ExhaleRoot:
                     if not already_there:
                         f.namespaces_used.append(child)
 
-        # last but not least, enums and variables declared in the file that are scoped
+        # last but not least, some different kinds declared in the file that are scoped
         # in a namespace they will show up in the programlisting, but not at the toplevel.
         for f in self.files:
             potential_orphans = []
             for n in f.namespaces_used:
                 for child in n.children:
-                    if child.kind == "enum" or child.kind == "variable":
+                    if child.kind == "enum"     or child.kind == "variable" or \
+                       child.kind == "function" or child.kind == "typedef"  or \
+                       child.kind == "union":
                         potential_orphans.append(child)
 
             # now that we have a list of potential orphans, see if this doxygen xml had
             # the refid of a given child present.
             for orphan in potential_orphans:
                 unresolved_name = orphan.name.split("::")[-1]
-                if any(unresolved_name in line for line in f.program_listing):
-                    f.children.append(orphan)
+                if f.refid in orphan.refid and any(unresolved_name in line for line in f.program_listing):
+                    if orphan not in f.children:
+                        f.children.append(orphan)
 
     def filePostProcess(self):
         '''
@@ -1699,6 +1887,7 @@ class ExhaleRoot:
                     # we have found the directory we want
                     if d.name == dir_path:
                         d.children.append(f)
+                        f.parent = d
                         break
                     # otherwise, try and find an owner
                     else:
@@ -1808,26 +1997,47 @@ class ExhaleRoot:
         Doxygen.  This includes all leaf-like documents (``class``, ``struct``,
         ``enum``, ``typedef``, ``union``, ``variable``, and ``define``), as well as
         namespace, file, and directory pages.
+
+        During the reparenting phase of the parsing process, nested items were added as
+        a child to their actual parent.  For classes, structs, enums, and unions, if
+        it was reparented to a ``namespace`` it will *remain* in its respective
+        ``self.<breathe_kind>`` list.  However, if it was an internally declared child
+        of a class or struct (nested classes, structs, enums, and unions), this node
+        will be removed from its ``self.<breathe_kind>`` list to avoid duplication in
+        the class hierarchy generation.
+
+        When generating the full API, though, we will want to include all of these and
+        therefore must call :func:`exhale.ExhaleRoot.generateSingleNodeRST` with all of
+        the nested items.  For nested classes and structs, this is done by just calling
+        ``node.findNestedClassLike`` for every node in ``self.class_like``.  The
+        resulting list then has all of ``self.class_like``, as well as any nested
+        classes and structs found.  With ``enum`` and ``union``, these would have been
+        reparented to a **class** or **struct** if it was removed from the relevant
+        ``self.<breathe_kind>`` list.  Meaning we must make sure that we genererate the
+        single node RST documents for everything by finding the nested enums and unions
+        from ``self.class_like``, as well as everything in ``self.enums`` and
+        ``self.unions``.
         '''
         # initialize all of the nodes
         for node in self.all_nodes:
             self.initializeNodeFilenameAndLink(node)
 
+        # find the potentially nested items that were reparented
+        nested_enums      = []
+        nested_unions     = []
+        nested_class_like = []
         for cl in self.class_like:
-            self.generateSingleNodeRST(cl)
-        for e in self.enums:
-            self.generateSingleNodeRST(e)
-        for f in self.functions:
-            self.generateSingleNodeRST(f)
-        for t in self.typedefs:
-            self.generateSingleNodeRST(t)
-        for u in self.unions:
-            self.generateSingleNodeRST(u)
-        for v in self.variables:
-            self.generateSingleNodeRST(v)
-        for d in self.defines:
-            self.generateSingleNodeRST(d)
+            cl.findNestedEnums(nested_enums)
+            cl.findNestedUnions(nested_unions)
+            cl.findNestedClassLike(nested_class_like)
 
+        # generate all of the leaf-like documents
+        for node in itertools.chain(nested_class_like, self.enums, nested_enums,
+                                    self.unions, nested_unions, self.functions,
+                                    self.typedefs, self.variables, self.defines):
+            self.generateSingleNodeRST(node)
+
+        # generate the remaining parent-like documents
         self.generateNamespaceNodeDocuments()
         self.generateFileNodeDocuments()
         self.generateDirectoryNodeDocuments()
@@ -1848,10 +2058,15 @@ class ExhaleRoot:
         file, but when we want to use it with ``include`` or ``toctree`` this will
         need to change.  Refer to :func:`exhale.ExhaleRoot.gerrymanderNodeFilenames`.
 
+        This method also sets the value of ``node.title``, which will be used in both
+        the reStructuredText document of the node as well as the links generated in the
+        class view hierarchy (<a href="..."> for the ``createTreeView = True`` option).
+
         :type:  exhale.ExhaleNode
         :param: node
             The node that we are setting the above information for.
         '''
+        # create the file and link names
         html_safe_name = node.name.replace(":", "_").replace("/", "_")
         node.file_name = "{}/exhale_{}_{}.rst".format(self.root_directory, node.kind, html_safe_name)
         node.link_name = "{}_{}".format(qualifyKind(node.kind).lower(), html_safe_name)
@@ -1860,6 +2075,51 @@ class ExhaleRoot:
                 self.root_directory, html_safe_name
             )
             node.program_link_name = "program_listing_file_{}".format(html_safe_name)
+
+        # create the title for this node.
+        if node.kind == "dir":
+            title = node.name.split("/")[-1]
+        # breathe does not prepend the namespace for variables and typedefs, so
+        # I choose to leave the fully qualified name in the title for added clarity
+        elif node.kind == "variable" or node.kind == "typedef":
+            title = node.name
+        else:
+            #
+            # :TODO: This is probably breaking template specializations, need to redo
+            #        the html_safe_name, file_name, and link_name to account for these
+            #        as well as include documentation for how to link to partial
+            #        template specializations.
+            #
+            #        That is, need to do something like
+            #
+            #        html_safe_name = node.name.replace(":", "_")
+            #                                  .replace("/", "_")
+            #                                  .replace(" ", "_")
+            #                                  .replace("<", "LT_")
+            #                                  .replace(">", "_GT")
+            #
+            #        Or something like that...
+            #
+            first_lt = node.name.find("<")
+            last_gt  = node.name.rfind(">")
+            # dealing with a template, special treatment necessary
+            if first_lt > -1 and last_gt > -1:
+                title = "{}{}".format(
+                    node.name[:first_lt].split("::")[-1], # remove namespaces
+                    node.name[first_lt:last_gt + 1]       # template params
+                )
+            else:
+                title = node.name.split("::")[-1]
+
+            # additionally, I feel that nested classes should have their fully qualified
+            # name without namespaces for clarity
+            prepend_parent = False
+            if node.kind == "class" or node.kind == "struct" or node.kind == "enum" or node.kind == "union":
+                if node.parent is not None and (node.parent.kind == "class" or node.parent.kind == "struct"):
+                    prepend_parent = True
+            if prepend_parent:
+                title = "{}::{}".format(node.parent.name.split("::")[-1], title)
+        node.title = "{} {}".format(qualifyKind(node.kind), title)
 
     def generateSingleNodeRST(self, node):
         '''
@@ -1884,15 +2144,59 @@ class ExhaleRoot:
             with open(node.file_name, "w") as gen_file:
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(node.link_name)
-                # every generated file must have a header for sphinx to be happy
-                # breathe does not prepend the namespace for variables and typedefes, so
-                # I choose to leave the fully qualified name in the title for added clarity
-                if node.kind == "variable" or node.kind == "typedef":
-                    title = node.name
-                else:
-                    title = node.name.split("::")[-1]
-                node.title = "{} {}".format(qualifyKind(node.kind), title)
                 header = "{}\n{}\n\n".format(node.title, EXHALE_FILE_HEADING)
+                # link back to the file this was defined in
+                file_included = False
+                for f in self.files:
+                    if node in f.children:
+                        if file_included:
+                            raise RuntimeError("Critical error: this node is parented to multiple files.\n\nNode: {}".format(node.name))
+                        header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
+                        file_included = True
+                # if this is a nested type, link back to its parent
+                if node.parent is not None and (node.parent.kind == "struct" or node.parent.kind == "class"):
+                    # still a chance to recover if the parent worked. probably doesn't work past one layer
+                    # TODO: create like quadruple nested classes and find a way to reverse upward. parent links
+                    #       should just be class or struct until it is a namespace or file?
+                    if not file_included:
+                        parent_traverser = node.parent
+                        while parent_traverser is not None:
+                            for f in self.files:
+                                if node.parent in f.children:
+                                    if file_included:
+                                        raise RuntimeError("Critical error: this node is parented to multiple files.\n\nNode: {}".format(node.name))
+                                    header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
+                                    file_included = True
+                                    if node not in f.children:
+                                        f.children.append(node)
+                            if file_included:
+                                parent_traverser = None
+                            else:
+                                parent_traverser = parent_traverser.parent
+
+                    header = "{}- Nested type of :ref:`{}`\n\n".format(header, node.parent.link_name)
+                # if this has nested types, link to them
+                if node.kind == "class" or node.kind == "struct":
+                    nested_children = []
+                    for c in node.children:
+                        c.findNestedEnums(nested_children)
+                        c.findNestedUnions(nested_children)
+                        c.findNestedClassLike(nested_children)
+
+                    if nested_children:
+                        # build up a list of links, custom sort function will force
+                        # double nested and beyond to appear after their parent by
+                        # sorting on their name
+                        nested_children.sort(key=lambda x: x.name)
+                        nested_child_stream = cStringIO.StringIO()
+                        for nc in nested_children:
+                            nested_child_stream.write("- :ref:`{}`\n".format(nc.link_name))
+
+                        # extract the list of links and add them as a subsection in the header
+                        nested_child_string = nested_child_stream.getvalue()
+                        nested_child_stream.close()
+                        header = "{}**Nested Types**:\n\n{}\n\n".format(header, nested_child_string)
+
                 # inject the appropriate doxygen directive and name of this node
                 directive = ".. {}:: {}\n".format(kindAsBreatheDirective(node.kind), node.name)
                 # include any specific directives for this doxygen directive
@@ -2047,10 +2351,12 @@ class ExhaleRoot:
                     fixed_whitespace = re.sub(r'<sp/>', ' ', pgf_line)
                     # for our purposes, this is good enough:
                     #     http://stackoverflow.com/a/4869782/3814202
-                    no_xml_tags = re.sub(r'<[^<]+?>', '', fixed_whitespace)
-                    revive_lt   = re.sub(r'&lt;', '<', no_xml_tags)
-                    revive_gt   = re.sub(r'&gt;', '>', revive_lt)
-                    revive_amp  = re.sub(r'&amp;', '&', revive_gt)
+                    no_xml_tags  = re.sub(r'<[^<]+?>', '', fixed_whitespace)
+                    revive_lt    = re.sub(r'&lt;', '<', no_xml_tags)
+                    revive_gt    = re.sub(r'&gt;', '>', revive_lt)
+                    revive_quote = re.sub(r'&quot;', '"', revive_gt)
+                    revive_apos  = re.sub(r'&apos;', "'", revive_quote)
+                    revive_amp   = re.sub(r'&amp;', '&', revive_apos)
                     full_program_listing = "{}   {}".format(full_program_listing, revive_amp)
 
                 # create the programlisting file
@@ -2156,6 +2462,19 @@ class ExhaleRoot:
             except:
                 exclaimError("Critical error while generating the file for [{}]".format(f.file_name))
 
+            if EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES:
+                try:
+                    with open(f.file_name, "a") as gen_file:
+                        # add the breathe directive ???
+                        gen_file.write(
+                            "\nFull File Listing\n{}\n\n"
+                            ".. {}:: {}\n"
+                            "{}\n\n".format(EXHALE_SECTION_HEADING, kindAsBreatheDirective(f.kind), f.location, specificationsForKind(f.kind))
+                        )
+
+                except:
+                    exclaimError("Critical error while generating the breathe directive for [{}]".format(f.file_name))
+
     def generateDirectoryNodeDocuments(self):
         '''
         Generates all of the directory reStructuredText documents.
@@ -2207,8 +2526,6 @@ class ExhaleRoot:
             with open(node.file_name, "w") as gen_file:
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(node.link_name)
-                # every generated file must have a header for sphinx to be happy
-                node.title = "{} {}".format(qualifyKind(node.kind), node.name.split("/")[-1])
                 header = "{}\n{}\n\n".format(node.title, EXHALE_FILE_HEADING)
                 # generate the headings and links for the children
                 # write it all out
@@ -2467,9 +2784,14 @@ class ExhaleRoot:
                 for d in self.dirs:
                     d.findNestedDirectories(all_directories)
 
+                # recover classes and structs that were reparented
+                all_class_like = []
+                for cl in self.class_like:
+                    cl.findNestedClassLike(all_class_like)
+
                 # write everything to file: reorder these lines for different outcomes
                 self.enumerateAll("Namespaces", all_namespaces, full_api_file)
-                self.enumerateAll("Classes and Structs", self.class_like, full_api_file)
+                self.enumerateAll("Classes and Structs", all_class_like, full_api_file)
                 self.enumerateAll("Enums", self.enums, full_api_file)
                 self.enumerateAll("Unions", self.unions, full_api_file)
                 self.enumerateAll("Functions", self.functions, full_api_file)

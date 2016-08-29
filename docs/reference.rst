@@ -26,6 +26,18 @@ way that makes it stick out a little more.
 
 .. autofunction:: exhale.exclaimError
 
+Exposed Utility Variables
+----------------------------------------------------------------------------------------
+
+.. autodata:: exhale.EXHALE_FILE_HEADING
+   :annotation:
+
+.. autodata:: exhale.EXHALE_SECTION_HEADING
+   :annotation:
+
+.. autodata:: exhale.EXHALE_SUBSECTION_HEADING
+   :annotation:
+
 Ownership Graph Representation
 ----------------------------------------------------------------------------------------
 

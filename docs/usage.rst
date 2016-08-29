@@ -194,6 +194,15 @@ represented is a ``struct some_thing`` in ``namespace arbitrary``, then
 
 Noting that there are **two** underscores between ``arbitrary`` and ``some``.  Refer to
 the full documentation of :func:`exhale.qualifyKind` for the possible return values.
+If this is not working, simply generate the API once and look at the top of the file
+generated for the thing you are trying to link to.  Copy the link (ignoring the leading
+underscore) and use that.
+
+These are reStructuredText links, so in the above example you would write
+
+.. code-block:: rst
+
+   I am linking to :ref:`struct_arbitrary__some_thing`.
 
 .. _usage_customizing_all_breathe_directives:
 
@@ -254,7 +263,9 @@ File pages are structured something like
     | **2** | - Program Listing for file (hyperlink)         |           |
     +-------+------------------------------------------------+-----------+
     |  ... other common information ...                                  |
-    +--------------------------------------------------------------------+
+    +-------+------------------------------------------------------------+
+    | **3** | {{ appendBreatheFileDirective }}                           |
+    +-------+------------------------------------------------------------+
 
 
 **Heading**:
@@ -283,6 +294,32 @@ File pages are structured something like
    remain in the file.
 
    Unlike Doxygen, I do not link to anything in the code.  Maybe sometime in the future?
+
+3. If the value of ``"appendBreatheFileDirective" = True`` in the arguments passed to
+   :func:`exhale.generate`, then the following section will be appended to the bottom
+   of the file being generated:
+
+   .. raw:: html
+
+      <div class="highlight-rest">
+        <div class="highlight">
+          <pre>
+      Full File Listing
+      ----------------------------------------------------------------------------------
+
+      .. doxygenfile:: {{ exhale_node.location }}</pre>
+        </div>
+      </div>
+
+   This will hopefully be a temporary workaround until I can figure out how to robustly
+   parse the xml for this, or figure out how to manipulate Breathe to give me this
+   information (since it clearly exists...).  This workaround is unideal in that any
+   errors you have in any of the documentation of the items in the file will be
+   duplicated by the build, as well as a large number of DUPLICATE id's will be flagged.
+   The generated links inside of the produced output by Breathe will now also link to
+   items on this page first.  AKA this is a buggy feature that I hope to fix soon, but
+   if you *really* need the file documentation in your project, this is currently the
+   only way to include it.
 
 .. note::
 
@@ -442,3 +479,181 @@ might look like:
    I do not support ``groups`` with Doxygen, as I assume if you have gone through the
    effort to group everything then you have a desire to manually control the output.
    Breathe already has an excellent ``doxygengroup`` directive, and you should use that.
+
+Start to finish for Read the Docs
+----------------------------------------------------------------------------------------
+
+Assuming you already had the code that you are generating the API for documented,
+navigate to the top-level folder of your repository.  Read the Docs (RTD) will be
+looking for a folder named either ``doc`` or ``docs`` at the root of your repository
+by default::
+
+    $ cd ~/my_repo/
+    $ mkdir docs
+
+Now we are ready to begin.
+
+1. Generate your sphinx code by using the ``sphinx-quickstart`` utility.  It may look
+   something like the following:
+
+   .. code-block:: bash
+
+      $ ~/my_repo/docs> sphinx-quickstart
+      Welcome to the Sphinx 1.3.1 quickstart utility.
+
+      Please enter values for the following settings (just press Enter to
+      accept a default value, if one is given in brackets).
+
+      Enter the root path for documentation.
+      > Root path for the documentation [.]:
+
+      You have two options for placing the build directory for Sphinx output.
+      Either, you use a directory "_build" within the root path, or you separate
+      "source" and "build" directories within the root path.
+      > Separate source and build directories (y/n) [n]:
+
+      Inside the root directory, two more directories will be created; "_templates"
+      for custom HTML templates and "_static" for custom stylesheets and other static
+      files. You can enter another prefix (such as ".") to replace the underscore.
+      > Name prefix for templates and static dir [_]:
+
+      ... and a whole lot more ...
+
+  .. warning::
+     The default value for ``> Create Makefile? (y/n) [y]:`` must be yes to work on RTD.
+     They are giving you a unix virtual environment.
+
+2. This will create the files ``conf.py``, ``index.rst``, ``Makefile``, and ``make.bat``
+   if you are supporting Windows.  It will also create the directories ``_static`` and
+   ``_templates`` for customizing the sphinx output.
+
+3. Create a ``requirements.txt`` file with the line ``breathe`` so RTD will install it:
+
+   .. code-block:: bash
+
+      $ ~/my_repo/docs> echo 'breathe' > requirements.txt
+
+4. Clone exhale and steal all of the files you will need:
+
+   .. code-block:: bash
+
+      $ ~/my_repo/docs> git clone https://github.com/svenevs/exhale.git
+      $ ~/my_repo/docs> mv exhale/exhale.py .
+      $ ~/my_repo/docs> mv exhale/treeView/_static/collapse/ ./_static/
+      $ ~/my_repo/docs> mv exhale/treeView/_templates/layout.html _templates/
+      $ ~/my_repo/docs> rm -rf exhale/
+
+5. Uncomment the line ``sys.path.insert(0, os.path.abspath('.'))`` at the top of the
+   generated ``conf.py`` so that Sphinx will know where to look for ``exhale.py``.
+
+6. Two options below  (5) in ``conf.py``, add ``'breathe'`` to the ``extensions`` list
+   so that the directives from Breathe can be used.
+
+7. Just below the ``extensions`` list, configure breathe.  Adding the following should
+   be sufficient:
+
+   .. code-block:: py
+
+      breathe_projects = { "yourProjectName": "./doxyoutput/xml" }
+      breathe_default_project = "yourProjectName"
+
+8. Edit ``conf.py`` to use the RTD Theme.  You are of course able to use a different
+   Sphinx theme, but the RTD Theme is what this will enable.  Replace the ``html_theme``
+   and ``html_theme_path`` lines (or comment them out) with:
+
+   .. code-block:: py
+
+      # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
+      on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+      if not on_rtd:  # only import and set the theme if we're building docs locally
+          import sphinx_rtd_theme
+          html_theme = 'sphinx_rtd_theme'
+          html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+9. Edit ``conf.py`` to include the ``generateDoxygenXML`` function shown below --- just
+   paste the function at the bottom of ``conf.py``.  Make sure you change the
+   appropriate values for your project.
+
+10. Just below that, paste the ``setup(app)`` method from :ref:`usage_quickstart_guide`.
+    Add a call to ``generateDoxygenXML`` to the first line of the method, and add
+    ``createTreeView = True`` to the dictionary arguments sent to :func:`exhale.generate`.
+
+11. Go to the admin page of your RTD website and select the *Advanced Settings* tab.
+    Make sure the *Install your project inside a virtualenv using* ``setup.py install``
+    button is checked.  In the *Requirements file* box below, enter
+    ``docs/requirements.txt`` assuming you followed the steps above.
+
+    I personally prefer to keep the ``requirements.txt`` hidden in the ``docs`` folder
+    so that it is implicit that those are only requirements for building the docs, and
+    not the actual project itself.
+
+So in case steps 9 and 10 were not clear, this is what you would have at the bottom of
+your ``conf.py``:
+
+.. code-block:: py
+
+   def generateDoxygenXML():
+       '''
+       Generates the doxygen xml files used by breathe and exhale.  Approach modified from:
+
+       - https://github.com/fmtlib/fmt/blob/master/doc/build.py
+
+       The differences are in some of the arguments to Doxygen.
+       '''
+       from subprocess import PIPE, Popen
+       try:
+
+           doxygen_cmd = ["doxygen", "-"]# "-" tells Doxygen to read configs from stdin
+           doxygen_proc = Popen(doxygen_cmd, stdin=PIPE)
+           doxygen_proc.communicate(input=r'''
+               # Make this the same as what you tell exhale.
+               OUTPUT_DIRECTORY       = doxyoutput
+               # If you need this to be YES, exhale will probably break.
+               CREATE_SUBDIRS         = NO
+               # So that only include/ and subdirectories appear.
+               STRIP_FROM_PATH        = ..
+               # Tell Doxygen where the source code is (yours may be different).
+               INPUT                  = ../include
+               # Nested folders will be ignored without this.  You may not need it.
+               RECURSIVE              = YES
+               # Set to YES if you are debugging or want to compare.
+               GENERATE_HTML          = NO
+               # Unless you want it?
+               GENERATE_LATEX         = NO
+               # Both breathe and exhale need the xml.
+               GENERATE_XML           = YES
+               # Set to NO if you do not want the Doxygen program listing included.
+               XML_PROGRAMLISTING     = YES
+           ''')
+           doxygen_proc.stdin.close()
+           if doxygen_proc.wait() != 0:
+               raise RuntimeError("Non-zero return code from 'doxygen'...")
+       except Exception as e:
+           raise Exception("Unable to execute 'doxygen': {}".format(e))
+
+
+   # setup is called auto-magically for you by Sphinx
+   def setup(app):
+       generateDoxygenXML()
+       # create the dictionary to send to exhale
+       exhaleArgs = {
+           "doxygenIndexXMLPath" : "./doxyoutput/xml/index.xml",
+           "containmentFolder"   : "./generated_api",
+           "rootFileName"        : "library_root.rst",
+           "rootFileTitle"       : "Library API",
+           "createTreeView"      : True
+       }
+
+       # import the exhale module from the current directory and generate the api
+       sys.path.append(os.path.abspath('.')) # exhale.py is in this directory
+       from exhale import generate
+       generate(exhaleArgs)
+
+And you are done.  Make sure you ``git add`` all of the files in your new ``docs``
+directory, RTD will clone your repository / update when you push commits.  You can
+build it locally using ``make html`` in the current directory, but make sure you do not
+add the ``_build`` directory to your git repository.
+
+I hope that the above is successful for you, it looks like a lot but it's not too bad...
+right?

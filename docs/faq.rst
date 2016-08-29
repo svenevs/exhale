@@ -22,3 +22,14 @@ Refer to the RTD docs here_.
 
 .. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
 .. _here: http://docs.readthedocs.io/en/latest/faq.html#my-project-isn-t-building-with-autodoc
+
+Metaprogramming and full template specialization?
+----------------------------------------------------------------------------------------
+Nope.  Partial template specialization at best is supported by Breathe; not full
+template specialization.  Furthermore, Doxygen can barely handle metaprogramming...YMMV.
+
+For partial templates, see the breathe templates_ section for how you would specialize.
+My understanding is the spacing is sensitive.  I have yet to be able to include any form
+of template specialization in breathe, though, including their example code.
+
+.. _templates: http://breathe.readthedocs.io/en/latest/class.html#template-specialisation-example
