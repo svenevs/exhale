@@ -981,12 +981,18 @@ class ExhaleNode:
                     nested_enums      = []
                     nested_unions     = []
                     nested_class_like = []
+                    # important: only scan self.children, do not use recursive findNested* methods
                     for c in self.children:
-                        c.findNestedEnums(nested_enums)
-                        c.findNestedUnions(nested_unions)
-                        c.findNestedClassLike(nested_class_like)
+                        if c.kind == "enum":
+                            nested_enums.append(c)
+                        elif c.kind == "union":
+                            nested_unions.append(c)
+                        elif c.kind == "struct" or c.kind == "class":
+                            nested_class_like.append(c)
+
                     has_nested_children = nested_enums or nested_unions or nested_class_like # <3 Python
 
+                # if there are sub children, there needs to be a new html list generated
                 if self.kind == "namespace" or has_nested_children:
                     next_indent = '  {}'.format(indent)
                     stream.write('{}{}\n{}{}\n{}<ul>\n'.format(indent, opening_li,
@@ -2071,6 +2077,10 @@ class ExhaleRoot:
         node.file_name = "{}/exhale_{}_{}.rst".format(self.root_directory, node.kind, html_safe_name)
         node.link_name = "{}_{}".format(qualifyKind(node.kind).lower(), html_safe_name)
         if node.kind == "file":
+            # account for same file name in different directory
+            html_safe_name = node.location.replace("/", "_")
+            node.file_name = "{}/exhale_{}_{}.rst".format(self.root_directory, node.kind, html_safe_name)
+            node.link_name = "{}_{}".format(qualifyKind(node.kind).lower(), html_safe_name)
             node.program_file = "{}/exhale_program_listing_file_{}.rst".format(
                 self.root_directory, html_safe_name
             )
@@ -2108,6 +2118,14 @@ class ExhaleRoot:
                     node.name[:first_lt].split("::")[-1], # remove namespaces
                     node.name[first_lt:last_gt + 1]       # template params
                 )
+                html_safe_name = title.replace(":", "_").replace("/", "_").replace(" ", "_").replace("<", "LT_").replace(">", "_GT").replace(",", "")
+                node.file_name = "{}/exhale_{}_{}.rst".format(self.root_directory, node.kind, html_safe_name)
+                node.link_name = "{}_{}".format(qualifyKind(node.kind).lower(), html_safe_name)
+                if node.kind == "file":
+                    node.program_file = "{}/exhale_program_listing_file_{}.rst".format(
+                        self.root_directory, html_safe_name
+                    )
+                    node.program_link_name = "program_listing_file_{}".format(html_safe_name)
             else:
                 title = node.name.split("::")[-1]
 
@@ -2425,6 +2443,7 @@ class ExhaleRoot:
             file_typedefs   = []
             file_unions     = []
             file_variables  = []
+            file_defines    = []
             for child in f.children:
                 if child.kind == "struct":
                     file_structs.append(child)
@@ -2440,10 +2459,13 @@ class ExhaleRoot:
                     file_unions.append(child)
                 elif child.kind == "variable":
                     file_variables.append(child)
+                elif child.kind == "define":
+                    file_defines.append(child)
             children_string = self.generateSortedChildListString("Namespaces", "", f.namespaces_used)
             children_string = self.generateSortedChildListString("Classes", children_string, file_structs + file_classes)
             children_string = self.generateSortedChildListString("Enums", children_string, file_enums)
             children_string = self.generateSortedChildListString("Functions", children_string, file_functions)
+            children_string = self.generateSortedChildListString("Defines", children_string, file_defines)
             children_string = self.generateSortedChildListString("Typedefs", children_string, file_typedefs)
             children_string = self.generateSortedChildListString("Unions", children_string, file_unions)
             children_string = self.generateSortedChildListString("Variables", children_string, file_variables)
