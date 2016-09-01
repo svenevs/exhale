@@ -269,8 +269,10 @@ def generate(exhaleArgs):
         raise ValueError("The type of the value for the key 'doxygenStripFromPath' must be a string.")
     try:
         strip = os.path.abspath(doxygenStripFromPath)
+        if not os.path.isdir(strip):
+            raise ValueError("The value for the key 'doxygenStripFromPath' does not appear to be a valid path")
     except Exception as e:
-        raise ValueError("The value for the key 'doxygenStripFromPath' does not appear to be a valid path: {}".format(e))
+        raise RuntimeError("Error coordinating the 'doxygenStripFromPath' variable: {}".format(e))
     global EXHALE_API_DOXYGEN_STRIP_FROM_PATH
     EXHALE_API_DOXYGEN_STRIP_FROM_PATH = strip
 
