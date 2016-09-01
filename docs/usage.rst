@@ -23,14 +23,15 @@ In your ``conf.py``
     def setup(app):
         # create the dictionary to send to exhale
         exhaleArgs = {
-            "doxygenIndexXMLPath" : "./doxyoutput/xml/index.xml",
-            "containmentFolder"   : "./generated_api",
-            "rootFileName"        : "library_root.rst",
-            "rootFileTitle"       : "Library API"
+            "doxygenIndexXMLPath"  : "./doxyoutput/xml/index.xml",
+            "containmentFolder"    : "./generated_api",
+            "rootFileName"         : "library_root.rst",
+            "rootFileTitle"        : "Library API",
+            "doxygenStripFromPath" : ".."
         }
 
         # import the exhale module from the current directory and generate the api
-        sys.path.append(os.path.abspath('.')) # exhale.py is in this directory
+        sys.path.insert(0, os.path.abspath('.')) # exhale.py is in this directory
         from exhale import generate
         generate(exhaleArgs)
 
@@ -204,6 +205,9 @@ These are reStructuredText links, so in the above example you would write
 
    I am linking to :ref:`struct_arbitrary__some_thing`.
 
+Alternatively, you can link to a class with ``:class:`namespace::ClassName```, as well
+as link to a method within that class using ``:func:`namespace::ClassName::method```.
+
 .. _usage_customizing_all_breathe_directives:
 
 Customizing Breathe Output
@@ -343,17 +347,19 @@ In ``conf.py`` we now define at the bottom
 
 .. code-block:: py
 
-    def generateDoxygenXML():
+    def generateDoxygenXML(stripPath):
         '''
-        Generates the doxygen xml files used by breathe and exhale.  Approach modified from:
+        Generates the doxygen xml files used by breathe and exhale.
+        Approach modified from:
 
         - https://github.com/fmtlib/fmt/blob/master/doc/build.py
 
-        The differences are in some of the arguments to Doxygen.
+        :param stripPath:
+            The value you are sending to exhale.generate via the
+            key 'doxygenStripFromPath'.  Usually, should be '..'.
         '''
         from subprocess import PIPE, Popen
         try:
-
             doxygen_cmd = ["doxygen", "-"]# "-" tells Doxygen to read configs from stdin
             doxygen_proc = Popen(doxygen_cmd, stdin=PIPE)
             doxygen_proc.communicate(input=r'''
@@ -362,7 +368,8 @@ In ``conf.py`` we now define at the bottom
                 # If you need this to be YES, exhale will probably break.
                 CREATE_SUBDIRS         = NO
                 # So that only include/ and subdirectories appear.
-                STRIP_FROM_PATH        = ..
+                FULL_PATH_NAMES        = YES
+                STRIP_FROM_PATH        = "%s/"
                 # Tell Doxygen where the source code is (yours may be different).
                 INPUT                  = ../include
                 # Nested folders will be ignored without this.  You may not need it.
@@ -375,12 +382,45 @@ In ``conf.py`` we now define at the bottom
                 GENERATE_XML           = YES
                 # Set to NO if you do not want the Doxygen program listing included.
                 XML_PROGRAMLISTING     = YES
-            ''')
+                # Allow for rst directives and advanced functions (e.g. grid tables)
+                ALIASES                = "rst=\verbatim embed:rst:leading-asterisk"
+                ALIASES               += "endrst=\endverbatim"
+            ''' % stripPath)
             doxygen_proc.stdin.close()
             if doxygen_proc.wait() != 0:
                 raise RuntimeError("Non-zero return code from 'doxygen'...")
         except Exception as e:
             raise Exception("Unable to execute 'doxygen': {}".format(e))
+
+Now that you have defined this at the bottom of ``conf.py``, we'll add a modified
+``setup(app)`` method:
+
+.. code-block:: py
+
+    # setup is called auto-magically for you by Sphinx
+    def setup(app):
+        stripPath = ".."
+        generateDoxygenXML(stripPath)
+
+        # create the dictionary to send to exhale
+        exhaleArgs = {
+            "doxygenIndexXMLPath"  : "./doxyoutput/xml/index.xml",
+            "containmentFolder"    : "./generated_api",
+            "rootFileName"         : "library_root.rst",
+            "rootFileTitle"        : "Library API",
+            "doxygenStripFromPath" : stripPath
+        }
+
+        # import the exhale module from the current directory and generate the api
+        sys.path.insert(0, os.path.abspath('.')) # exhale.py is in this directory
+        from exhale import generate
+        generate(exhaleArgs)
+
+Now you can build the docs with ``make html`` and it will re-parse using Doxygen,
+generate all relevant files, and give you an updated website.  While some may argue that
+this is wasteful, ``exhale`` is not smart enough and never will be smart enough to
+provide incremental updates.  The full api is regenerated.  Every time.  So you may as
+well run Doxygen each time ;)
 
 .. note::
 
@@ -393,9 +433,6 @@ In ``conf.py`` we now define at the bottom
    - ``EXPAND_ONLY_PREDEF``
    - ``PREDEFINED`` (very useful if the Doxygen preprocessor is choking on your macros)
    - ``SKIP_FUNCTION_MACROS``
-
-If you are building on Read the Docs, you will need a few more items in ``conf.py``,
-refer to the `RTD Theme GitHub Page <https://github.com/snide/sphinx_rtd_theme#using-this-theme-locally-then-building-on-read-the-docs>`_ for details.
 
 .. _doxygen_documentaion_specifics:
 
@@ -571,13 +608,10 @@ Now we are ready to begin.
           html_theme = 'sphinx_rtd_theme'
           html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
-9. Edit ``conf.py`` to include the ``generateDoxygenXML`` function shown below --- just
-   paste the function at the bottom of ``conf.py``.  Make sure you change the
-   appropriate values for your project.
+9. Edit ``conf.py`` to include the ``generateDoxygenXML`` and ``setup`` methods provided
+   in :ref:`usage_fully_automated` at the bottom of the file.
 
-10. Just below that, paste the ``setup(app)`` method from :ref:`usage_quickstart_guide`.
-    Add a call to ``generateDoxygenXML`` to the first line of the method, and add
-    ``createTreeView = True`` to the dictionary arguments sent to :func:`exhale.generate`.
+10. Add ``createTreeView = True`` to the dictionary arguments sent to :func:`exhale.generate`.
 
 11. Go to the admin page of your RTD website and select the *Advanced Settings* tab.
     Make sure the *Install your project inside a virtualenv using* ``setup.py install``
@@ -587,68 +621,6 @@ Now we are ready to begin.
     I personally prefer to keep the ``requirements.txt`` hidden in the ``docs`` folder
     so that it is implicit that those are only requirements for building the docs, and
     not the actual project itself.
-
-So in case steps 9 and 10 were not clear, this is what you would have at the bottom of
-your ``conf.py``:
-
-.. code-block:: py
-
-   def generateDoxygenXML():
-       '''
-       Generates the doxygen xml files used by breathe and exhale.  Approach modified from:
-
-       - https://github.com/fmtlib/fmt/blob/master/doc/build.py
-
-       The differences are in some of the arguments to Doxygen.
-       '''
-       from subprocess import PIPE, Popen
-       try:
-
-           doxygen_cmd = ["doxygen", "-"]# "-" tells Doxygen to read configs from stdin
-           doxygen_proc = Popen(doxygen_cmd, stdin=PIPE)
-           doxygen_proc.communicate(input=r'''
-               # Make this the same as what you tell exhale.
-               OUTPUT_DIRECTORY       = doxyoutput
-               # If you need this to be YES, exhale will probably break.
-               CREATE_SUBDIRS         = NO
-               # So that only include/ and subdirectories appear.
-               STRIP_FROM_PATH        = ..
-               # Tell Doxygen where the source code is (yours may be different).
-               INPUT                  = ../include
-               # Nested folders will be ignored without this.  You may not need it.
-               RECURSIVE              = YES
-               # Set to YES if you are debugging or want to compare.
-               GENERATE_HTML          = NO
-               # Unless you want it?
-               GENERATE_LATEX         = NO
-               # Both breathe and exhale need the xml.
-               GENERATE_XML           = YES
-               # Set to NO if you do not want the Doxygen program listing included.
-               XML_PROGRAMLISTING     = YES
-           ''')
-           doxygen_proc.stdin.close()
-           if doxygen_proc.wait() != 0:
-               raise RuntimeError("Non-zero return code from 'doxygen'...")
-       except Exception as e:
-           raise Exception("Unable to execute 'doxygen': {}".format(e))
-
-
-   # setup is called auto-magically for you by Sphinx
-   def setup(app):
-       generateDoxygenXML()
-       # create the dictionary to send to exhale
-       exhaleArgs = {
-           "doxygenIndexXMLPath" : "./doxyoutput/xml/index.xml",
-           "containmentFolder"   : "./generated_api",
-           "rootFileName"        : "library_root.rst",
-           "rootFileTitle"       : "Library API",
-           "createTreeView"      : True
-       }
-
-       # import the exhale module from the current directory and generate the api
-       sys.path.append(os.path.abspath('.')) # exhale.py is in this directory
-       from exhale import generate
-       generate(exhaleArgs)
 
 And you are done.  Make sure you ``git add`` all of the files in your new ``docs``
 directory, RTD will clone your repository / update when you push commits.  You can

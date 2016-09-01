@@ -47,6 +47,10 @@ least the following information:
 3. The name of the root file **you** will be linking to from your reStructuredText.
    This file will be in the directory from 2.
 4. The title of the document for 3, since this will appear in a ``.. toctree::`` directive.
+5. The relative or absolute path to **strip** from the File Pages.  If you follow the
+   tutorials present on this site, this will always be ``".."``.  This may be removed
+   in the future, but currently if this is not supplied then hosting on Read the Docs
+   will break.
 
 .. warning::
    Order of execution matters: Doxygen must be executed / updated before exhale.  If you
@@ -72,7 +76,7 @@ So if your documentation directory structure looked like::
                index.xml
                ... other doxygen xml output ...
 
-Then you could answer 1-4 above with
+Then you could answer 1-5 above with
 
 +---+--------------------------------------+----------------------------------+
 | 1 | Doxygen xml index location           | ``"./doxyoutput/xml/index.xml"`` |
@@ -81,7 +85,9 @@ Then you could answer 1-4 above with
 +---+--------------------------------------+----------------------------------+
 | 3 | Generated library root file          | ``"library_root.rst"``           |
 +---+--------------------------------------+----------------------------------+
-| 4 | Generated library root file title    |``"Library API"``                 |
+| 4 | Generated library root file title    | ``"Library API"``                |
++---+--------------------------------------+----------------------------------+
+| 5 | Path to strip from Doxygen output    | ``".."``                         |
 +---+--------------------------------------+----------------------------------+
 
 and the following directory structure would be produced::
