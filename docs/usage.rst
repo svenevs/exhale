@@ -360,9 +360,9 @@ In ``conf.py`` we now define at the bottom
         '''
         from subprocess import PIPE, Popen
         try:
-            doxygen_cmd = ["doxygen", "-"]# "-" tells Doxygen to read configs from stdin
-            doxygen_proc = Popen(doxygen_cmd, stdin=PIPE)
-            doxygen_proc.communicate(input=r'''
+            doxygen_cmd   = ["doxygen", "-"]# "-" tells Doxygen to read configs from stdin
+            doxygen_proc  = Popen(doxygen_cmd, stdin=PIPE)
+            doxygen_input = r'''
                 # Make this the same as what you tell exhale.
                 OUTPUT_DIRECTORY       = doxyoutput
                 # If you need this to be YES, exhale will probably break.
@@ -386,11 +386,24 @@ In ``conf.py`` we now define at the bottom
                 ALIASES                = "rst=\verbatim embed:rst:leading-asterisk"
                 ALIASES               += "endrst=\endverbatim"
             ''' % stripPath)
+            # In python 3 strings and bytes are no longer interchangeable
+            if sys.version[0] == "3":
+                doxygen_input = bytes(doxygen_input, 'ASCII')
+            doxygen_proc.communicate(input=doxygen_input)
             doxygen_proc.stdin.close()
             if doxygen_proc.wait() != 0:
                 raise RuntimeError("Non-zero return code from 'doxygen'...")
         except Exception as e:
             raise Exception("Unable to execute 'doxygen': {}".format(e))
+
+.. note::
+   The above code should work for Python 2 and 3, but be careful not to modify the
+   somewhat delicate treatment of strings:
+
+   - ``doxygen_input = r'''...``: the ``r`` is required to **prevent** the verbatim rst
+     directives to expand into control sequences (``\v``)
+   - In Python 3 you need to explicitly construct the bytes for communicating
+     with the process.
 
 Now that you have defined this at the bottom of ``conf.py``, we'll add a modified
 ``setup(app)`` method:
@@ -569,6 +582,14 @@ Now we are ready to begin.
    .. code-block:: bash
 
       $ ~/my_repo/docs> echo 'breathe' > requirements.txt
+
+   Alternatively, you can have RTD install via Git Tags.  At the time of writing this,
+   the latest tag for ``breathe`` is ``4.3.1``, so in your ``requirements.txt`` you
+   would have
+
+   .. code-block:: bash
+
+      git+git://github.com/michaeljones/breathe@v4.3.1#egg=breathe
 
 4. Clone exhale and steal all of the files you will need:
 
