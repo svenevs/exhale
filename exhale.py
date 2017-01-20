@@ -2,7 +2,7 @@
 #
 # This file was generated on/around (date -Ru):
 #
-#             Sun, 15 Jan 2017 05:53:44 +0000
+#             Fri, 20 Jan 2017 21:14:23 +0000
 #
 # Copyright (c) 2016, Stephen McDowell
 # All rights reserved.
@@ -996,6 +996,7 @@ class ExhaleNode:
                 parameter is False, and should only ever be set to True internally by
                 recursive calls to this method.
         '''
+        has_nested_children = False
         if self.inClassView():
             if not treeView:
                 stream.write("{}- :ref:`{}`\n".format('    ' * level, self.link_name))
@@ -1016,7 +1017,7 @@ class ExhaleNode:
                                                                     self.file_name.split('.rst')[0],
                                                                     html_link,
                                                                     link_title)
-                has_nested_children = False
+                # search for nested children to display as sub-items in the tree view
                 if self.kind == "class" or self.kind == "struct":
                     nested_enums      = []
                     nested_unions     = []
