@@ -25,6 +25,17 @@ issue (or pull request!) explaining what should change.  I made this because it 
 something I really wanted, and felt the community at large could benefit from as well.
 I put a lot of effort into making it flexible, but it is by no means perfect.
 
+Roadmap
+****************************************************************************************
+
+There are some features I need to / want to implement this summer.  I'm open to
+suggestions / ideas / things you would want to see in this library.  I'll be revamping
+`exhale` this summer when I have a little more time.
+
+The proposed changes are in the project roadmap_.
+
+.. _roadmap: https://github.com/svenevs/exhale/projects/1
+
 Credit
 ----------------------------------------------------------------------------------------
 
