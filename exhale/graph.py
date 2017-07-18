@@ -1,10 +1,6 @@
 # This file is part of exhale: https://github.com/svenevs/exhale
 #
-# This file was generated on/around (date -Ru):
-#
-#             Fri, 20 Jan 2017 21:14:23 +0000
-#
-# Copyright (c) 2016, Stephen McDowell
+# Copyright (c) 2017, Stephen McDowell
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,9 +27,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+from . import configs
+from .utils import exclaimError, kindAsBreatheDirective, qualifyKind, specificationsForKind
 
-from breathe.parser.index import parse as breathe_parse
-import sys
 import re
 import os
 import itertools
@@ -44,582 +40,9 @@ except ImportError:
     # Python 3 StringIO
     from io import StringIO
 
-__all__ = ['generate', 'ExhaleRoot', 'ExhaleNode', 'exclaimError', 'qualifyKind',
-           'kindAsBreatheDirective', 'specificationsForKind', 'EXHALE_FILE_HEADING',
-           'EXHALE_SECTION_HEADING', 'EXHALE_SUBSECTION_HEADING']
-__name__ = "exhale"
+__all__       = ["ExhaleRoot", "ExhaleNode"]
+__name__      = "graph"
 __docformat__ = "reStructuredText"
-
-EXHALE_API_TOCTREE_MAX_DEPTH = 5 # DO NOT EXPOSE
-'''
-The value used as ``:maxdepth:`` with restructured text ``.. toctree::`` directives.
-The default value is 5, as any larger will likely produce errors with a LaTeX build.
-Change this value by specifying the proper value to the dictionary passed to the
-`generate` function.
-'''
-
-EXHALE_API_DOXY_OUTPUT_DIR = "" # DO NOT EXPOSE
-'''
-The path to the doxygen xml output **directory**, relative to ``conf.py`` (or whichever
-file is calling `generate`.  This value **must** be set for `generate` to be able to do
-anything.
-'''
-
-EXHALE_API_DOXYGEN_STRIP_FROM_PATH = None # DO NOT EXPOSE
-'''
-Accounts for broken STRIP_FROM_PATH handling on RTD.
-'''
-
-EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES = False # DO NOT EXPOSE
-'''
-Currently, Exhale (I...) do not know how to extract the documentation string for a given
-file being produced.  If True, then the breathe directive (``doxygenfile``) will be
-incorporated at the bottom of the file.  This will duplicate a lot of information, but
-will include the file's description at the beginning.
-'''
-
-EXHALE_FILE_HEADING = "=" * 88
-''' The restructured text file heading separator (``"=" * 88``). '''
-
-EXHALE_SECTION_HEADING = "-" * 88
-''' The restructured text section heading separator (``"-" * 88``). '''
-
-EXHALE_SUBSECTION_HEADING = "*" * 88
-''' The restructured text sub-section heading separator (``"*" * 88``).'''
-
-EXHALE_CUSTOM_SPECIFICATIONS_FUNCTION = None # DO NOT EXPOSE
-'''
-User specified override of `specificationsForKind`.  No safety checks are performed for
-externally provided functions.  Change the functionality of `specificationsForKind` by
-specifiying a function in the dictionary passed to `generate`.
-'''
-
-
-########################################################################################
-#
-##
-###
-####
-##### Primary entry point.
-####
-###
-##
-#
-########################################################################################
-def generate(exhaleArgs):
-    '''
-    The main entry point to exhale, which parses and generates the full API.
-
-    :Parameters:
-        ``exhaleArgs`` (dict)
-            The dictionary of arguments to configure exhale with.  All keys are strings,
-            and most values should also be strings.  See below.
-
-    **Required Entries:**
-
-    **key**: ``"doxygenIndexXMLPath"`` --- value type: ``str``
-        The absolute or relative path to where the Doxygen index.xml is.  A relative
-        path must be relative to the file **calling** exhale.
-
-    **key**: ``"containmentFolder"`` --- value type: ``str``
-        The folder the generated API will be created in.  If the folder does not exist,
-        exhale will create the folder.  The path can be absolute, or relative to the
-        file that is **calling** exhale.  For example, ``"./generated_api"``.
-
-    **key**: ``"rootFileName"`` --- value type: ``str``
-        The name of the file that **you** will be linking to from your reStructuredText
-        documents.  Do not include the ``containmentFolder`` path in this file name,
-        exhale will create the file ``"{}/{}".format(containmentFolder, rootFileName)``.
-
-        In order for Sphinx to be happy, you should include a ``.rst`` suffix.  All of
-        the generated API uses reStructuredText, and that will not ever change.
-
-        For example, if you specify
-
-        - ``"containmentFolder" = "./generated_api"``, and
-        - ``"rootFileName" = "library_root.rst"``
-
-        Then exhale will generate the file ``./generated_api/library_root.rst``.
-
-        You could include this file in a toctree directive (say in ``index.rst``) with::
-
-            .. toctree:
-               :maxdepth: 2
-
-               generated_api/library_root
-
-        Since Sphinx allows for some flexibility (e.g. your primary domain may be using
-        ``.txt`` files), **no error checking will be performed**.
-
-    **key**: ``"rootFileTitle"`` --- value type: ``str``
-        The title to be written at the top of ``rootFileName``, which will appear in
-        your file including it in the ``toctree`` directive.
-
-    **key**: ``"doxygenStripFromPath"`` --- value type: ``str``
-        When building on Read the Docs, there seem to be issues regarding the Doxygen
-        variable ``STRIP_FROM_PATH`` when built remotely.  That is, it isn't stripped at
-        all.  Provide me with a string path (e.g. ``".."``), and I will strip this for
-        you for the File nodes being generated.  I will use the exact value of
-        ``os.path.abspath("..")`` in the example above, so you can supply either a
-        relative or absolute path.  The File view hierarchy **will** break if you do
-        not give me a value for this, and therefore I hesitantly require this argument.
-        The value ``".."`` assumes that ``conf.py`` is in a ``docs/`` or similar folder
-        exactly one level below the repository's root.
-
-    **Additional Options:**
-
-    **key**: ``"afterTitleDescription"`` --- value type: ``str``
-        Properly formatted reStructuredText with **no indentation** to be included
-        directly after the title.  You can use any rst directives or formatting you wish
-        in this string.  I suggest using the ``textwrap`` module, e.g.::
-
-            description = textwrap.dedent(\'\'\'
-            This is a description of the functionality of the library being documented.
-
-            .. warning::
-
-               Please be advised that this library does not do anything.
-            \'\'\')
-
-        Then you can add ``"afterTitleDescription" = description`` to your dictionary.
-
-    **key**: ``"afterBodySummary"`` --- value type: ``str``
-        Similar to ``afterTitleDescription``, this is a string with reStructuredText
-        formatting.  This will be inserted after the generated API body.  The layout
-        looks something like this::
-
-            rootFileTitle
-            ============================================================================
-
-            afterTitleDescription (if provided)
-
-            [[[ GENERATED API BODY ]]]
-
-            afterBodySummary (if provided)
-
-    **key**: ``"createTreeView"`` --- value type: ``bool``
-        For portability, the default value if not specified is ``False``, which will
-        generate reStructuredText bulleted lists for the Class View and File View
-        hierarchies.  If ``True``, raw html unordered lists will be generated.  Please
-        refer to the *Clickable Hierarchies* subsection of :ref:`usage_advanced_usage`
-        for more details.
-
-    **key**: ``"fullToctreeMaxDepth"`` --- value type: ``int``
-        Beneath the Class View and File View hierarchies a Full API listing is generated
-        as there are items that may not appear in the Class View hierarchy, as well as
-        without this an obscene amount of warnings are generated from Sphinx because
-        neither view actually uses a ``toctree``, they link directly.
-
-        The default value is 5 if not specified, but you may want to give a smaller
-        value depending on the framework being documented.  This value must be greater
-        than or equal to 1 (this is the value of ``:maxdepth:``).
-
-    **key**: ``"appendBreatheFileDirective"`` --- value type: ``bool``
-        Currently, I do not know how to reliably extract the brief / detailed file
-        descriptions for a given file node.  Therefore, if you have file level
-        documentation in your project that has meaning, it would otherwise be omitted.
-        As a temporary patch, if you specify this value as ``True`` then at the bottom
-        of the file page the full ``doxygenfile`` directive output from Breathe will
-        be appended to the file documentiation.  File level brief and detailed
-        descriptions will be included, followed by a large amount of duplication.  I
-        hope to remove this value soon, in place of either parsing the xml more
-        carefully or finding out how to extract this information directly from Breathe.
-
-        The default value of this behavior is ``False`` if it is not specified in the
-        dictionary passed as input for this method.  Please refer to the *Customizing
-        File Pages* subsection of :ref:`usage_customizing_file_pages` for more
-        information on what the impact of this variable is.
-
-    **key**: ``"customSpecificationFunction"`` --- value type: ``function``
-        The custom specification function to override the default behavior of exhale.
-        Please refer to the :func:`exhale.specificationsForKind` documentation.
-
-    :raises ValueError:
-        If the required dictionary arguments are not present, or any of the (key, value)
-        pairs are invalid.
-
-    :raises RuntimeError:
-        If any **fatal** error is caught during the generation of the API.
-    '''
-    if type(exhaleArgs) is not dict:
-        raise ValueError("The type of 'exhaleArgs' must be a dictionary.")
-    # Gather mandatory input
-    if "doxygenIndexXMLPath" not in exhaleArgs:
-        raise ValueError("'doxygenIndexXMLPath' must be present in the arguments to generate.")
-    try:
-        global EXHALE_API_DOXY_OUTPUT_DIR
-        doxygenIndexXMLPath = exhaleArgs["doxygenIndexXMLPath"]
-        EXHALE_API_DOXY_OUTPUT_DIR = doxygenIndexXMLPath.split("index.xml")[0]
-    except Exception as e:
-        raise ValueError("Unable to utilize the provided 'doxygenIndexXMLPath'\n{}".format(e))
-
-    if "containmentFolder" not in exhaleArgs:
-        raise ValueError("'containmentFolder' must be present in the arguments to generate.")
-    containmentFolder = exhaleArgs["containmentFolder"]
-    if type(containmentFolder) is not str:
-        raise ValueError("The type of the value for the key 'containmentFolder' must be a string.")
-
-    if "rootFileName" not in exhaleArgs:
-        raise ValueError("'rootFileName' must be present in the arguments passed to generate.")
-    rootFileName = exhaleArgs["rootFileName"]
-    if type(rootFileName) is not str:
-        raise ValueError("The type of the value for the key 'rootFileName' must be a string.")
-
-    if "rootFileTitle" not in exhaleArgs:
-        raise ValueError("'rootFileTitle' must be present in the arguments passed to generate.")
-    rootFileTitle = exhaleArgs["rootFileTitle"]
-    if type(rootFileTitle) is not str:
-        raise ValueError("The type of the value for the key 'rootFileTitle' must be a string.")
-
-    if "doxygenStripFromPath" not in exhaleArgs:
-        raise ValueError("'doxygenStripFromPath' must be present in the arguments passed to generate.")
-    doxygenStripFromPath = exhaleArgs["doxygenStripFromPath"]
-    if type(doxygenStripFromPath) is not str:
-        raise ValueError("The type of the value for the key 'doxygenStripFromPath' must be a string.")
-    try:
-        strip = os.path.abspath(doxygenStripFromPath)
-        if not os.path.isdir(strip):
-            raise ValueError("The value for the key 'doxygenStripFromPath' does not appear to be a valid path")
-    except Exception as e:
-        raise RuntimeError("Error coordinating the 'doxygenStripFromPath' variable: {}".format(e))
-    global EXHALE_API_DOXYGEN_STRIP_FROM_PATH
-    EXHALE_API_DOXYGEN_STRIP_FROM_PATH = strip
-
-    # gather the optional configurations
-    if "afterTitleDescription" in exhaleArgs:
-        afterTitleDescription = exhaleArgs["afterTitleDescription"]
-        if type(afterTitleDescription) is not str:
-            raise ValueError("The type of the value for the key 'afterTitleDescription' must be a string.")
-    else:
-        afterTitleDescription = ""
-
-    if "afterBodySummary" in exhaleArgs:
-        afterBodySummary = exhaleArgs["afterBodySummary"]
-        if type(afterBodySummary) is not str:
-            raise ValueError("The type of the value for the key 'afterBodySummary' must be a string.")
-    else:
-        afterBodySummary = ""
-
-    if "createTreeView" in exhaleArgs:
-        createTreeView = exhaleArgs["createTreeView"]
-        if type(createTreeView) is not bool:
-            raise ValueError("The type of the value for the key 'createTreeView' must be a boolean.")
-    else:
-        createTreeView = False
-
-    if "fullToctreeMaxDepth" in exhaleArgs:
-        fullToctreeMaxDepth = exhaleArgs["fullToctreeMaxDepth"]
-        if type(fullToctreeMaxDepth) is not int:
-            raise ValueError("The type of the value for the key 'fullToctreeMaxDepth' must be an int.")
-        global EXHALE_API_TOCTREE_MAX_DEPTH
-        EXHALE_API_TOCTREE_MAX_DEPTH = fullToctreeMaxDepth
-
-    if "appendBreatheFileDirective" in exhaleArgs:
-        appendBreatheFileDirective = exhaleArgs["appendBreatheFileDirective"]
-        if type(appendBreatheFileDirective) is not bool:
-            raise ValueError("The type of the value for the key 'appendBreatheFileDirective' must be a boolean.")
-        global EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES
-        EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES = appendBreatheFileDirective
-
-    if "customSpecificationFunction" in exhaleArgs:
-        customSpecificationFunction = exhaleArgs["customSpecificationFunction"]
-        try:
-            ret = customSpecificationFunction("class")
-        except:
-            raise ValueError("Unable to call your custom specification function with 'class' as input...")
-        if type(ret) is not str:
-            raise ValueError("Your custom specification function did not return a string...")
-        global EXHALE_CUSTOM_SPECIFICATIONS_FUNCTION
-        EXHALE_CUSTOM_SPECIFICATIONS_FUNCTION = customSpecificationFunction
-
-    # input gathered, try creating the breathe root compound
-    try:
-        breatheRoot = breathe_parse(doxygenIndexXMLPath)
-    except Exception as e:
-        raise RuntimeError("Unable to use Breathe to parse the specified doxygen index.xml: {}".format(e))
-
-    if breatheRoot is not None:
-        # split into multiple try-except blocks to make it a little easier to identify
-        # where the error comes from
-        try:
-            textRoot = ExhaleRoot(breatheRoot, containmentFolder, rootFileName,
-                                  rootFileTitle, afterTitleDescription,
-                                  afterBodySummary, createTreeView)
-        except Exception as e:
-            raise RuntimeError("Exception caught creating the ExhaleRoot object: {}".format(e))
-        try:
-            textRoot.parse()
-        except Exception as e:
-            raise RuntimeError("Exception caught while parsing: {}".format(e))
-        try:
-            textRoot.generateFullAPI()
-        except Exception as e:
-            raise RuntimeError("Exception caught while generating: {}".format(e))
-    else:
-        raise RuntimeError("Critical error: the returned Breathe root is 'None'.")
-
-
-########################################################################################
-#
-##
-###
-####
-##### Utility / helper functions.
-####
-###
-##
-#
-########################################################################################
-def qualifyKind(kind):
-    '''
-    Qualifies the breathe ``kind`` and returns an qualifier string describing this
-    to be used for the text output (e.g. in generated file headings and link names).
-
-    The output for a given kind is as follows:
-
-    +-------------+------------------+
-    | Input Kind  | Output Qualifier |
-    +=============+==================+
-    | "class"     | "Class"          |
-    +-------------+------------------+
-    | "define"    | "Define"         |
-    +-------------+------------------+
-    | "enum"      | "Enum"           |
-    +-------------+------------------+
-    | "enumvalue" | "Enumvalue"      |
-    +-------------+------------------+
-    | "file"      | "File"           |
-    +-------------+------------------+
-    | "function"  | "Function"       |
-    +-------------+------------------+
-    | "group"     | "Group"          |
-    +-------------+------------------+
-    | "namespace" | "Namespace"      |
-    +-------------+------------------+
-    | "struct"    | "Struct"         |
-    +-------------+------------------+
-    | "typedef"   | "Typedef"        |
-    +-------------+------------------+
-    | "union"     | "Union"          |
-    +-------------+------------------+
-    | "variable"  | "Variable"       |
-    +-------------+------------------+
-
-    The following breathe kinds are ignored:
-
-    - "autodoxygenfile"
-    - "doxygenindex"
-    - "autodoxygenindex"
-
-    Note also that although a return value is generated, neither "enumvalue" nor
-    "group" are actually used.
-
-    :Parameters:
-        ``kind`` (str)
-            The return value of a Breathe ``compound`` object's ``get_kind()`` method.
-
-    :Return (str):
-        The qualifying string that will be used to build the reStructuredText titles and
-        other qualifying names.  If the empty string is returned then it was not
-        recognized.
-    '''
-    if kind == "class":
-        qualifier = "Class"
-    elif kind == "struct":
-        qualifier = "Struct"
-    elif kind == "function":
-        qualifier = "Function"
-    elif kind == "enum":
-        qualifier = "Enum"
-    elif kind == "enumvalue":# unused
-        qualifier = "Enumvalue"
-    elif kind == "namespace":
-        qualifier = "Namespace"
-    elif kind == "define":
-        qualifier = "Define"
-    elif kind == "typedef":
-        qualifier = "Typedef"
-    elif kind == "variable":
-        qualifier = "Variable"
-    elif kind == "file":
-        qualifier = "File"
-    elif kind == "dir":
-        qualifier = "Directory"
-    elif kind == "group":
-        qualifier = "Group"
-    elif kind == "union":
-        qualifier = "Union"
-    else:
-        qualifier = ""
-    return qualifier
-
-
-def kindAsBreatheDirective(kind):
-    '''
-    Returns the appropriate breathe restructured text directive for the specified kind.
-    The output for a given kind is as follows:
-
-    +-------------+--------------------+
-    | Input Kind  | Output Directive   |
-    +=============+====================+
-    | "class"     | "doxygenclass"     |
-    +-------------+--------------------+
-    | "define"    | "doxygendefine"    |
-    +-------------+--------------------+
-    | "enum"      | "doxygenenum"      |
-    +-------------+--------------------+
-    | "enumvalue" | "doxygenenumvalue" |
-    +-------------+--------------------+
-    | "file"      | "doxygenfile"      |
-    +-------------+--------------------+
-    | "function"  | "doxygenfunction"  |
-    +-------------+--------------------+
-    | "group"     | "doxygengroup"     |
-    +-------------+--------------------+
-    | "namespace" | "doxygennamespace" |
-    +-------------+--------------------+
-    | "struct"    | "doxygenstruct"    |
-    +-------------+--------------------+
-    | "typedef"   | "doxygentypedef"   |
-    +-------------+--------------------+
-    | "union"     | "doxygenunion"     |
-    +-------------+--------------------+
-    | "variable"  | "doxygenvariable"  |
-    +-------------+--------------------+
-
-    The following breathe kinds are ignored:
-
-    - "autodoxygenfile"
-    - "doxygenindex"
-    - "autodoxygenindex"
-
-    Note also that although a return value is generated, neither "enumvalue" nor
-    "group" are actually used.
-
-    :Parameters:
-        ``kind`` (str)
-            The kind of the breathe compound / ExhaleNode object (same values).
-
-    :Return (str):
-        The directive to be used for the given ``kind``.  The empty string is returned
-        for both unrecognized and ignored input values.
-    '''
-    if kind == "class":
-        directive = "doxygenclass"
-    elif kind == "struct":
-        directive = "doxygenstruct"
-    elif kind == "function":
-        directive = "doxygenfunction"
-    elif kind == "enum":
-        directive = "doxygenenum"
-    elif kind == "enumvalue":# unused
-        directive = "doxygenenumvalue"
-    elif kind == "namespace":
-        directive = "doxygennamespace"
-    elif kind == "define":
-        directive = "doxygendefine"
-    elif kind == "typedef":
-        directive = "doxygentypedef"
-    elif kind == "variable":
-        directive = "doxygenvariable"
-    elif kind == "file":
-        directive = "doxygenfile"
-    elif kind == "union":
-        directive = "doxygenunion"
-    elif kind == "group":# unused
-        directive = "doxygengroup"
-    else:
-        directive = ""
-    return directive
-
-
-def specificationsForKind(kind):
-    '''
-    Returns the relevant modifiers for the restructured text directive associated with
-    the input kind.  The only considered values for the default implementation are
-    ``class`` and ``struct``, for which the return value is exactly::
-
-        "   :members:\\n   :protected-members:\\n   :undoc-members:\\n"
-
-    Formatting of the return is fundamentally important, it must include both the prior
-    indentation as well as newlines separating any relevant directive modifiers.  The
-    way the framework uses this function is very specific; if you do not follow the
-    conventions then sphinx will explode.
-
-    Consider a ``struct thing`` being documented.  The file generated for this will be::
-
-        .. _struct_thing:
-
-        Struct thing
-        ================================================================================
-
-        .. doxygenstruct:: thing
-           :members:
-           :protected-members:
-           :undoc-members:
-
-    Assuming the first two lines will be in a variable called ``link_declaration``, and
-    the next three lines are stored in ``header``, the following is performed::
-
-        directive = ".. {}:: {}\\n".format(kindAsBreatheDirective(node.kind), node.name)
-        specifications = "{}\\n\\n".format(specificationsForKind(node.kind))
-        gen_file.write("{}{}{}{}".format(link_declaration, header, directive, specifications))
-
-    That is, **no preceding newline** should be returned from your custom function, and
-    **no trailing newline** is needed.  Your indentation for each specifier should be
-    **exactly three spaces**, and if you want more than one you need a newline in between
-    every specification you want to include.  Whitespace control is handled internally
-    because many of the directives do not need anything added.  For a full listing of
-    what your specifier options are, refer to the breathe documentation:
-
-        http://breathe.readthedocs.io/en/latest/directives.html
-
-    :Parameters:
-        ``kind`` (str)
-            The kind of the node we are generating the directive specifications for.
-
-    :Return (str):
-        The correctly formatted specifier(s) for the given ``kind``.  If no specifier(s)
-        are necessary or desired, the empty string is returned.
-    '''
-    # use the custom directives function
-    if EXHALE_CUSTOM_SPECIFICATIONS_FUNCTION is not None:
-        return EXHALE_CUSTOM_SPECIFICATIONS_FUNCTION(kind)
-
-    # otherwise, just provide class and struct
-    if kind == "class" or kind == "struct":
-        directive = "   :members:\n   :protected-members:\n   :undoc-members:"
-    else:
-        directive = ""
-    return directive
-
-
-def exclaimError(msg, ansi_fmt="34;1m"):
-    '''
-    Prints ``msg`` to the console in color with ``(!)`` prepended in color.
-
-    Example (uncolorized) output of ``exclaimError("No leading space needed.")``::
-
-        (!) No leading space needed.
-
-    All messages are written to ``sys.stderr``, and are closed with ``[0m``.  The
-    default color is blue, but can be changed using ``ansi_fmt``.
-
-    Documentation building has a verbose output process, this just helps distinguish an
-    error message coming from exhale.
-
-    :Parameters:
-        ``msg`` (str)
-            The message you want printed to standard error.
-
-        ``ansi_fmt`` (str)
-            An ansi color format.  ``msg`` is printed as
-            ``"\\033[" + ansi_fmt + msg + "\\033[0m\\n``, so you should specify both the
-            color code and the format code (after the semicolon).  The default value is
-            ``34;1m`` --- refer to
-            http://misc.flogisoft.com/bash/tip_colors_and_formatting for alternatives.
-    '''
-    sys.stderr.write("\033[{}(!) {}\033[0m\n".format(ansi_fmt, msg))
 
 
 ########################################################################################
@@ -752,8 +175,8 @@ class ExhaleNode:
         self.kind     = breatheCompound.get_kind()
         self.name     = breatheCompound.get_name()
         self.refid    = breatheCompound.get_refid()
-        self.children = [] # ExhaleNodes
-        self.parent   = None # if reparented, will be an ExhaleNode
+        self.children = []    # ExhaleNodes
+        self.parent   = None  # if reparented, will be an ExhaleNode
         # managed externally
         self.file_name = None
         self.link_name = None
@@ -763,11 +186,11 @@ class ExhaleNode:
         self.in_directory_view = False
         # kind-specific additional information
         if self.kind == "file":
-            self.namespaces_used   = [] # ExhaleNodes
-            self.includes          = [] # strings
-            self.included_by       = [] # (refid, name) tuples
+            self.namespaces_used   = []  # ExhaleNodes
+            self.includes          = []  # strings
+            self.included_by       = []  # (refid, name) tuples
             self.location          = ""
-            self.program_listing   = [] # strings
+            self.program_listing   = []  # strings
             self.program_file      = ""
             self.program_link_name = ""
 
@@ -967,7 +390,7 @@ class ExhaleNode:
             # missing top level nodes at the end
             self.in_class_view = True
             return self.kind == "struct" or self.kind == "class" or \
-                   self.kind == "enum"   or self.kind == "union"
+                   self.kind == "enum"   or self.kind == "union"  # noqa
 
     def toClassView(self, level, stream, treeView, lastChild=False):
         '''
@@ -1031,7 +454,7 @@ class ExhaleNode:
                         elif c.kind == "struct" or c.kind == "class":
                             nested_class_like.append(c)
 
-                    has_nested_children = nested_enums or nested_unions or nested_class_like # <3 Python
+                    has_nested_children = nested_enums or nested_unions or nested_class_like  # <3 Python
 
                 # if there are sub children, there needs to be a new html list generated
                 if self.kind == "namespace" or has_nested_children:
@@ -1355,9 +778,32 @@ class ExhaleRoot:
 
         ``variables`` (list)
             The full list of ExhaleNodes of kind ``variable``.
+
+        ``doxygenIndexXMLDirectory`` (str)
+            The absolute path the the root level of the doxygen xml output.  If the path
+            to the ``index.xml`` file created by doxygen was
+            ``./doxyoutput/xml/index.xml``, then this parameter would simply be
+            ``./doxyoutput/xml``.
+
+        ``doxygenStripFromPath`` (str)
+            If not ``None``, this path is used to control deleting e.g. absolute paths
+            from the output generated.  This should be the same path specified to the
+            doxygen build process, but experience seems to reveal that the doxygen on
+            read the docs is not performing this (likely due to certain environment
+            configurations or something as yet to be identified).
+
+        ``generateBreatheFileDirectives`` (bool)
+            Currently, Exhale (I...) do not know how to extract the documentation string
+            for a given file being produced.  If True, then the breathe directive
+            (``doxygenfile``) will be incorporated at the bottom of the file.  This will
+            duplicate a lot of information, but will include the file's description at
+            the beginning.  This feature will be removed in future releases once files
+            can be reliably paired with their documentation.
     '''
     def __init__(self, breatheRoot, rootDirectory, rootFileName, rootFileTitle,
-                 rootFileDescription, rootFileSummary, createTreeView):
+                 rootFileDescription, rootFileSummary, createTreeView,
+                 doxygenIndexXMLDirectory, doxygenStripFromPath=None,
+                 generateBreatheFileDirectives=False):
         # the Breathe root object (main entry point to Breathe graph)
         self.breathe_root = breatheRoot
 
@@ -1389,41 +835,46 @@ class ExhaleRoot:
         self.node_by_refid = {}
 
         # breathe directive    breathe kind
-        #--------------------+----------------+
+        # -------------------+----------------+
         # autodoxygenfile  <-+-> IGNORE       |
         # doxygenindex     <-+-> IGNORE       |
         # autodoxygenindex <-+-> IGNORE       |
-        #--------------------+----------------+
+        # -------------------+----------------+
         # doxygenclass     <-+-> "class"      |
         # doxygenstruct    <-+-> "struct"     |
-        self.class_like      = [] #           |
+        self.class_like      = []           # |
         # doxygendefine    <-+-> "define"     |
-        self.defines         = [] #           |
+        self.defines         = []           # |
         # doxygenenum      <-+-> "enum"       |
-        self.enums           = [] #           |
+        self.enums           = []           # |
         # ---> largely ignored by framework,  |
         #      but stored if desired          |
         # doxygenenumvalue <-+-> "enumvalue"  |
-        self.enum_values     = [] #           |
+        self.enum_values     = []           # |
         # doxygenfunction  <-+-> "function"   |
-        self.functions       = [] #           |
+        self.functions       = []           # |
         # no directive     <-+-> "dir"        |
-        self.dirs = []            #           |
+        self.dirs = []                      # |
         # doxygenfile      <-+-> "file"       |
-        self.files           = [] #           |
+        self.files           = []           # |
         # not used, but could be supported in |
         # the future?                         |
         # doxygengroup     <-+-> "group"      |
-        self.groups          = [] #           |
+        self.groups          = []           # |
         # doxygennamespace <-+-> "namespace"  |
-        self.namespaces      = [] #           |
+        self.namespaces      = []           # |
         # doxygentypedef   <-+-> "typedef"    |
-        self.typedefs        = [] #           |
+        self.typedefs        = []           # |
         # doxygenunion     <-+-> "union"      |
-        self.unions          = [] #           |
+        self.unions          = []           # |
         # doxygenvariable  <-+-> "variable"   |
-        self.variables       = [] #           |
-        #-------------------------------------+
+        self.variables       = []           # |
+        # -------------------+----------------+
+
+        # Extra configs
+        self.doxygenIndexXMLDirectory      = doxygenIndexXMLDirectory
+        self.doxygenStripFromPath          = doxygenStripFromPath
+        self.generateBreatheFileDirectives = generateBreatheFileDirectives
 
     ####################################################################################
     #
@@ -1478,7 +929,7 @@ class ExhaleRoot:
         while len(nodes_remaining) > 0:
             curr_node = nodes_remaining.pop()
             self.trackNodeIfUnseen(curr_node)
-            self.discoverNeigbors(nodes_remaining, curr_node)
+            self.discoverNeighbors(nodes_remaining, curr_node)
 
     def trackNodeIfUnseen(self, node):
         '''
@@ -1517,7 +968,7 @@ class ExhaleRoot:
             elif node.kind == "union":
                 self.unions.append(node)
 
-    def discoverNeigbors(self, nodesRemaining, node):
+    def discoverNeighbors(self, nodesRemaining, node):
         '''
         Helper method for :func:`exhale.ExhaleRoot.discoverAllNodes`.  Some of the
         compound objects received from Breathe have a member function ``get_member()``
@@ -1799,8 +1250,10 @@ class ExhaleRoot:
             ``XML_PROGRAMLISTING = NO`` with Doxygen.  An example of such an enum would
             be an enum declared inside of a namespace within this file.
         '''
-        if EXHALE_API_DOXY_OUTPUT_DIR == "":
-            exclaimError("The doxygen xml output directory was not specified!")
+        if not os.path.isdir(self.doxygenIndexXMLDirectory):
+            exclaimError("The doxygen xml output directory [{}] is not valid!".format(
+                self.doxygenIndexXMLDirectory
+            ))
             return
         # parse the doxygen xml file and extract all refid's put in it
         # keys: file object, values: list of refid's
@@ -1817,9 +1270,9 @@ class ExhaleRoot:
         for f in self.files:
             doxygen_xml_file_ownerships[f] = []
             try:
-                doxy_xml_path = "{}{}.xml".format(EXHALE_API_DOXY_OUTPUT_DIR, f.refid)
+                doxy_xml_path = "{}{}.xml".format(self.doxygenIndexXMLDirectory, f.refid)
                 with open(doxy_xml_path, "r") as doxy_file:
-                    processing_code_listing = False # shows up at bottom of xml
+                    processing_code_listing = False  # shows up at bottom of xml
                     for line in doxy_file:
                         # see if this line represents the location tag
                         match = loc_regex.match(line)
@@ -1863,9 +1316,9 @@ class ExhaleRoot:
         #
 
         # hack to make things work right on RTD
-        if EXHALE_API_DOXYGEN_STRIP_FROM_PATH is not None:
+        if self.doxygenStripFromPath is not None:
             for f in self.files:
-                f.location = f.location.replace(EXHALE_API_DOXYGEN_STRIP_FROM_PATH, "")
+                f.location = f.location.replace(self.doxygenStripFromPath, "")
                 if f.location[0] == "/":
                     f.location = f.location[1:]
 
@@ -2040,7 +1493,7 @@ class ExhaleRoot:
         try:
             with open(self.full_root_file_path, "w") as generated_index:
                 generated_index.write("{}\n{}\n\n{}\n\n".format(
-                    self.root_file_title, EXHALE_FILE_HEADING, self.root_file_description)
+                    self.root_file_title, configs.EXHALE_FILE_HEADING, self.root_file_description)
                 )
         except:
             exclaimError("Unable to create the root api file / header: {}".format(self.full_root_file_path))
@@ -2164,8 +1617,8 @@ class ExhaleRoot:
             # dealing with a template, special treatment necessary
             if first_lt > -1 and last_gt > -1:
                 title = "{}{}".format(
-                    node.name[:first_lt].split("::")[-1], # remove namespaces
-                    node.name[first_lt:last_gt + 1]       # template params
+                    node.name[:first_lt].split("::")[-1],  # remove namespaces
+                    node.name[first_lt:last_gt + 1]        # template params
                 )
                 html_safe_name = title.replace(":", "_").replace("/", "_").replace(" ", "_").replace("<", "LT_").replace(">", "_GT").replace(",", "")
                 node.file_name = "{}/exhale_{}_{}.rst".format(self.root_directory, node.kind, html_safe_name)
@@ -2211,13 +1664,15 @@ class ExhaleRoot:
             with open(node.file_name, "w") as gen_file:
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(node.link_name)
-                header = "{}\n{}\n\n".format(node.title, EXHALE_FILE_HEADING)
+                header = "{}\n{}\n\n".format(node.title, configs.EXHALE_FILE_HEADING)
                 # link back to the file this was defined in
                 file_included = False
+                # same error can be thrown twice in below code segment
+                multi_parent = "Critical error: this node is parented to multiple files.\n\nNode: {}"
                 for f in self.files:
                     if node in f.children:
                         if file_included:
-                            raise RuntimeError("Critical error: this node is parented to multiple files.\n\nNode: {}".format(node.name))
+                            raise RuntimeError(multi_parent.format(node.name))
                         header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
                         file_included = True
                 # if this is a nested type, link back to its parent
@@ -2231,7 +1686,7 @@ class ExhaleRoot:
                             for f in self.files:
                                 if node.parent in f.children:
                                     if file_included:
-                                        raise RuntimeError("Critical error: this node is parented to multiple files.\n\nNode: {}".format(node.name))
+                                        raise RuntimeError(multi_parent.format(node.name))
                                     header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
                                     file_included = True
                                     if node not in f.children:
@@ -2269,8 +1724,8 @@ class ExhaleRoot:
                 # include any specific directives for this doxygen directive
                 specifications = "{}\n\n".format(specificationsForKind(node.kind))
                 gen_file.write("{}{}{}{}".format(link_declaration, header, directive, specifications))
-        except:
-            exclaimError("Critical error while generating the file for [{}]".format(node.file_name))
+        except Exception as e:
+            exclaimError("Critical error while generating the file for [{}]:\n{}".format(node.file_name, e))
 
     def generateNamespaceNodeDocuments(self):
         '''
@@ -2308,7 +1763,7 @@ class ExhaleRoot:
                 link_declaration = ".. _{}:\n\n".format(nspace.link_name)
                 # every generated file must have a header for sphinx to be happy
                 nspace.title = "{} {}".format(qualifyKind(nspace.kind), nspace.name)
-                header = "{}\n{}\n\n".format(nspace.title, EXHALE_FILE_HEADING)
+                header = "{}\n{}\n\n".format(nspace.title, configs.EXHALE_FILE_HEADING)
                 # generate the headings and links for the children
                 children_string = self.generateNamespaceChildrenString(nspace)
                 # write it all out
@@ -2358,17 +1813,20 @@ class ExhaleRoot:
                 nsp_variables.append(child)
 
         # generate their headings if they exist (no Defines...that's not a C++ thing...)
-        children_string = self.generateSortedChildListString("Namespaces", "", nsp_namespaces)
-        children_string = self.generateSortedChildListString("Classes", children_string, nsp_nested_class_like)
-        children_string = self.generateSortedChildListString("Enums", children_string, nsp_enums)
-        children_string = self.generateSortedChildListString("Functions", children_string, nsp_functions)
-        children_string = self.generateSortedChildListString("Typedefs", children_string, nsp_typedefs)
-        children_string = self.generateSortedChildListString("Unions", children_string, nsp_unions)
-        children_string = self.generateSortedChildListString("Variables", children_string, nsp_variables)
-
+        children_stream = StringIO()
+        self.generateSortedChildListString(children_stream, "Namespaces", nsp_namespaces)
+        self.generateSortedChildListString(children_stream, "Classes", nsp_nested_class_like)
+        self.generateSortedChildListString(children_stream, "Enums", nsp_enums)
+        self.generateSortedChildListString(children_stream, "Functions", nsp_functions)
+        self.generateSortedChildListString(children_stream, "Typedefs", nsp_typedefs)
+        self.generateSortedChildListString(children_stream, "Unions", nsp_unions)
+        self.generateSortedChildListString(children_stream, "Variables", nsp_variables)
+        # read out the buffer contents, close it and return the desired string
+        children_string = children_stream.getvalue()
+        children_stream.close()
         return children_string
 
-    def generateSortedChildListString(self, sectionTitle, previousString, lst):
+    def generateSortedChildListString(self, stream, sectionTitle, lst):
         '''
         Helper method for :func:`exhale.ExhaleRoot.generateNamespaceChildrenString`.
         Used to build up a continuous string with all of the children separated out into
@@ -2376,17 +1834,14 @@ class ExhaleRoot:
 
         This generates a new titled section with ``sectionTitle`` and puts a link to
         every node found in ``lst`` in this section.  The newly created section is
-        appended to ``previousString`` and then returned.
-
-        :TODO:
-            Change this to use string streams like the other methods instead.
+        appended to the existing ``stream`` buffer.
 
         :Parameters:
+            ``stream`` (StringIO)
+                The already-open StringIO to write the result to.
+
             ``sectionTitle`` (str)
                 The title of the section for this list of children.
-
-            ``previousString`` (str)
-                The string to append the newly created section to.
 
             ``lst`` (list)
                 A list of ExhaleNode objects that are to be linked to from this section.
@@ -2394,12 +1849,9 @@ class ExhaleRoot:
         '''
         if lst:
             lst.sort()
-            new_string = "{}\n\n{}\n{}\n".format(previousString, sectionTitle, EXHALE_SECTION_HEADING)
+            stream.write("\n\n{}\n{}\n".format(sectionTitle, configs.EXHALE_SECTION_HEADING))
             for l in lst:
-                new_string = "{}\n- :ref:`{}`".format(new_string, l.link_name)
-            return new_string
-        else:
-            return previousString
+                stream.write("\n- :ref:`{}`".format(l.link_name))
 
     def generateFileNodeDocuments(self):
         '''
@@ -2436,7 +1888,7 @@ class ExhaleRoot:
                         link_declaration = ".. _{}:\n\n".format(f.program_link_name)
                         # every generated file must have a header for sphinx to be happy
                         prog_title = "Program Listing for {} {}".format(qualifyKind(f.kind), f.name)
-                        header = "{}\n{}\n\n".format(prog_title, EXHALE_FILE_HEADING)
+                        header = "{}\n{}\n\n".format(prog_title, configs.EXHALE_FILE_HEADING)
                         return_link = "- Return to documentation for :ref:`{}`\n\n".format(f.link_name)
                         # write it all out
                         gen_file.write("{}{}{}{}\n\n".format(
@@ -2450,18 +1902,18 @@ class ExhaleRoot:
         for f in self.files:
             if len(f.location) > 0:
                 file_definition = "Definition (``{}``)\n{}\n\n".format(
-                    f.location, EXHALE_SECTION_HEADING
+                    f.location, configs.EXHALE_SECTION_HEADING
                 )
             else:
                 file_definition = ""
 
             if include_program_listing and file_definition != "":
                 file_definition = "{}.. toctree::\n   :maxdepth: 1\n\n   {}\n\n".format(
-                    file_definition, f.program_file.split("/")[-1] # file path still has directory
+                    file_definition, f.program_file.split("/")[-1]  # file path still has directory
                 )
 
             if len(f.includes) > 0:
-                file_includes = "Includes\n{}\n\n".format(EXHALE_SECTION_HEADING)
+                file_includes = "Includes\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
                 for incl in sorted(f.includes):
                     local_file = None
                     for incl_file in self.files:
@@ -2478,7 +1930,7 @@ class ExhaleRoot:
                 file_includes = ""
 
             if len(f.included_by) > 0:
-                file_included_by = "Included By\n{}\n\n".format(EXHALE_SECTION_HEADING)
+                file_included_by = "Included By\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
                 for incl_ref, incl_name in f.included_by:
                     for incl_file in self.files:
                         if incl_ref == incl_file.refid:
@@ -2513,14 +1965,20 @@ class ExhaleRoot:
                     file_variables.append(child)
                 elif child.kind == "define":
                     file_defines.append(child)
-            children_string = self.generateSortedChildListString("Namespaces", "", f.namespaces_used)
-            children_string = self.generateSortedChildListString("Classes", children_string, file_structs + file_classes)
-            children_string = self.generateSortedChildListString("Enums", children_string, file_enums)
-            children_string = self.generateSortedChildListString("Functions", children_string, file_functions)
-            children_string = self.generateSortedChildListString("Defines", children_string, file_defines)
-            children_string = self.generateSortedChildListString("Typedefs", children_string, file_typedefs)
-            children_string = self.generateSortedChildListString("Unions", children_string, file_unions)
-            children_string = self.generateSortedChildListString("Variables", children_string, file_variables)
+
+            # generate the listing of children referenced to from this file
+            children_stream = StringIO()
+            self.generateSortedChildListString(children_stream, "Namespaces", f.namespaces_used)
+            self.generateSortedChildListString(children_stream, "Classes", file_structs + file_classes)
+            self.generateSortedChildListString(children_stream, "Enums", file_enums)
+            self.generateSortedChildListString(children_stream, "Functions", file_functions)
+            self.generateSortedChildListString(children_stream, "Defines", file_defines)
+            self.generateSortedChildListString(children_stream, "Typedefs", file_typedefs)
+            self.generateSortedChildListString(children_stream, "Unions", file_unions)
+            self.generateSortedChildListString(children_stream, "Variables", file_variables)
+
+            children_string = children_stream.getvalue()
+            children_stream.close()
 
             try:
                 with open(f.file_name, "w") as gen_file:
@@ -2528,26 +1986,32 @@ class ExhaleRoot:
                     link_declaration = ".. _{}:\n\n".format(f.link_name)
                     # every generated file must have a header for sphinx to be happy
                     f.title = "{} {}".format(qualifyKind(f.kind), f.name)
-                    header = "{}\n{}\n\n".format(f.title, EXHALE_FILE_HEADING)
+                    header = "{}\n{}\n\n".format(f.title, configs.EXHALE_FILE_HEADING)
                     # write it all out
                     gen_file.write("{}{}{}{}\n{}\n{}\n\n".format(
-                        link_declaration, header, file_definition, file_includes, file_included_by, children_string)
-                    )
+                        link_declaration, header, file_definition, file_includes,
+                        file_included_by, children_string
+                    ))
             except:
                 exclaimError("Critical error while generating the file for [{}]".format(f.file_name))
 
-            if EXHALE_GENERATE_BREATHE_FILE_DIRECTIVES:
+            if self.generateBreatheFileDirectives:
                 try:
                     with open(f.file_name, "a") as gen_file:
                         # add the breathe directive ???
                         gen_file.write(
                             "\nFull File Listing\n{}\n\n"
                             ".. {}:: {}\n"
-                            "{}\n\n".format(EXHALE_SECTION_HEADING, kindAsBreatheDirective(f.kind), f.location, specificationsForKind(f.kind))
+                            "{}\n\n".format(
+                                configs.EXHALE_SECTION_HEADING, kindAsBreatheDirective(f.kind),
+                                f.location, specificationsForKind(f.kind)
+                            )
                         )
 
                 except:
-                    exclaimError("Critical error while generating the breathe directive for [{}]".format(f.file_name))
+                    exclaimError(
+                        "Critical error while generating the breathe directive for [{}]".format(f.file_name)
+                    )
 
     def generateDirectoryNodeDocuments(self):
         '''
@@ -2581,7 +2045,7 @@ class ExhaleRoot:
 
         # generate the subdirectory section
         if len(child_dirs) > 0:
-            child_dirs_string = "Subdirectories\n{}\n\n".format(EXHALE_SECTION_HEADING)
+            child_dirs_string = "Subdirectories\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
             for child_dir in sorted(child_dirs):
                 child_dirs_string = "{}- :ref:`{}`\n".format(child_dirs_string, child_dir.link_name)
         else:
@@ -2589,7 +2053,7 @@ class ExhaleRoot:
 
         # generate the files section
         if len(child_files) > 0:
-            child_files_string = "Files\n{}\n\n".format(EXHALE_SECTION_HEADING)
+            child_files_string = "Files\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
             for child_file in sorted(child_files):
                 child_files_string = "{}- :ref:`{}`\n".format(child_files_string, child_file.link_name)
         else:
@@ -2600,7 +2064,7 @@ class ExhaleRoot:
             with open(node.file_name, "w") as gen_file:
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(node.link_name)
-                header = "{}\n{}\n\n".format(node.title, EXHALE_FILE_HEADING)
+                header = "{}\n{}\n\n".format(node.title, configs.EXHALE_FILE_HEADING)
                 # generate the headings and links for the children
                 # write it all out
                 gen_file.write("{}{}{}\n{}\n\n".format(
@@ -2741,7 +2205,7 @@ class ExhaleRoot:
         # write everything to file to be included in the root api later
         try:
             with open(self.class_view_file, "w") as cvf:
-                cvf.write("Class Hierarchy\n{}\n\n{}\n\n".format(EXHALE_SECTION_HEADING,
+                cvf.write("Class Hierarchy\n{}\n\n{}\n\n".format(configs.EXHALE_SECTION_HEADING,
                                                                  class_view_string))
         except Exception as e:
             exclaimError("Error writing the class hierarchy: {}".format(e))
@@ -2806,7 +2270,7 @@ class ExhaleRoot:
         # write everything to file to be included in the root api later
         try:
             with open(self.directory_view_file, "w") as dvf:
-                dvf.write("File Hierarchy\n{}\n\n{}\n\n".format(EXHALE_SECTION_HEADING,
+                dvf.write("File Hierarchy\n{}\n\n{}\n\n".format(configs.EXHALE_SECTION_HEADING,
                                                                 directory_view_string))
         except Exception as e:
             exclaimError("Error writing the directory hierarchy: {}".format(e))
@@ -2846,7 +2310,7 @@ class ExhaleRoot:
         try:
             with open(self.unabridged_api_file, "w") as full_api_file:
                 # write the header
-                full_api_file.write("Full API\n{}\n\n".format(EXHALE_SECTION_HEADING))
+                full_api_file.write("Full API\n{}\n\n".format(configs.EXHALE_SECTION_HEADING))
 
                 # recover all namespaces that were reparented
                 all_namespaces = []
@@ -2897,12 +2361,12 @@ class ExhaleRoot:
                 closed already.
         '''
         if len(lst) > 0:
-            openFile.write("{}\n{}\n\n".format(subsectionTitle, EXHALE_SUBSECTION_HEADING))
+            openFile.write("{}\n{}\n\n".format(subsectionTitle, configs.EXHALE_SUBSECTION_HEADING))
             for l in sorted(lst):
                 openFile.write(
                     ".. toctree::\n"
                     "   :maxdepth: {}\n\n"
-                    "   {}\n\n".format(EXHALE_API_TOCTREE_MAX_DEPTH, l.file_name)
+                    "   {}\n\n".format(configs.exhaleApiTocTreeMaxDepth, l.file_name)
                 )
 
     def generateAPIRootSummary(self):
