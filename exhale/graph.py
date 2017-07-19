@@ -33,6 +33,7 @@ from .utils import exclaimError, kindAsBreatheDirective, qualifyKind, specificat
 import re
 import os
 import itertools
+import xmltodict
 try:
     # Python 2 StringIO
     from cStringIO import StringIO
@@ -170,11 +171,46 @@ class ExhaleNode:
             ``program_file``. Set to ``None`` on creation, refer to
             :func:`exhale.ExhaleRoot.initializeNodeFilenameAndLink`.
     '''
-    def __init__(self, breatheCompound):
-        self.compound = breatheCompound
-        self.kind     = breatheCompound.get_kind()
-        self.name     = breatheCompound.get_name()
-        self.refid    = breatheCompound.get_refid()
+    def __init__(self, compound):
+        # self.compound, self.name, self.kind, and self.refid are the four core  types
+        # listed in the index.xml document.  These are then used to infer relationships,
+        # find the node's specific compound definition (listed in <node.refid>.xml if it
+        # exists).
+        #
+        # The <node.refid>.xml file describes much more, the "compounddef" tag is the
+        # the one this library primarily uses in order to find the necessary details.
+        # These files are described by "compound.xsd" that appears in the same directory.
+        self.compound = compound
+        if "name" not in compound:
+            raise RuntimeError(
+                "The key 'name' was not found in the input compound: {}".format(compound)
+            )
+        self.name = compound["name"]
+
+        if "@kind" not in compound:
+            raise RuntimeError(
+                "The key '@kind' was not found in the input compound: {}".format(compound)
+            )
+        self.kind = compound["@kind"]
+
+        if "@refid" not in compound:
+            raise RuntimeError(
+                "The key '@refid' was not found in the input compound: {}".format(compound)
+            )
+        self.refid = compound["@refid"]
+
+        # used for establishing a link to the file something was done in for leaf-like
+        # nodes conveniently, files also have this defined as their name making
+        # comparison easy :)
+        self.def_in_file = None
+        cdef_dict = self.openNodeCompoundDefDict()
+        if cdef_dict and "location" in cdef_dict and "@file" in cdef_dict["location"]:
+            self.def_in_file = cdef_dict["location"]["@file"]
+
+        # self.compound = breatheCompound
+        # self.kind     = breatheCompound.get_kind()
+        # self.name     = breatheCompound.get_name()
+        # self.refid    = breatheCompound.get_refid()
         self.children = []    # ExhaleNodes
         self.parent   = None  # if reparented, will be an ExhaleNode
         # managed externally
@@ -223,6 +259,26 @@ class ExhaleNode:
         # otherwise, sort based off the kind
         else:
             return self.kind < other.kind
+
+    def openNodeXMLAsDict(self):
+        # Determine where the definition actually took place
+        node_xml_path = "{}{}.xml".format(configs.exhaleDoxyOutputDir, self.refid)
+        if os.path.isfile(node_xml_path):
+            try:
+                with open(node_xml_path, "r") as node_xml:
+                    node_xml_contents = node_xml.read()
+
+                node_xml_dict = xmltodict.parse(node_xml_contents)
+                return node_xml_dict
+
+            except:
+                return None
+
+    def openNodeCompoundDefDict(self):
+        root = self.openNodeXMLAsDict()
+        if root and ("doxygen" in root and "compounddef" in root["doxygen"]):
+            return root["doxygen"]["compounddef"]
+        return root
 
     def findNestedNamespaces(self, lst):
         '''
@@ -778,32 +834,9 @@ class ExhaleRoot:
 
         ``variables`` (list)
             The full list of ExhaleNodes of kind ``variable``.
-
-        ``doxygenIndexXMLDirectory`` (str)
-            The absolute path the the root level of the doxygen xml output.  If the path
-            to the ``index.xml`` file created by doxygen was
-            ``./doxyoutput/xml/index.xml``, then this parameter would simply be
-            ``./doxyoutput/xml``.
-
-        ``doxygenStripFromPath`` (str)
-            If not ``None``, this path is used to control deleting e.g. absolute paths
-            from the output generated.  This should be the same path specified to the
-            doxygen build process, but experience seems to reveal that the doxygen on
-            read the docs is not performing this (likely due to certain environment
-            configurations or something as yet to be identified).
-
-        ``generateBreatheFileDirectives`` (bool)
-            Currently, Exhale (I...) do not know how to extract the documentation string
-            for a given file being produced.  If True, then the breathe directive
-            (``doxygenfile``) will be incorporated at the bottom of the file.  This will
-            duplicate a lot of information, but will include the file's description at
-            the beginning.  This feature will be removed in future releases once files
-            can be reliably paired with their documentation.
     '''
     def __init__(self, breatheRoot, rootDirectory, rootFileName, rootFileTitle,
-                 rootFileDescription, rootFileSummary, createTreeView,
-                 doxygenIndexXMLDirectory, doxygenStripFromPath=None,
-                 generateBreatheFileDirectives=False):
+                 rootFileDescription, rootFileSummary, createTreeView):
         # the Breathe root object (main entry point to Breathe graph)
         self.breathe_root = breatheRoot
 
@@ -871,11 +904,6 @@ class ExhaleRoot:
         self.variables       = []           # |
         # -------------------+----------------+
 
-        # Extra configs
-        self.doxygenIndexXMLDirectory      = doxygenIndexXMLDirectory
-        self.doxygenStripFromPath          = doxygenStripFromPath
-        self.generateBreatheFileDirectives = generateBreatheFileDirectives
-
     ####################################################################################
     #
     ##
@@ -922,10 +950,33 @@ class ExhaleRoot:
         populated the lists ``self.all_compounds``, ``self.all_nodes``, and the
         ``self.<breathe_kind>`` lists for different types of objects.
         '''
+        doxygen_index_xml = "{}/index.xml".format(configs.exhaleDoxyOutputDir)
+        try:
+            with open(doxygen_index_xml, "r") as index:
+                index_contents = index.read()
+        except:
+            raise RuntimeError("Could not read the contents of [{}].".format(doxygen_index_xml))
+
+        try:
+            doxygen_index_dict = xmltodict.parse(index_contents)
+        except:
+            raise RuntimeError("Could not parse the contents of [{}] as an xml.".format(doxygen_index_xml))
+
+        root_node_name = "doxygenindex"
+        if root_node_name not in doxygen_index_dict:
+            raise RuntimeError(
+                "Did not find root XML node named '{}' parsing [{}].".format(
+                    root_node_name, doxygen_index_xml
+                )
+            )
+
+        doxygen_root = doxygen_index_dict[root_node_name]
+
         # When you call the breathe_root.get_compound() method, it returns a list of the
         # top level source nodes.  These start out on the stack, and we add their
         # children if they have not already been visited before.
-        nodes_remaining = [ExhaleNode(compound) for compound in self.breathe_root.get_compound()]
+        # nodes_remaining = [ExhaleNode(compound) for compound in self.breathe_root.get_compound()]
+        nodes_remaining = [ExhaleNode(compound) for compound in doxygen_root["compound"]]
         while len(nodes_remaining) > 0:
             curr_node = nodes_remaining.pop()
             self.trackNodeIfUnseen(curr_node)
@@ -992,10 +1043,12 @@ class ExhaleRoot:
                 The node we are trying to discover potential new neighbors from.
         '''
         # discover neighbors of current node; some seem to not have get_member()
-        if "member" in node.compound.__dict__:
-            for member in node.compound.get_member():
-                # keep track of every breathe compound we have seen
-                if member not in self.all_compounds:
+        # if "member" in node.compound.__dict__:
+        if "member" in node.compound:
+            for member in node.compound["member"]:
+                # keep track of every compound we have seen
+                if member not in self.all_compounds and \
+                        ("name" in member and "@kind" in member and "@refid" in member):
                     self.all_compounds.append(member)
                     # if we haven't seen this compound yet, make a node
                     child_node = ExhaleNode(member)
@@ -1250,9 +1303,9 @@ class ExhaleRoot:
             ``XML_PROGRAMLISTING = NO`` with Doxygen.  An example of such an enum would
             be an enum declared inside of a namespace within this file.
         '''
-        if not os.path.isdir(self.doxygenIndexXMLDirectory):
+        if not os.path.isdir(configs.exhaleDoxyOutputDir):
             exclaimError("The doxygen xml output directory [{}] is not valid!".format(
-                self.doxygenIndexXMLDirectory
+                configs.exhaleDoxyOutputDir
             ))
             return
         # parse the doxygen xml file and extract all refid's put in it
@@ -1270,7 +1323,7 @@ class ExhaleRoot:
         for f in self.files:
             doxygen_xml_file_ownerships[f] = []
             try:
-                doxy_xml_path = "{}{}.xml".format(self.doxygenIndexXMLDirectory, f.refid)
+                doxy_xml_path = "{}{}.xml".format(configs.exhaleDoxyOutputDir, f.refid)
                 with open(doxy_xml_path, "r") as doxy_file:
                     processing_code_listing = False  # shows up at bottom of xml
                     for line in doxy_file:
@@ -1316,9 +1369,9 @@ class ExhaleRoot:
         #
 
         # hack to make things work right on RTD
-        if self.doxygenStripFromPath is not None:
+        if configs.exhaleDoxygenStripFromPath is not None:
             for f in self.files:
-                f.location = f.location.replace(self.doxygenStripFromPath, "")
+                f.location = f.location.replace(configs.exhaleDoxygenStripFromPath, "")
                 if f.location[0] == "/":
                     f.location = f.location[1:]
 
@@ -1669,12 +1722,21 @@ class ExhaleRoot:
                 file_included = False
                 # same error can be thrown twice in below code segment
                 multi_parent = "Critical error: this node is parented to multiple files.\n\nNode: {}"
-                for f in self.files:
-                    if node in f.children:
-                        if file_included:
-                            raise RuntimeError(multi_parent.format(node.name))
-                        header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
-                        file_included = True
+                if node.def_in_file:
+                    for f in self.files:
+                        if f.def_in_file == node.def_in_file:
+                            header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
+                else:
+                    exclaimError(
+                        "Did not locate the file that defined {} [{}]; no link generated.".format(node.kind,
+                                                                                                  node.name)
+                    )
+                # for f in self.files:
+                #     if node in f.children:
+                #         if file_included:
+                #             raise RuntimeError(multi_parent.format(node.name))
+                #         header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
+                #         file_included = True
                 # if this is a nested type, link back to its parent
                 if node.parent is not None and (node.parent.kind == "struct" or node.parent.kind == "class"):
                     # still a chance to recover if the parent worked. probably doesn't work past one layer
@@ -1980,6 +2042,17 @@ class ExhaleRoot:
             children_string = children_stream.getvalue()
             children_stream.close()
 
+            # acquire the file level documentation if present.
+            #
+        #possible keys for this dictionary on files:
+        # ['@id', '@kind', '@language', 'compoundname', 'includes', 'includedby',
+        # 'incdepgraph', 'invincdepgraph', 'innerclass', 'innernamespace',
+        # 'briefdescription', 'detaileddescription', 'programlisting', 'location']
+        #believe is same for all kinds, need to verify
+            cdef_dict = f.openNodeCompoundDefDict()
+            brief = cdef_dict["briefdescription"]
+            detailed = cdef_dict["detaileddescription"]
+
             try:
                 with open(f.file_name, "w") as gen_file:
                     # generate a link label for every generated file
@@ -1987,6 +2060,21 @@ class ExhaleRoot:
                     # every generated file must have a header for sphinx to be happy
                     f.title = "{} {}".format(qualifyKind(f.kind), f.name)
                     header = "{}\n{}\n\n".format(f.title, configs.EXHALE_FILE_HEADING)
+
+                    # include the brief / detailed description if provided
+                    if brief:
+                        gen_file.write("\nBrief Description:\n{}\n\n{}\n\n".format(
+                            configs.EXHALE_SUBSECTION_HEADING, brief
+                        ))
+
+                    if detailed:
+                        gen_file.write("\nDetailed Description:\n{}\n\n{}\n\n".format(
+                            configs.EXHALE_SUBSECTION_HEADING, detailed
+                        ))
+
+                    if brief or detailed:
+                        exclaimError("*****************: checkout {}".format(f.name))
+
                     # write it all out
                     gen_file.write("{}{}{}{}\n{}\n{}\n\n".format(
                         link_declaration, header, file_definition, file_includes,
@@ -1995,7 +2083,7 @@ class ExhaleRoot:
             except:
                 exclaimError("Critical error while generating the file for [{}]".format(f.file_name))
 
-            if self.generateBreatheFileDirectives:
+            if configs.exhaleGenerateBreatheFileDirectives:
                 try:
                     with open(f.file_name, "a") as gen_file:
                         # add the breathe directive ???

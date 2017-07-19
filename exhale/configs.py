@@ -83,3 +83,46 @@ def exhaleHasCustomSpecificationsFunction():
 
 def exhaleCallCustomSpecificationsForKind(kind):
     return exhaleCustomSpecificationsForKind(kind)
+
+
+
+
+exhaleDoxyOutputDir = ""
+'''
+The absolute path the the root level of the doxygen xml output.  If the path to the
+``index.xml`` file created by doxygen was ``./doxyoutput/xml/index.xml``, then this
+would simply be ``./doxyoutput/xml``.
+'''
+
+
+def setExhaleDoxyOutputDir(where):
+    global exhaleDoxyOutputDir
+    exhaleDoxyOutputDir = where
+
+
+exhaleDoxygenStripFromPath = None
+'''
+If not ``None``, this path is used to control deleting e.g. absolute paths from the
+output generated.  This should be the same path specified to the doxygen build process,
+but experience seems to reveal that the doxygen on read the docs is not performing this
+(likely due to certain environment configurations or something as yet to be identified).
+'''
+
+
+def setExhaleDoxygenStripFromPath(path):
+    global exhaleDoxygenStripFromPath
+    exhaleDoxygenStripFromPath = path
+
+
+exhaleGenerateBreatheFileDirectives = False
+'''
+Currently, Exhale (I...) do not know how to extract the documentation string for a given
+file being produced.  If True, then the breathe directive (``doxygenfile``) will be
+incorporated at the bottom of the file.  This will duplicate a lot of information, but
+will include the file's description at the beginning.  This feature will be removed in
+future releases once files can be reliably paired with their documentation.
+'''
+
+def setExhaleGenerateBreatheFileDirectives(use):
+    global exhaleGenerateBreatheFileDirectives
+    exhaleGenerateBreatheFileDirectives = use

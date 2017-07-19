@@ -194,6 +194,7 @@ def generate(exhaleArgs):
     try:
         doxygenIndexXMLPath      = exhaleArgs["doxygenIndexXMLPath"]
         doxygenIndexXMLDirectory = doxygenIndexXMLPath.split("index.xml")[0]
+        configs.setExhaleDoxyOutputDir(doxygenIndexXMLDirectory)
     except Exception as e:
         raise ValueError("Unable to utilize the provided 'doxygenIndexXMLPath'\n{}".format(e))
 
@@ -224,7 +225,7 @@ def generate(exhaleArgs):
         strip = os.path.abspath(doxygenStripFromPath)
         if not os.path.isdir(strip):
             raise ValueError("The value for the key 'doxygenStripFromPath' does not appear to be a valid path")
-        doxygenStripFromPath = strip
+        configs.setExhaleDoxygenStripFromPath(strip)
     except Exception as e:
         raise RuntimeError("Error coordinating the 'doxygenStripFromPath' variable: {}".format(e))
 
@@ -262,8 +263,7 @@ def generate(exhaleArgs):
             raise ValueError(
                 "The type of the value for the key 'appendBreatheFileDirective' must be a boolean."
             )
-    else:
-        appendBreatheFileDirective = False
+        configs.setExhaleGenerateBreatheFileDirectives(appendBreatheFileDirective)
 
     if "customSpecificationFunction" in exhaleArgs:
         customSpecificationFunction = exhaleArgs["customSpecificationFunction"]
@@ -289,9 +289,7 @@ def generate(exhaleArgs):
         try:
             textRoot = ExhaleRoot(breatheRoot, containmentFolder, rootFileName,
                                   rootFileTitle, afterTitleDescription,
-                                  afterBodySummary, createTreeView,
-                                  doxygenIndexXMLDirectory, doxygenStripFromPath,
-                                  appendBreatheFileDirective)
+                                  afterBodySummary, createTreeView)
         except Exception as e:
             raise RuntimeError("Exception caught creating the ExhaleRoot object: {}".format(e))
         try:
