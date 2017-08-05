@@ -1,21 +1,70 @@
-exhale
+Exhale
 ========================================================================================
-
-Automatic C++ library api documentation generation: breathe doxygen in and exhale it out.
-
-Brief
-----------------------------------------------------------------------------------------
-
-This project attempts to port the Doxygen style Class and File hierarchies into Sphinx,
-using Breathe to pull in the documentation from Doxygen.  This project was developed
-with C++ in mind, but would likely also work well for a pure C library as well.
-
-Full documentation and usage guide: |docs|
+|docs|
 
 .. |docs| image:: https://readthedocs.org/projects/exhale/badge/?version=latest
     :alt: Documentation Status
     :scale: 100%
     :target: https://exhale.readthedocs.io/en/latest/?badge=latest
+
+.. begin_tmp_danger_warning
+
+.. danger::
+
+   These documents are currently largely out of order and most of the documentation you
+   will read pertaining to how it works are out of date.  This code is currently
+   unstable and under-tested.  This admonition will be removed when ready.
+
+.. end_tmp_danger_warning
+
+.. begin_exhale_brief_desc
+
+Automatic C++ library API documentation generation using Doxygen, Sphinx, and Breathe.
+This project attempts to revive the Doxygen style hierarchies in reStructuredText
+documents to enable powerful documentation syntax and generate beautiful websites.
+
+.. end_exhale_brief_desc
+
+.. begin_exhale_long_desc
+
+Exhale is a `Sphinx <http://www.sphinx-doc.org/en/stable/>`_ extension that depends on
+the excellent `Breathe <http://breathe.readthedocs.io/en/latest/>`_ extension which
+enables parsing Doxygen documentation into the Sphinx domain.  Exhale provides a layer
+of automation, enabling launching Doxygen and generating the full website all from your
+``conf.py``.  Exhale will execute these actions by way of ``sphinx-build`` being invoked,
+allowing you to use it for hosting on `Read the Docs <https://readthedocs.org/>`_.
+
+.. end_exhale_long_desc
+
+Usage
+----------------------------------------------------------------------------------------
+
+See the `full documentation and usage guide <https://exhale.rtfd.io>`_.
+
+.. begin_exhale_is_it_for_me
+
+Exhale might **not** be the tool you are looking for!  It was designed to be as
+intuitive and flexible as possible, but it does require more machinery to get
+everything started.
+
+**Why use it?**
+    The motivation for writing it was to use Sphinx and Doxygen together.  It was
+    largely inspired by Breathe, but I had a strong desire to have the Class and
+    File hierarchies in an **html** format.  Doxygen can generate websites.  Sphinx
+    can generate them better.
+
+**Why not use it?**
+    It may be more involved than you need.  Check out the ``breathe-apidoc`` tool
+    that comes with your installation of ``breathe``.  It is quite similar to the
+    `Sphinx API doc tool <http://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html>`_,
+    and that may be all you are looking for to get your documentation displayed.
+
+A more comprehensive example repository (which was used for testing once upon a time) is
+located at the companion_ site.
+
+.. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
+
+.. end_exhale_is_it_for_me
 
 Participate
 ----------------------------------------------------------------------------------------
@@ -51,6 +100,8 @@ here out of convenience for you.
 License
 ----------------------------------------------------------------------------------------
 
-This project uses a BSD 3-clause license, listed at the top of ``exhale.py``, in hopes
-that it will be accessible to most projects.  If you require a different license, please
-raise an issue and I will consider a dual license.
+This project uses a BSD 3-clause license, in hopes that it will be accessible to most
+projects.  If you require a different license, please raise an issue and I will consider
+a dual license.
+
+The full license is `available here <https://github.com/svenevs/exhale/LICENSE.md>`_.
