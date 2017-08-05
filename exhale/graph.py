@@ -28,12 +28,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from . import configs
-from .utils import exclaimError, kindAsBreatheDirective, qualifyKind, specificationsForKind
+from . import parse
+from . import utils
+from .utils import exclaimError, kindAsBreatheDirective, qualifyKind, specificationsForKind, AnsiColors
 
 import re
 import os
 import itertools
-import xmltodict
+import textwrap
+from bs4 import BeautifulSoup
+
 try:
     # Python 2 StringIO
     from cStringIO import StringIO
@@ -171,46 +175,25 @@ class ExhaleNode:
             ``program_file``. Set to ``None`` on creation, refer to
             :func:`exhale.ExhaleRoot.initializeNodeFilenameAndLink`.
     '''
-    def __init__(self, compound):
-        # self.compound, self.name, self.kind, and self.refid are the four core  types
-        # listed in the index.xml document.  These are then used to infer relationships,
-        # find the node's specific compound definition (listed in <node.refid>.xml if it
-        # exists).
-        #
-        # The <node.refid>.xml file describes much more, the "compounddef" tag is the
-        # the one this library primarily uses in order to find the necessary details.
-        # These files are described by "compound.xsd" that appears in the same directory.
-        self.compound = compound
-        if "name" not in compound:
-            raise RuntimeError(
-                "The key 'name' was not found in the input compound: {}".format(compound)
-            )
-        self.name = compound["name"]
-
-        if "@kind" not in compound:
-            raise RuntimeError(
-                "The key '@kind' was not found in the input compound: {}".format(compound)
-            )
-        self.kind = compound["@kind"]
-
-        if "@refid" not in compound:
-            raise RuntimeError(
-                "The key '@refid' was not found in the input compound: {}".format(compound)
-            )
-        self.refid = compound["@refid"]
+    def __init__(self, name, kind, refid):
+        self.name  = name
+        self.kind  = kind
+        self.refid = refid
 
         # used for establishing a link to the file something was done in for leaf-like
         # nodes conveniently, files also have this defined as their name making
         # comparison easy :)
         self.def_in_file = None
-        cdef_dict = self.openNodeCompoundDefDict()
-        if cdef_dict and "location" in cdef_dict and "@file" in cdef_dict["location"]:
-            self.def_in_file = cdef_dict["location"]["@file"]
+
+        ########## cdef_dict = self.openNodeCompoundDefDict()
+        # if cdef_dict and "location" in cdef_dict and "@file" in cdef_dict["location"]:
+        #     self.def_in_file = cdef_dict["location"]["@file"]
 
         # self.compound = breatheCompound
         # self.kind     = breatheCompound.get_kind()
         # self.name     = breatheCompound.get_name()
         # self.refid    = breatheCompound.get_refid()
+        ##########
         self.children = []    # ExhaleNodes
         self.parent   = None  # if reparented, will be an ExhaleNode
         # managed externally
@@ -255,20 +238,20 @@ class ExhaleNode:
                 elif self.kind == "class" and other.kind == "struct":
                     return False
                 else:
-                    return self.name < other.name
+                    return self.name.lower() < other.name.lower()
         # otherwise, sort based off the kind
         else:
             return self.kind < other.kind
 
     def openNodeXMLAsDict(self):
         # Determine where the definition actually took place
-        node_xml_path = "{}{}.xml".format(configs.exhaleDoxyOutputDir, self.refid)
+        node_xml_path = "{}{}.xml".format(configs.doxygenOutputDirectory, self.refid)
         if os.path.isfile(node_xml_path):
             try:
                 with open(node_xml_path, "r") as node_xml:
                     node_xml_contents = node_xml.read()
 
-                node_xml_dict = xmltodict.parse(node_xml_contents)
+                node_xml_dict = xmltodict.parse(node_xml_contents, process_namespaces=True)
                 return node_xml_dict
 
             except:
@@ -544,8 +527,8 @@ class ExhaleNode:
                 last_child_index = num_kids + num_nspaces - 1
                 child_idx = 0
 
-                # first all of the child class like, then any nested namespaces
-                for node in itertools.chain(kids, nspaces):
+                # first all of the nested namespaces, then the child class like
+                for node in itertools.chain(nspaces, kids):
                     node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
                     child_idx += 1
 
@@ -625,38 +608,11 @@ class ExhaleNode:
                 recursive calls to this method.
         '''
         if self.inDirectoryView():
-            if not treeView:
-                stream.write("{}- :ref:`{}`\n".format('    ' * level, self.link_name))
-            else:
-                indent = '  ' * (level * 2)
-                if lastChild:
-                    opening_li = '<li class="lastChild">'
-                else:
-                    opening_li = '<li>'
-                # turn double underscores into underscores, then underscores into hyphens
-                html_link = self.link_name.replace("__", "_").replace("_", "-")
-                # should always have at least two parts (templates will have more)
-                title_as_link_parts = self.title.split(" ")
-                qualifier = title_as_link_parts[0]
-                link_title = " ".join(title_as_link_parts[1:])
-                link_title = link_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                html_link = '{} <a href="{}.html#{}">{}</a>'.format(qualifier,
-                                                                    self.file_name.split('.rst')[0],
-                                                                    html_link,
-                                                                    link_title)
-                if self.kind == "dir":
-                    next_indent = '  {}'.format(indent)
-                    stream.write('{}{}\n{}{}\n{}<ul>\n'.format(indent, opening_li,
-                                                               next_indent, html_link,
-                                                               next_indent))
-                else:
-                    stream.write('{}{}{}</li>\n'.format(indent, opening_li, html_link))
-
-            # include the relevant children (class like or nested namespaces)
+            # pre-process and find everything that is relevant (need to know if there
+            # are children or not before writing for the bootstrap side)
             if self.kind == "dir":
-                # pre-process and find everything that is relevant
-                kids    = []
                 dirs = []
+                kids = []
                 for c in self.children:
                     if c.inDirectoryView():
                         if c.kind == "dir":
@@ -664,28 +620,85 @@ class ExhaleNode:
                         elif c.kind == "file":
                             kids.append(c)
 
-                # always put nested namespaces last; parent dictates to the child if
-                # they are the last child being printed
-                kids.sort()
-                num_kids = len(kids)
-
                 dirs.sort()
                 num_dirs = len(dirs)
 
+                kids.sort()
+                num_kids = len(kids)
+
+                total_kids = num_dirs + num_kids
+
                 last_child_index = num_kids + num_dirs - 1
                 child_idx = 0
+            else:
+                total_kids = 0
 
-                for k in kids:
-                    k.toDirectoryView(level + 1, stream, treeView, child_idx == last_child_index)
-                    child_idx += 1
+            if not treeView:
+                stream.write("{}- :ref:`{}`\n".format('    ' * level, self.link_name))
+            else:
+                indent = '  ' * (level * 2)
+                next_indent = "  {0}".format(indent)
+                if configs.treeViewIsBootstrap:
+                    stream.write("\n{indent}{{\n{next_indent}{text}".format(
+                        indent=indent,
+                        next_indent=next_indent,
+                        text="text: \"{}\"".format(self.name))
+                    )
 
+                    # If there are children then `nodes: [ ... ]` will be next
+                    if total_kids > 0:
+                        stream.write(",")
+                    # Otherwise, this element is ending.  JavaScript doesn't care about
+                    # trailing commas :)
+                    else:
+                        stream.write("\n{indent}}},".format(indent=indent))
+                else:
+                    if lastChild:
+                        opening_li = '<li class="lastChild">'
+                    else:
+                        opening_li = '<li>'
+                    # turn double underscores into underscores, then underscores into hyphens
+                    html_link = self.link_name.replace("__", "_").replace("_", "-")
+                    # should always have at least two parts (templates will have more)
+                    title_as_link_parts = self.title.split(" ")
+                    qualifier = title_as_link_parts[0]
+                    link_title = " ".join(title_as_link_parts[1:])
+                    link_title = link_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                    html_link = '{} <a href="{}.html#{}">{}</a>'.format(qualifier,
+                                                                        self.file_name.split('.rst')[0],
+                                                                        html_link,
+                                                                        link_title)
+                    if self.kind == "dir":
+                        next_indent = '  {}'.format(indent)
+                        stream.write('{}{}\n{}{}\n{}<ul>\n'.format(indent, opening_li,
+                                                                   next_indent, html_link,
+                                                                   next_indent))
+                    else:
+                        stream.write('{}{}{}</li>\n'.format(indent, opening_li, html_link))
+
+            # include the relevant children (class like or nested namespaces)
+            if self.kind == "dir":
+                if treeView and configs.treeViewIsBootstrap and (num_dirs + num_kids > 0):
+                    stream.write("\n{next_indent}nodes: [\n".format(next_indent=next_indent))
+
+                # first put in all of the nested directories
                 for n in dirs:
                     n.toDirectoryView(level + 1, stream, treeView, child_idx == last_child_index)
                     child_idx += 1
 
+                # then list all files in this directory
+                for k in kids:
+                    k.toDirectoryView(level + 1, stream, treeView, child_idx == last_child_index)
+                    child_idx += 1
+
                 # now that all of the children haven been written, close the tags
                 if treeView:
-                    stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
+                    if configs.treeViewIsBootstrap:
+                        if num_dirs + num_kids > 0:
+                            stream.write("\n{next_indent}]\n".format(next_indent=next_indent))
+                        stream.write("\n{indent}}},\n".format(indent=indent))
+                    else:
+                        stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
 
 
 class ExhaleRoot:
@@ -713,9 +726,6 @@ class ExhaleRoot:
     of those methods.
 
     :Parameters:
-        ``breatheRoot`` (instance)
-            Type unknown, this is the return value of ``breathe.breathe_parse``.
-
         ``rootDirectory`` (str)
             The name of the root directory to put everything in.  This should be the
             value of the key ``containmentFolder`` in the dictionary passed to
@@ -748,9 +758,6 @@ class ExhaleRoot:
             :func:`exhale.generate`.
 
     :Attributes:
-        ``breathe_root`` (instance)
-            The value of the parameter ``breatheRoot``.
-
         ``root_directory`` (str)
             The value of the parameter ``rootDirectory``.
 
@@ -835,33 +842,32 @@ class ExhaleRoot:
         ``variables`` (list)
             The full list of ExhaleNodes of kind ``variable``.
     '''
-    def __init__(self, breatheRoot, rootDirectory, rootFileName, rootFileTitle,
-                 rootFileDescription, rootFileSummary, createTreeView):
-        # the Breathe root object (main entry point to Breathe graph)
-        self.breathe_root = breatheRoot
-
+    # def __init__(self, breatheRoot, rootDirectory, rootFileName, rootFileTitle,
+    #              rootFileDescription, rootFileSummary, createTreeView):
+    def __init__(self):
         # file generation location and root index data
-        self.root_directory        = rootDirectory
-        self.root_file_name        = rootFileName
-        self.full_root_file_path   = "{}/{}".format(self.root_directory, self.root_file_name)
-        self.root_file_title       = rootFileTitle
-        self.root_file_description = rootFileDescription
-        self.root_file_summary     = rootFileSummary
-        self.class_view_file       = "{}.rst".format(
+        self.root_directory        = configs.containmentFolder
+        self.root_file_name        = configs.rootFileName
+        self.full_root_file_path   = os.path.join(self.root_directory, self.root_file_name)
+        self.root_file_title       = configs.rootFileTitle
+        self.root_file_description = configs.afterTitleDescription
+        self.root_file_summary     = configs.afterBodySummary
+        self.class_view_file       = "{0}.rst".format(
             self.full_root_file_path.replace(self.root_file_name, "class_view_hierarchy")
         )
-        self.directory_view_file   = "{}.rst".format(
+        self.directory_view_file   = "{0}.rst".format(
             self.full_root_file_path.replace(self.root_file_name, "directory_view_hierarchy")
         )
-        self.unabridged_api_file   = "{}.rst".format(
+        self.unabridged_api_file   = "{0}.rst".format(
             self.full_root_file_path.replace(self.root_file_name, "unabridged_api")
         )
 
         # whether or not we should generate the raw html tree view
-        self.use_tree_view = createTreeView
+        self.use_tree_view = configs.createTreeView
 
         # track all compounds (from Breathe) to build all nodes (ExhaleNodes)
-        self.all_compounds = [self.breathe_root.get_compound()]
+        # self.all_compounds = [self.breathe_root.get_compound()]
+        self.all_compounds = []##### remove this
         self.all_nodes = []
 
         # convenience lookup: keys are string Doxygen refid's, values are ExhaleNodes
@@ -950,7 +956,7 @@ class ExhaleRoot:
         populated the lists ``self.all_compounds``, ``self.all_nodes``, and the
         ``self.<breathe_kind>`` lists for different types of objects.
         '''
-        doxygen_index_xml = "{}/index.xml".format(configs.exhaleDoxyOutputDir)
+        doxygen_index_xml = "{}/index.xml".format(configs.doxygenOutputDirectory)
         try:
             with open(doxygen_index_xml, "r") as index:
                 index_contents = index.read()
@@ -958,29 +964,195 @@ class ExhaleRoot:
             raise RuntimeError("Could not read the contents of [{}].".format(doxygen_index_xml))
 
         try:
-            doxygen_index_dict = xmltodict.parse(index_contents)
+            index_soup = BeautifulSoup(index_contents, "lxml-xml")
         except:
             raise RuntimeError("Could not parse the contents of [{}] as an xml.".format(doxygen_index_xml))
 
-        root_node_name = "doxygenindex"
-        if root_node_name not in doxygen_index_dict:
+        doxygen_root = index_soup.doxygenindex
+        if not doxygen_root:
             raise RuntimeError(
-                "Did not find root XML node named '{}' parsing [{}].".format(
-                    root_node_name, doxygen_index_xml
-                )
+                "Did not find root XML node named 'doxygenindex' parsing [{}].".format(doxygen_index_xml)
             )
 
-        doxygen_root = doxygen_index_dict[root_node_name]
+        for compound in doxygen_root.find_all("compound"):
+            if compound.find("name") and "kind" in compound.attrs and "refid" in compound.attrs:
+                curr_name  = compound.find("name").get_text()
+                curr_kind  = compound.attrs["kind"]
+                curr_refid = compound.attrs["refid"]
+                curr_node  = ExhaleNode(curr_name, curr_kind, curr_refid)
+                self.trackNodeIfUnseen(curr_node)
+
+                # For things like files and namespaces, a "member" list will include
+                # things like defines, enums, etc.  For classes and structs, we don't
+                # need to pay attention because the members are the various methods or
+                # data members by the class
+                if curr_kind == "namespace" or curr_kind == "file":
+                    for member in compound.find_all("member"):
+                        if member.find("name") and "kind" in member.attrs and "refid" in member.attrs:
+                            child_name  = member.find("name").get_text()
+                            child_kind  = member.attrs["kind"]
+                            child_refid = member.attrs["refid"]
+                            child_node  = ExhaleNode(child_name, child_kind, child_refid)
+                            self.trackNodeIfUnseen(child_node)
+
+                            if curr_kind == "namespace":
+                                child_node.parent = curr_node
+                            else:  # curr_kind == "file"
+                                child_node.def_in_file = curr_node
+
+                            curr_node.children.append(child_node)
+                # self.discoverNeighbors(compound, curr_node)
+
+        # Now that we have discovered everything, we need to explicitly parse the file
+        # xml documents to determine where leaf-like nodes have been declared.
+        #
+        # TODO: change formatting of namespace to provide a listing of all files using it
+        for f in self.files:
+            node_xml_contents = utils.nodeCompoundXMLContents(f)
+            if node_xml_contents:
+                try:
+                    f.soup = BeautifulSoup(node_xml_contents, "lxml-xml")
+                except Exception as e:
+                    exclaimError("Unable to parse file xml [{0}]:\n{1}".format(f.name, e))
+                    break
+
+                try:
+                    cdef = f.soup.doxygen.compounddef
+                    err_non = "[CRITICAL] did not find refid [{0}] in `self.node_by_refid`."
+                    err_dup = "Conflicting file definition: [{0}] appears to be defined in both [{1}] and [{2}]."
+                    # process classes
+                    inner_classes = cdef.find_all("innerclass", recursive=False)
+                    exclaimError("*** [{}] had [{}] innerclass".format(f.name, len(inner_classes)), utils.AnsiColors.BOLD_MAGENTA)
+                    for class_like in inner_classes:
+                        if "refid" in class_like.attrs:
+                            refid = class_like.attrs["refid"]
+                            if refid in self.node_by_refid:
+                                node = self.node_by_refid[refid]
+                                exclaimError("   - [{}]".format(node.name), utils.AnsiColors.BOLD_MAGENTA)
+                                if not node.def_in_file:
+                                    node.def_in_file = f
+                                elif node.def_in_file != f:
+                                    exclaimError(err_dup.format(node.name, node.def_in_file.name, f.name),
+                                                 utils.AnsiColors.BOLD_YELLOW)
+                            else:
+                                exclaimError(err_non.format(refid), utils.AnsiColors.BOLD_RED)
+                        else:
+                            ######### TODO: does this happen?
+                            pass
+
+                    # try and find anything else
+                    memberdefs = cdef.find_all("memberdef", recursive=False)
+                    exclaimError("*** [{}] had [{}] memberdef".format(f.name, len(memberdefs)), utils.AnsiColors.BOLD_MAGENTA)
+                    for member in cdef.find_all("memberdef", recursive=False):
+                        if "id" in member.attrs:
+                            refid = member.attrs["id"]
+                            if refid in self.node_by_refid:
+                                node = self.node_by_refid[refid]
+                                exclaimError("   - [{}]".format(node.name), utils.AnsiColors.BOLD_MAGENTA)
+                                if not node.def_in_file:
+                                    node.def_in_file = f
+
+                    # the location of the file as determined by doxygen
+                    location = cdef.find("location")
+                    if location and "file" in location.attrs:
+                        f.def_in_file_location = location.attrs["file"]
+                    else:
+                        f.def_in_file_location = None #######
+                except Exception as e:
+                    exclaimError("XXXXXXX ::: {} :: {}".format(f.name, e), utils.AnsiColors.BOLD_MAGENTA)
+
+        ######
+        # last chance: we will still miss some, but need to pause and establish namespace relationships
+        for nspace in self.namespaces:
+            node_xml_contents = utils.nodeCompoundXMLContents(nspace)
+            if node_xml_contents:
+                try:
+                    name_soup = BeautifulSoup(node_xml_contents, "lxml-xml")
+                except:
+                    continue
+
+                cdef = name_soup.doxygen.compounddef
+                for class_like in cdef.find_all("innerclass", recursive=False):
+                    if "refid" in class_like.attrs:
+                        refid = class_like.attrs["refid"]
+                        if refid in self.node_by_refid:
+                            node = self.node_by_refid[refid]
+                            if node not in nspace.children:
+                                nspace.children.append(node)
+                                node.parent = nspace
+
+                for nested_nspace in cdef.find_all("innernamespace", recursive=False):
+                    if "refid" in nested_nspace.attrs:
+                        refid = nested_nspace.attrs["refid"]
+                        if refid in self.node_by_refid:
+                            node = self.node_by_refid[refid]
+                            if node not in nspace.children:
+                                nspace.children.append(node)
+                                node.parent = nspace
+
+                # This is where things get interesting
+                for sectiondef in cdef.find_all("sectiondef", recursive=False):
+                    for memberdef in sectiondef.find_all("memberdef", recursive=False):
+                        if "id" in memberdef.attrs:
+                            refid = memberdef.attrs["id"]
+                            if refid in self.node_by_refid:
+                                node = self.node_by_refid[refid]
+                                location = memberdef.find("location")
+                                if location:
+                                    if "file" in location.attrs:
+                                        filedef = location.attrs["file"]
+                                        for f in self.files:
+                                            if filedef == f.def_in_file_location:
+                                                node.def_in_file = f
+                                                if node not in f.children:
+                                                    f.children.append(node)
+                                                break
+
+
+
+        missing_file_def = {}
+        missing_file_def_candidates = {}
+        for refid in self.node_by_refid:
+            node = self.node_by_refid[refid]
+            if node.def_in_file is None and node.kind not in ("file", "dir", "group", "namespace"):
+                missing_file_def[refid] = node
+                missing_file_def_candidates[refid] = []
+
+        for f in self.files:
+            cdef = f.soup.doxygen.compounddef
+            # try and find things in the programlisting as a last resort
+            programlisting = cdef.find("programlisting")
+            if programlisting:
+                for ref in programlisting.find_all("ref"):
+                    if "refid" in ref.attrs:
+                        refid = ref.attrs["refid"]
+                        if "kindref" in ref.attrs and ref.attrs["kindref"] == "member":
+                            if refid in missing_file_def and f not in missing_file_def_candidates[refid]:
+                                missing_file_def_candidates[refid].append(f)
+                        # elif "kindref" in ref.attrs:
+                        # if "refkind" in ref.attrs:
+                        #     exclaimError("=== refkind: {}".format(refid), utils.AnsiColors.BOLD_YELLOW)
+
+        for refid in missing_file_def:
+            node = missing_file_def[refid]
+            candidates = missing_file_def_candidates[refid]
+            # If only one found, life is good!
+            if len(candidates) == 1:
+                node.def_in_file = candidates[0]
+            # elif len(candidates) > 1:
+            #     import ipdb
+            #     ipdb.set_trace()
+
 
         # When you call the breathe_root.get_compound() method, it returns a list of the
         # top level source nodes.  These start out on the stack, and we add their
         # children if they have not already been visited before.
         # nodes_remaining = [ExhaleNode(compound) for compound in self.breathe_root.get_compound()]
-        nodes_remaining = [ExhaleNode(compound) for compound in doxygen_root["compound"]]
-        while len(nodes_remaining) > 0:
-            curr_node = nodes_remaining.pop()
-            self.trackNodeIfUnseen(curr_node)
-            self.discoverNeighbors(nodes_remaining, curr_node)
+        # nodes_remaining = [ExhaleNode(compound) for compound in doxygen_root["compound"]]
+        # while len(nodes_remaining) > 0:
+        #     curr_node = nodes_remaining.pop()
+        #     self.trackNodeIfUnseen(curr_node)
+        #     self.discoverNeighbors(nodes_remaining, curr_node)
 
     def trackNodeIfUnseen(self, node):
         '''
@@ -994,6 +1166,7 @@ class ExhaleRoot:
         '''
         if node not in self.all_nodes:
             self.all_nodes.append(node)
+            self.node_by_refid[node.refid] = node
             if node.kind == "class" or node.kind == "struct":
                 self.class_like.append(node)
             elif node.kind == "namespace":
@@ -1019,7 +1192,7 @@ class ExhaleRoot:
             elif node.kind == "union":
                 self.unions.append(node)
 
-    def discoverNeighbors(self, nodesRemaining, node):
+    def discoverNeighbors(self, compoundTag, node):
         '''
         Helper method for :func:`exhale.ExhaleRoot.discoverAllNodes`.  Some of the
         compound objects received from Breathe have a member function ``get_member()``
@@ -1057,6 +1230,8 @@ class ExhaleRoot:
                     if node.kind == "class" or node.kind == "struct" or node.kind == "union":
                         if child_node.kind == "enum" or child_node.kind == "union":
                             nodesRemaining.append(child_node)
+                    elif node.kind == "file":
+                        exclaimError("** [[[ {} ]]] {}".format(node.name, child_node.name), AnsiColors.BOLD_MAGENTA)
                     else:
                         nodesRemaining.append(child_node)
                     # the enum is presented separately, enumvals are haphazard and i hate them
@@ -1064,6 +1239,8 @@ class ExhaleRoot:
                     if child_node.kind != "enumvalue":
                         node.children.append(child_node)
                         child_node.parent = node
+                else:
+                    exclaimError("$$ Already in all_compounds: [{}]".format(member), AnsiColors.BOLD_GREEN)
 
     def reparentAll(self):
         '''
@@ -1082,6 +1259,9 @@ class ExhaleRoot:
         self.reparentDirectories()
         self.renameToNamespaceScopes()
         self.reparentNamespaces()
+
+        for node in self.all_nodes:
+            node.children = list(set(node.children))
 
     def reparentUnions(self):
         '''
@@ -1165,28 +1345,38 @@ class ExhaleRoot:
         hierarchy is generated correctly.
         '''
         removals = []
+        # for cl in self.class_like:
+        #     parts = cl.name.split("::")
+        #     if len(parts) > 1:
+        #         # first try and reparent to namespaces
+        #         namespace_name = "::".join(parts[:-1])
+        #         parent_found = False
+        #         for n in self.namespaces:
+        #             if n.name == namespace_name:
+        #                 n.children.append(cl)
+        #                 cl.parent = n
+        #                 parent_found = True
+        #                 break
+
+        #         # if a namespace parent wasn not found, try and reparent to a class
+        #         if not parent_found:
+        #             # parent class name would be namespace_name
+        #             for p_cls in self.class_like:
+        #                 if p_cls.name == namespace_name:
+        #                     p_cls.children.append(cl)
+        #                     cl.parent = p_cls
+        #                     removals.append(cl)
+        #                     break
         for cl in self.class_like:
             parts = cl.name.split("::")
             if len(parts) > 1:
-                # first try and reparent to namespaces
-                namespace_name = "::".join(parts[:-1])
-                parent_found = False
-                for n in self.namespaces:
-                    if n.name == namespace_name:
-                        n.children.append(cl)
-                        cl.parent = n
-                        parent_found = True
+                parent_name = "::".join(parts[:-1])
+                for parent_cl in self.class_like:
+                    if parent_cl.name == parent_name:
+                        parent_cl.children.append(cl)
+                        cl.parent = parent_cl
+                        removals.append(cl)
                         break
-
-                # if a namespace parent wasn not found, try and reparent to a class
-                if not parent_found:
-                    # parent class name would be namespace_name
-                    for p_cls in self.class_like:
-                        if p_cls.name == namespace_name:
-                            p_cls.children.append(cl)
-                            cl.parent = p_cls
-                            removals.append(cl)
-                            break
 
         for rm in removals:
             if rm in self.class_like:
@@ -1254,30 +1444,35 @@ class ExhaleRoot:
         ``self.namespaces``, it is important that
         :func:`exhale.ExhaleRoot.renameToNamespaceScopes` is called before this method.
         '''
-        namespace_parts = []
-        namespace_ranks = []
-        for n in self.namespaces:
-            parts = n.name.split("::")
-            for p in parts:
-                if p not in namespace_parts:
-                    namespace_parts.append(p)
-            namespace_ranks.append((len(parts), n))
+        # namespace_parts = []
+        # namespace_ranks = []
+        # for n in self.namespaces:
+        #     parts = n.name.split("::")
+        #     for p in parts:
+        #         if p not in namespace_parts:
+        #             namespace_parts.append(p)
+        #     namespace_ranks.append((len(parts), n))
 
-        traversal = sorted(namespace_ranks)
+        # traversal = sorted(namespace_ranks)
+        # removals = []
+        # for rank, namespace in reversed(traversal):
+        #     # rank one means top level namespace
+        #     if rank < 2:
+        #         continue
+        #     # otherwise, this is nested
+        #     for p_rank, p_namespace in reversed(traversal):
+        #         if p_rank == rank - 1:
+        #             if p_namespace.name == "::".join(namespace.name.split("::")[:-1]):
+        #                 p_namespace.children.append(namespace)
+        #                 namespace.parent = p_namespace
+        #                 if namespace not in removals:
+        #                     removals.append(namespace)
+                        # continue
+
         removals = []
-        for rank, namespace in reversed(traversal):
-            # rank one means top level namespace
-            if rank < 2:
-                break
-            # otherwise, this is nested
-            for p_rank, p_namespace in reversed(traversal):
-                if p_rank == rank - 1:
-                    if p_namespace.name == "::".join(namespace.name.split("::")[:-1]):
-                        p_namespace.children.append(namespace)
-                        namespace.parent = p_namespace
-                        if namespace not in removals:
-                            removals.append(namespace)
-                        break
+        for nspace in self.namespaces:
+            if nspace.parent and nspace.parent.kind == "namespace" and nspace not in removals:
+                removals.append(nspace)
 
         for rm in removals:
             self.namespaces.remove(rm)
@@ -1303,11 +1498,12 @@ class ExhaleRoot:
             ``XML_PROGRAMLISTING = NO`` with Doxygen.  An example of such an enum would
             be an enum declared inside of a namespace within this file.
         '''
-        if not os.path.isdir(configs.exhaleDoxyOutputDir):
+        if not os.path.isdir(configs.doxygenOutputDirectory):
             exclaimError("The doxygen xml output directory [{}] is not valid!".format(
-                configs.exhaleDoxyOutputDir
+                configs.doxygenOutputDirectory
             ))
             return
+
         # parse the doxygen xml file and extract all refid's put in it
         # keys: file object, values: list of refid's
         doxygen_xml_file_ownerships = {}
@@ -1321,9 +1517,14 @@ class ExhaleRoot:
         loc_regex    = re.compile(r'.*<location file="(.*)"/>')
 
         for f in self.files:
+            # if f.name == "camera_state.hpp":
+            #     import ipdb
+            #     ipdb.set_trace()
+
+
             doxygen_xml_file_ownerships[f] = []
             try:
-                doxy_xml_path = "{}{}.xml".format(configs.exhaleDoxyOutputDir, f.refid)
+                doxy_xml_path = os.path.join(configs.doxygenOutputDirectory, "{0}.xml".format(f.refid))
                 with open(doxy_xml_path, "r") as doxy_file:
                     processing_code_listing = False  # shows up at bottom of xml
                     for line in doxy_file:
@@ -1369,11 +1570,22 @@ class ExhaleRoot:
         #
 
         # hack to make things work right on RTD
-        if configs.exhaleDoxygenStripFromPath is not None:
+        if configs.doxygenStripFromPath is not None:
             for f in self.files:
-                f.location = f.location.replace(configs.exhaleDoxygenStripFromPath, "")
-                if f.location[0] == "/":
-                    f.location = f.location[1:]
+                # Strip out the path provided to Doxygen
+                f.location = f.location.replace(configs.doxygenStripFromPath, "")
+                # Remove leading path separator; the above line typically turns
+                # something like:
+                #
+                #     /some/long/absolute/path/include/dir/file.hpp
+                #
+                # into
+                #
+                #    /dir/file.hpp
+                #
+                # so we want to make sure to remove the leading / in this case.
+                if f.location.startswith(os.sep):
+                    f.location = f.location(os.sep, "", 1)
 
         # now that we have parsed all the listed refid's in the doxygen xml, reparent
         # the nodes that we care about
@@ -1424,6 +1636,19 @@ class ExhaleRoot:
                 if f.refid in orphan.refid and any(unresolved_name in line for line in f.program_listing):
                     if orphan not in f.children:
                         f.children.append(orphan)
+
+        # Last but not least, make sure all children know where they were defined.
+        for f in self.files:
+            for child in f.children:
+                if child.def_in_file is None:
+                    child.def_in_file = f
+                elif child.def_in_file != f:
+                    exclaimError(
+                        "Conflicting file definition for [{0}]: both [{1}] and [{2}] found.".format(
+                            child.name, child.def_in_file.name, f.name
+                        ),
+                        utils.AnsiColors.BOLD_RED
+                    )
 
     def filePostProcess(self):
         '''
@@ -1546,7 +1771,7 @@ class ExhaleRoot:
         try:
             with open(self.full_root_file_path, "w") as generated_index:
                 generated_index.write("{}\n{}\n\n{}\n\n".format(
-                    self.root_file_title, configs.EXHALE_FILE_HEADING, self.root_file_description)
+                    self.root_file_title, configs.SECTION_HEADING, self.root_file_description)
                 )
         except:
             exclaimError("Unable to create the root api file / header: {}".format(self.full_root_file_path))
@@ -1716,21 +1941,27 @@ class ExhaleRoot:
         try:
             with open(node.file_name, "w") as gen_file:
                 # generate a link label for every generated file
-                link_declaration = ".. _{}:\n\n".format(node.link_name)
-                header = "{}\n{}\n\n".format(node.title, configs.EXHALE_FILE_HEADING)
-                # link back to the file this was defined in
-                file_included = False
-                # same error can be thrown twice in below code segment
-                multi_parent = "Critical error: this node is parented to multiple files.\n\nNode: {}"
+                link_declaration = ".. _{}:".format(node.link_name)
+
+                # acquire the file this was originally defined in
                 if node.def_in_file:
-                    for f in self.files:
-                        if f.def_in_file == node.def_in_file:
-                            header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
+                    defined_in = "- Defined in :ref:`{where}`".format(where=node.def_in_file.link_name)
                 else:
+                    defined_in = ".. did not find file this was defined in"
                     exclaimError(
                         "Did not locate the file that defined {} [{}]; no link generated.".format(node.kind,
                                                                                                   node.name)
                     )
+
+                # link to outer types if this node is a nested type
+                if node.parent and (node.parent.kind == "struct" or node.parent.kind == "class"):
+                    nested_type_of = "- Nested type of :ref:`{parent}`".format(parent=node.parent.link_name)
+                else:
+                    nested_type_of = ".. this is not a nested type"
+                # link back to the file this was defined in
+                file_included = False
+                # same error can be thrown twice in below code segment
+                multi_parent = "Critical error: this node is parented to multiple files.\n\nNode: {}"
                 # for f in self.files:
                 #     if node in f.children:
                 #         if file_included:
@@ -1738,28 +1969,31 @@ class ExhaleRoot:
                 #         header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
                 #         file_included = True
                 # if this is a nested type, link back to its parent
-                if node.parent is not None and (node.parent.kind == "struct" or node.parent.kind == "class"):
-                    # still a chance to recover if the parent worked. probably doesn't work past one layer
-                    # TODO: create like quadruple nested classes and find a way to reverse upward. parent links
-                    #       should just be class or struct until it is a namespace or file?
-                    if not file_included:
-                        parent_traverser = node.parent
-                        while parent_traverser is not None:
-                            for f in self.files:
-                                if node.parent in f.children:
-                                    if file_included:
-                                        raise RuntimeError(multi_parent.format(node.name))
-                                    header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
-                                    file_included = True
-                                    if node not in f.children:
-                                        f.children.append(node)
-                            if file_included:
-                                parent_traverser = None
-                            else:
-                                parent_traverser = parent_traverser.parent
+                ####################################3
+                # if node.parent is not None and (node.parent.kind == "struct" or node.parent.kind == "class"):
+                #     # still a chance to recover if the parent worked. probably doesn't work past one layer
+                #     # TODO: create like quadruple nested classes and find a way to reverse upward. parent links
+                #     #       should just be class or struct until it is a namespace or file?
+                #     if not file_included:
+                #         parent_traverser = node.parent
+                #         while parent_traverser is not None:
+                #             for f in self.files:
+                #                 if node.parent in f.children:
+                #                     if file_included:
+                #                         raise RuntimeError(multi_parent.format(node.name))
+                #                     header = "{}- Defined in :ref:`{}`\n\n".format(header, f.link_name)
+                #                     file_included = True
+                #                     if node not in f.children:
+                #                         f.children.append(node)
+                #             if file_included:
+                #                 parent_traverser = None
+                #             else:
+                #                 parent_traverser = parent_traverser.parent
 
-                    header = "{}- Nested type of :ref:`{}`\n\n".format(header, node.parent.link_name)
+                #     header = "{}- Nested type of :ref:`{}`\n\n".format(header, node.parent.link_name)
+                ################################
                 # if this has nested types, link to them
+                nested_defs = ".. no nested types to include"
                 if node.kind == "class" or node.kind == "struct":
                     nested_children = []
                     for c in node.children:
@@ -1779,13 +2013,46 @@ class ExhaleRoot:
                         # extract the list of links and add them as a subsection in the header
                         nested_child_string = nested_child_stream.getvalue()
                         nested_child_stream.close()
-                        header = "{}**Nested Types**:\n\n{}\n\n".format(header, nested_child_string)
+                        nested_defs = textwrap.dedent('''
+                            **Nested Types**:
 
+                            {children}
+                        '''.format(children=nested_child_string))
                 # inject the appropriate doxygen directive and name of this node
-                directive = ".. {}:: {}\n".format(kindAsBreatheDirective(node.kind), node.name)
+                directive = ".. {directive}:: {name}".format(
+                    directive=kindAsBreatheDirective(node.kind),
+                    name=node.name
+                )
                 # include any specific directives for this doxygen directive
-                specifications = "{}\n\n".format(specificationsForKind(node.kind))
-                gen_file.write("{}{}{}{}".format(link_declaration, header, directive, specifications))
+                specifications = "{}".format(specificationsForKind(node.kind))
+                gen_file.write(textwrap.dedent('''\
+                    :tocdepth: {page_depth}
+
+                    {link}
+
+                    {heading}
+                    {heading_mark}
+
+                    {defined_in}
+
+                    {nested_type_of}
+                '''.format(
+                    page_depth=configs.exhaleApiPageTocDepth,
+                    link=link_declaration,
+                    heading=node.title,
+                    heading_mark=configs.SECTION_HEADING,
+                    defined_in=defined_in,
+                    nested_type_of=nested_type_of
+                )))
+                if nested_defs:
+                    gen_file.write(nested_defs)
+                gen_file.write(textwrap.dedent('''
+                    {directive}
+                '''.format(
+                    nested_defs=nested_defs,
+                    directive=directive,
+                )))
+                gen_file.write(specifications)
         except Exception as e:
             exclaimError("Critical error while generating the file for [{}]:\n{}".format(node.file_name, e))
 
@@ -1820,12 +2087,13 @@ class ExhaleRoot:
                 The namespace node to create the reStructuredText document for.
         '''
         try:
+            ######TODO page_depth, textwrapdedent
             with open(nspace.file_name, "w") as gen_file:
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(nspace.link_name)
                 # every generated file must have a header for sphinx to be happy
                 nspace.title = "{} {}".format(qualifyKind(nspace.kind), nspace.name)
-                header = "{}\n{}\n\n".format(nspace.title, configs.EXHALE_FILE_HEADING)
+                header = "{}\n{}\n\n".format(nspace.title, configs.SECTION_HEADING)
                 # generate the headings and links for the children
                 children_string = self.generateNamespaceChildrenString(nspace)
                 # write it all out
@@ -1911,9 +2179,16 @@ class ExhaleRoot:
         '''
         if lst:
             lst.sort()
-            stream.write("\n\n{}\n{}\n".format(sectionTitle, configs.EXHALE_SECTION_HEADING))
+            stream.write(textwrap.dedent('''
+
+                {heading}
+                {heading_mark}
+
+            '''.format(heading=sectionTitle, heading_mark=configs.SUB_SECTION_HEADING)))
             for l in lst:
-                stream.write("\n- :ref:`{}`".format(l.link_name))
+                stream.write(textwrap.dedent('''
+                    - :ref:`{link}`
+                '''.format(link=l.link_name)))
 
     def generateFileNodeDocuments(self):
         '''
@@ -1947,15 +2222,23 @@ class ExhaleRoot:
                 try:
                     with open(f.program_file, "w") as gen_file:
                         # generate a link label for every generated file
-                        link_declaration = ".. _{}:\n\n".format(f.program_link_name)
+                        link_declaration = ".. _{}:".format(f.program_link_name)
                         # every generated file must have a header for sphinx to be happy
                         prog_title = "Program Listing for {} {}".format(qualifyKind(f.kind), f.name)
-                        header = "{}\n{}\n\n".format(prog_title, configs.EXHALE_FILE_HEADING)
-                        return_link = "- Return to documentation for :ref:`{}`\n\n".format(f.link_name)
-                        # write it all out
-                        gen_file.write("{}{}{}{}\n\n".format(
-                            link_declaration, header, return_link, full_program_listing)
-                        )
+                        gen_file.write(textwrap.dedent('''
+                            {link}
+
+                            {heading}
+                            {heading_mark}
+
+                            - Return to documentation for :ref:`{parent}`
+
+                        '''.format(
+                            link=link_declaration, heading=prog_title,
+                            heading_mark=configs.SECTION_HEADING,
+                            parent=f.link_name,
+                        )))
+                        gen_file.write(full_program_listing)
                 except:
                     exclaimError("Critical error while generating the file for [{}]".format(f.file_name))
             else:
@@ -1963,19 +2246,30 @@ class ExhaleRoot:
 
         for f in self.files:
             if len(f.location) > 0:
-                file_definition = "Definition (``{}``)\n{}\n\n".format(
-                    f.location, configs.EXHALE_SECTION_HEADING
-                )
+                file_definition = textwrap.dedent('''
+                    Definition (``{where}``)
+                    {heading_mark}
+
+                '''.format(where=f.location, heading_mark=configs.SUB_SECTION_HEADING))
             else:
                 file_definition = ""
 
             if include_program_listing and file_definition != "":
-                file_definition = "{}.. toctree::\n   :maxdepth: 1\n\n   {}\n\n".format(
-                    file_definition, f.program_file.split("/")[-1]  # file path still has directory
-                )
+                prog_file_definition = textwrap.dedent('''
+                    .. toctree::
+                       :maxdepth: 1
+
+                       {prog_link}
+                '''.format(prog_link=f.program_file.split("/")[-1]))
+                file_definition = "{}{}".format(file_definition, prog_file_definition)
 
             if len(f.includes) > 0:
-                file_includes = "Includes\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
+                file_includes_stream = StringIO()
+                file_includes_stream.write(textwrap.dedent('''
+                    Includes
+                    {heading_mark}
+
+                '''.format(heading_mark=configs.SUB_SECTION_HEADING)))
                 for incl in sorted(f.includes):
                     local_file = None
                     for incl_file in self.files:
@@ -1983,21 +2277,35 @@ class ExhaleRoot:
                             local_file = incl_file
                             break
                     if local_file is not None:
-                        file_includes = "{}- ``{}`` (:ref:`{}`)\n".format(
-                            file_includes, incl, local_file.link_name
-                        )
+                        file_includes_stream.write(textwrap.dedent('''
+                            - ``{include}`` (:ref:`{link}`)
+                        '''.format(include=incl, link=local_file.link_name)))
                     else:
-                        file_includes = "{}- ``{}``\n".format(file_includes, incl)
+                        file_includes_stream.write(textwrap.dedent('''
+                            - ``{include}``
+                        '''.format(include=incl)))
+
+                file_includes = file_includes_stream.getvalue()
+                file_includes_stream.close()
             else:
                 file_includes = ""
 
             if len(f.included_by) > 0:
-                file_included_by = "Included By\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
+                file_included_by_stream = StringIO()
+                file_included_by_stream.write(textwrap.dedent('''
+                    Included By
+                    {heading_mark}
+
+                '''.format(heading_mark=configs.SUB_SECTION_HEADING)))
                 for incl_ref, incl_name in f.included_by:
                     for incl_file in self.files:
                         if incl_ref == incl_file.refid:
-                            file_included_by = "{}- :ref:`{}`\n".format(file_included_by, incl_file.link_name)
+                            file_included_by_stream.write(textwrap.dedent('''
+                                - :ref:`{link}`
+                            '''.format(link=incl_file.link_name)))
                             break
+                file_included_by = file_included_by_stream.getvalue()
+                file_included_by_stream.close()
             else:
                 file_included_by = ""
 
@@ -2049,49 +2357,59 @@ class ExhaleRoot:
         # 'incdepgraph', 'invincdepgraph', 'innerclass', 'innernamespace',
         # 'briefdescription', 'detaileddescription', 'programlisting', 'location']
         #believe is same for all kinds, need to verify
-            cdef_dict = f.openNodeCompoundDefDict()
-            brief = cdef_dict["briefdescription"]
-            detailed = cdef_dict["detaileddescription"]
+            # cdef_dict = f.openNodeCompoundDefDict()
+            # brief = cdef_dict["briefdescription"]
+            # detailed = cdef_dict["detaileddescription"]
 
             try:
                 with open(f.file_name, "w") as gen_file:
                     # generate a link label for every generated file
-                    link_declaration = ".. _{}:\n\n".format(f.link_name)
+                    link_declaration = ".. _{}:".format(f.link_name)
                     # every generated file must have a header for sphinx to be happy
                     f.title = "{} {}".format(qualifyKind(f.kind), f.name)
-                    header = "{}\n{}\n\n".format(f.title, configs.EXHALE_FILE_HEADING)
+                    heading = textwrap.dedent('''
+                        :tocdepth: {page_depth}
 
-                    # include the brief / detailed description if provided
-                    if brief:
-                        gen_file.write("\nBrief Description:\n{}\n\n{}\n\n".format(
-                            configs.EXHALE_SUBSECTION_HEADING, brief
-                        ))
+                        {link}
 
-                    if detailed:
-                        gen_file.write("\nDetailed Description:\n{}\n\n{}\n\n".format(
-                            configs.EXHALE_SUBSECTION_HEADING, detailed
-                        ))
-
-                    if brief or detailed:
-                        exclaimError("*****************: checkout {}".format(f.name))
-
-                    # write it all out
-                    gen_file.write("{}{}{}{}\n{}\n{}\n\n".format(
-                        link_declaration, header, file_definition, file_includes,
-                        file_included_by, children_string
+                        {heading}
+                        {heading_mark}
+                    '''.format(
+                        page_depth=configs.exhaleApiPageTocDepth, link=link_declaration, heading=f.title, heading_mark=configs.SECTION_HEADING
                     ))
-            except:
-                exclaimError("Critical error while generating the file for [{}]".format(f.file_name))
 
-            if configs.exhaleGenerateBreatheFileDirectives:
+                    brief, detailed = parse.getFileBriefAndDetailedRST(self, f)
+                    gen_file.write(textwrap.dedent('''
+                        {heading}
+
+                        {brief}
+
+                        {definition}
+
+                        {detailed}
+
+                        {includes}
+
+                        {includeby}
+
+                        {children}
+                    '''.format(
+                        heading=heading, brief=brief, definition=file_definition,
+                        detailed=detailed, includes=file_includes,
+                        includeby=file_included_by, children=children_string
+                    )).lstrip())
+            except Exception as e:
+                exclaimError("Critical error while generating the file for [{}]:\n{}".format(f.file_name, e))
+
+            if configs.generateBreatheFileDirectives:
                 try:
                     with open(f.file_name, "a") as gen_file:
                         # add the breathe directive ???
                         gen_file.write(
-                            "\nFull File Listing\n{}\n\n"
-                            ".. {}:: {}\n"
-                            "{}\n\n".format(
-                                configs.EXHALE_SECTION_HEADING, kindAsBreatheDirective(f.kind),
+                            "\nFull File Listing\n{0}\n\n"
+                            ".. {1}:: {2}\n"
+                            "{3}\n\n".format(
+                                configs.SUB_SECTION_HEADING, kindAsBreatheDirective(f.kind),
                                 f.location, specificationsForKind(f.kind)
                             )
                         )
@@ -2133,7 +2451,7 @@ class ExhaleRoot:
 
         # generate the subdirectory section
         if len(child_dirs) > 0:
-            child_dirs_string = "Subdirectories\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
+            child_dirs_string = "Subdirectories\n{}\n\n".format(configs.SUB_SECTION_HEADING)
             for child_dir in sorted(child_dirs):
                 child_dirs_string = "{}- :ref:`{}`\n".format(child_dirs_string, child_dir.link_name)
         else:
@@ -2141,7 +2459,7 @@ class ExhaleRoot:
 
         # generate the files section
         if len(child_files) > 0:
-            child_files_string = "Files\n{}\n\n".format(configs.EXHALE_SECTION_HEADING)
+            child_files_string = "Files\n{}\n\n".format(configs.SUB_SECTION_HEADING)
             for child_file in sorted(child_files):
                 child_files_string = "{}- :ref:`{}`\n".format(child_files_string, child_file.link_name)
         else:
@@ -2152,9 +2470,10 @@ class ExhaleRoot:
             with open(node.file_name, "w") as gen_file:
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(node.link_name)
-                header = "{}\n{}\n\n".format(node.title, configs.EXHALE_FILE_HEADING)
+                header = "{}\n{}\n\n".format(node.title, configs.SECTION_HEADING)
                 # generate the headings and links for the children
                 # write it all out
+                ###################page_toc
                 gen_file.write("{}{}{}\n{}\n\n".format(
                     link_declaration, header, child_dirs_string, child_files_string)
                 )
@@ -2293,7 +2612,7 @@ class ExhaleRoot:
         # write everything to file to be included in the root api later
         try:
             with open(self.class_view_file, "w") as cvf:
-                cvf.write("Class Hierarchy\n{}\n\n{}\n\n".format(configs.EXHALE_SECTION_HEADING,
+                cvf.write("Class Hierarchy\n{}\n\n{}\n\n".format(configs.SUB_SECTION_HEADING,
                                                                  class_view_string))
         except Exception as e:
             exclaimError("Error writing the class hierarchy: {}".format(e))
@@ -2342,23 +2661,35 @@ class ExhaleRoot:
 
         # inject the raw html for the treeView unordered lists
         if treeView:
-            # we need to indent everything to be under the .. raw:: html directive, add
-            # indentation so the html is readable while we are at it
             indented = re.sub(r'(.+)', r'        \1', directory_view_string)
-            directory_view_string =                           \
-                '.. raw:: html\n\n'                           \
-                '   <ul class="treeView">\n'                  \
-                '     <li>\n'                                 \
-                '       <ul class="collapsibleList">\n'       \
-                '{}'                                          \
-                '       </ul><!-- collapsibleList -->\n'      \
-                '     </li><!-- only tree view element -->\n' \
-                '   </ul><!-- treeView -->\n'.format(indented)
+            if configs.treeViewIsBootstrap:
+                directory_view_string =                           \
+                    '.. raw:: html\n\n'                           \
+                    '   <div id="directory-treeView"></div>\n\n'  \
+                    '   <script type="text/javascript">\n'        \
+                    '     function getDirectoryViewTree() {{\n'   \
+                    '       return [\n'                           \
+                    '{}'                                          \
+                    '       ];\n'                                 \
+                    '     }}\n'                                   \
+                    '   </script>\n'.format(indented)
+            else:
+                # we need to indent everything to be under the .. raw:: html directive, add
+                # indentation so the html is readable while we are at it
+                directory_view_string =                           \
+                    '.. raw:: html\n\n'                           \
+                    '   <ul class="treeView">\n'                  \
+                    '     <li>\n'                                 \
+                    '       <ul class="collapsibleList">\n'       \
+                    '{}'                                          \
+                    '       </ul><!-- collapsibleList -->\n'      \
+                    '     </li><!-- only tree view element -->\n' \
+                    '   </ul><!-- treeView -->\n'.format(indented)
 
         # write everything to file to be included in the root api later
         try:
             with open(self.directory_view_file, "w") as dvf:
-                dvf.write("File Hierarchy\n{}\n\n{}\n\n".format(configs.EXHALE_SECTION_HEADING,
+                dvf.write("File Hierarchy\n{}\n\n{}\n\n".format(configs.SUB_SECTION_HEADING,
                                                                 directory_view_string))
         except Exception as e:
             exclaimError("Error writing the directory hierarchy: {}".format(e))
@@ -2398,7 +2729,7 @@ class ExhaleRoot:
         try:
             with open(self.unabridged_api_file, "w") as full_api_file:
                 # write the header
-                full_api_file.write("Full API\n{}\n\n".format(configs.EXHALE_SECTION_HEADING))
+                full_api_file.write("Full API\n{}\n\n".format(configs.SUB_SECTION_HEADING))
 
                 # recover all namespaces that were reparented
                 all_namespaces = []
@@ -2449,7 +2780,7 @@ class ExhaleRoot:
                 closed already.
         '''
         if len(lst) > 0:
-            openFile.write("{}\n{}\n\n".format(subsectionTitle, configs.EXHALE_SUBSECTION_HEADING))
+            openFile.write("{}\n{}\n\n".format(subsectionTitle, configs.SUB_SUB_SECTION_HEADING))
             for l in sorted(lst):
                 openFile.write(
                     ".. toctree::\n"

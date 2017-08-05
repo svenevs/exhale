@@ -29,13 +29,76 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from . import configs
 
+import os
 import sys
+import types
 
 __all__       = [
-    'exclaimError', 'qualifyKind', 'kindAsBreatheDirective', 'specificationsForKind'
+    'AnsiColors', 'nodeCompoundXMLContents', 'exclaimError', 'qualifyKind', 'kindAsBreatheDirective', 'specificationsForKind'
 ]
 __name__      = "utils"
 __docformat__ = "reStructuredText"
+
+
+AVAILABLE_KINDS = [
+    "class",
+    "struct",
+    "function",
+    "enum",
+    "enumvalue",  # unused
+    "namespace",
+    "define",
+    "typedef",
+    "variable",
+    "file",
+    "dir",
+    "group",  # unused
+    "union"
+]
+''' A list of all potential input ``kind`` values coming from Doxygen. '''
+
+
+def makeCustomSpecificationsMapping(func):
+    # Make sure they gave us a function
+    if not isinstance(func, types.FunctionType):
+        raise ValueError(
+            "The input to exhale.util.makeCustomSpecificationsMapping was *NOT* a function: {0}".format(
+                type(func)
+            )
+        )
+
+    # Stamp the return to ensure exhale created this function.
+    ret = {configs._closure_map_sanity_check: configs._closure_map_sanity_check}
+    try:
+        # Because we cannot pickle a fully-fledged function object, we are going to go
+        # through every kind and store its return value.
+        for kind in AVAILABLE_KINDS:
+            specs = func(kind)
+            if type(specs) is not str:
+                raise RuntimeError(
+                    "The custom specifications function did not return a string for input `{kind}`".format(
+                        kind=kind
+                    )
+                )
+            ret[kind] = specs
+    except Exception as e:
+        raise RuntimeError("Unable to create custom specifications:\n{0}".format(e))
+
+    # Everything went according to plan, send it back to `conf.py` :)
+    return ret
+
+
+def nodeCompoundXMLContents(node):
+    node_xml_path = os.path.join(configs.doxygenOutputDirectory, "{0}.xml".format(node.refid))
+    if os.path.isfile(node_xml_path):
+        try:
+            with open(node_xml_path, "r") as xml:
+                node_xml_contents = xml.read()
+
+            return node_xml_contents
+        except:
+            return None
+    return None
 
 
 ########################################################################################
@@ -102,35 +165,10 @@ def qualifyKind(kind):
         other qualifying names.  If the empty string is returned then it was not
         recognized.
     '''
-    if kind == "class":
-        qualifier = "Class"
-    elif kind == "struct":
-        qualifier = "Struct"
-    elif kind == "function":
-        qualifier = "Function"
-    elif kind == "enum":
-        qualifier = "Enum"
-    elif kind == "enumvalue":  # unused
-        qualifier = "Enumvalue"
-    elif kind == "namespace":
-        qualifier = "Namespace"
-    elif kind == "define":
-        qualifier = "Define"
-    elif kind == "typedef":
-        qualifier = "Typedef"
-    elif kind == "variable":
-        qualifier = "Variable"
-    elif kind == "file":
-        qualifier = "File"
-    elif kind == "dir":
-        qualifier = "Directory"
-    elif kind == "group":  # unused
-        qualifier = "Group"
-    elif kind == "union":
-        qualifier = "Union"
+    if kind == "dir":
+        return "Directory"
     else:
-        qualifier = ""
-    return qualifier
+        return kind.capitalize()
 
 
 def kindAsBreatheDirective(kind):
@@ -183,33 +221,7 @@ def kindAsBreatheDirective(kind):
         The directive to be used for the given ``kind``.  The empty string is returned
         for both unrecognized and ignored input values.
     '''
-    if kind == "class":
-        directive = "doxygenclass"
-    elif kind == "struct":
-        directive = "doxygenstruct"
-    elif kind == "function":
-        directive = "doxygenfunction"
-    elif kind == "enum":
-        directive = "doxygenenum"
-    elif kind == "enumvalue":  # unused
-        directive = "doxygenenumvalue"
-    elif kind == "namespace":
-        directive = "doxygennamespace"
-    elif kind == "define":
-        directive = "doxygendefine"
-    elif kind == "typedef":
-        directive = "doxygentypedef"
-    elif kind == "variable":
-        directive = "doxygenvariable"
-    elif kind == "file":
-        directive = "doxygenfile"
-    elif kind == "union":
-        directive = "doxygenunion"
-    elif kind == "group":  # unused
-        directive = "doxygengroup"
-    else:
-        directive = ""
-    return directive
+    return "doxygen{kind}".format(kind=kind)
 
 
 def specificationsForKind(kind):
@@ -262,8 +274,8 @@ def specificationsForKind(kind):
         are necessary or desired, the empty string is returned.
     '''
     # use the custom directives function
-    if configs.exhaleHasCustomSpecificationsFunction():
-        return configs.exhaleCallCustomSpecificationsForKind(kind)
+    if configs.customSpecificationsMapping:
+        return configs.customSpecificationsMapping[kind]
 
     # otherwise, just provide class and struct
     if kind == "class" or kind == "struct":
@@ -273,7 +285,136 @@ def specificationsForKind(kind):
     return directive
 
 
-def exclaimError(msg, ansi_fmt="34;1m"):
+class AnsiColors:
+    '''
+    A simple wrapper class for convenience definitions of common ANSI formats to enable
+    calling :func:`utils.exclaimError`.  The definitions below only affect the
+    foreground color of the text, but you can easily change the background color too.
+    See `ANSI color codes <http://misc.flogisoft.com/bash/tip_colors_and_formatting>`_
+    for a concise overview of how to use the ANSI color codes.
+    '''
+    BOLD          = "1m"
+    ''' The ANSI bold modifier, see :ref:`utils.AnsiColors.BOLD_RED` for an example. '''
+    DIM           = "2m"
+    ''' The ANSI dim modifier, see :ref:`utils.AnsiColors.DIM_RED` for an example. '''
+    UNDER         = "4m"
+    ''' The ANSI underline modifier, see :ref:`utils.AnsiColors.UNDER_RED` for an example. '''
+    INV           = "7m"
+    ''' The ANSI inverted modifier, see :ref:`utils.AnsiColors.INV_RED` for an example. '''
+    ####################################################################################
+    BLACK         = "30m"
+    ''' The ANSI black color. '''
+    BOLD_BLACK    = "30;{bold}".format(bold=BOLD)
+    ''' The ANSI bold black color. '''
+    DIM_BLACK     = "30;{dim}".format(dim=DIM)
+    ''' The ANSI dim black color. '''
+    UNDER_BLACK   = "30;{under}".format(under=UNDER)
+    ''' The ANSI underline black color. '''
+    INV_BLACK     = "30;{inv}".format(inv=INV)
+    ''' The ANSI inverted black color. '''
+    ####################################################################################
+    RED           = "31m"
+    ''' The ANSI red color. '''
+    BOLD_RED      = "31;{bold}".format(bold=BOLD)
+    ''' The ANSI bold red color. '''
+    DIM_RED       = "31;{dim}".format(dim=DIM)
+    ''' The ANSI dim red color. '''
+    UNDER_RED     = "31;{under}".format(under=UNDER)
+    ''' The ANSI underline red color. '''
+    INV_RED       = "31;{inv}".format(inv=INV)
+    ''' The ANSI inverted red color. '''
+    ####################################################################################
+    GREEN         = "32m"
+    ''' The ANSI green color. '''
+    BOLD_GREEN    = "32;{bold}".format(bold=BOLD)
+    ''' The ANSI bold green color. '''
+    DIM_GREEN     = "32;{dim}".format(dim=DIM)
+    ''' The ANSI dim green color. '''
+    UNDER_GREEN   = "32;{under}".format(under=UNDER)
+    ''' The ANSI underline green color. '''
+    INV_GREEN     = "32;{inv}".format(inv=INV)
+    ''' The ANSI inverted green color. '''
+    ####################################################################################
+    YELLOW        = "33m"
+    ''' The ANSI yellow color. '''
+    BOLD_YELLOW   = "33;{bold}".format(bold=BOLD)
+    ''' The ANSI bold yellow color. '''
+    DIM_YELLOW    = "33;{dim}".format(dim=DIM)
+    ''' The ANSI dim yellow color. '''
+    UNDER_YELLOW  = "33;{under}".format(under=UNDER)
+    ''' The ANSI underline yellow color. '''
+    INV_YELLOW    = "33;{inv}".format(inv=INV)
+    ''' The ANSI inverted yellow color. '''
+    ####################################################################################
+    BLUE          = "34m"
+    ''' The ANSI blue color. '''
+    BOLD_BLUE     = "34;{bold}".format(bold=BOLD)
+    ''' The ANSI bold blue color. '''
+    DIM_BLUE      = "34;{dim}".format(dim=DIM)
+    ''' The ANSI dim blue color. '''
+    UNDER_BLUE    = "34;{under}".format(under=UNDER)
+    ''' The ANSI underline blue color. '''
+    INV_BLUE      = "34;{inv}".format(inv=INV)
+    ''' The ANSI inverted blue color. '''
+    ####################################################################################
+    MAGENTA       = "35m"
+    ''' The ANSI magenta (purple) color. '''
+    BOLD_MAGENTA  = "35;{bold}".format(bold=BOLD)
+    ''' The ANSI bold magenta (purple) color. '''
+    DIM_MAGENTA   = "35;{dim}".format(dim=DIM)
+    ''' The ANSI dim magenta (purple) color. '''
+    UNDER_MAGENTA = "35;{under}".format(under=UNDER)
+    ''' The ANSI underlined magenta (purple) color. '''
+    INV_MAGENTA   = "35;{inv}".format(inv=INV)
+    ''' The ANSI inverted magenta (purple) color. '''
+    ####################################################################################
+    CYAN          = "36m"
+    ''' The ANSI cyan color. '''
+    BOLD_CYAN     = "36;{bold}".format(bold=BOLD)
+    ''' The ANSI bold cyan color. '''
+    DIM_CYAN      = "36;{dim}".format(dim=DIM)
+    ''' The ANSI dim cyan color. '''
+    UNDER_CYAN    = "36;{under}".format(under=UNDER)
+    ''' The ANSI underline cyan color. '''
+    INV_CYAN      = "36;{inv}".format(inv=INV)
+    ''' The ANSI inverted cyan color. '''
+    ####################################################################################
+    WHITE         = "37m"
+    ''' The ANSI white color. '''
+    BOLD_WHITE    = "37;{bold}".format(bold=BOLD)
+    ''' The ANSI bold white color. '''
+    DIM_WHITE     = "37;{dim}".format(dim=DIM)
+    ''' The ANSI dim white color. '''
+    UNDER_WHITE   = "37;{under}".format(under=UNDER)
+    ''' The ANSI underline white color. '''
+    INV_WHITE     = "37;{inv}".format(inv=INV)
+    ''' The ANSI inverted white color. '''
+
+    @classmethod
+    def printAllColorsToConsole(cls):
+        ''' A simple enumeration of the colors to the console to help decide :) '''
+        for elem in cls.__dict__:
+            # ignore specials such as __class__ or __module__
+            if not elem.startswith("__"):
+                color_fmt = cls.__dict__[elem]
+                if type(color_fmt) is str and color_fmt != "BOLD" and color_fmt != "DIM" and \
+                        color_fmt != "UNDER" and color_fmt != "INV":
+                    print("\033[{fmt}AnsiColors.{name}\033[0m".format(fmt=color_fmt, name=elem))
+
+
+def colorize(msg, ansi_fmt):
+    return "\033[{0}{1}\033[0m".format(ansi_fmt, msg)
+
+
+def progress(msg, ansi_fmt=AnsiColors.BOLD_GREEN):
+    return colorize("[+] {0}".format(msg), ansi_fmt)
+
+
+def info(msg, ansi_fmt=AnsiColors.BOLD_BLUE):
+    return colorize("[~] {0}".format(msg), ansi_fmt)
+
+
+def exclaimError(msg, ansi_fmt=AnsiColors.BOLD_BLUE):
     '''
     Prints ``msg`` to the console in color with ``(!)`` prepended in color.
 
@@ -282,7 +423,8 @@ def exclaimError(msg, ansi_fmt="34;1m"):
         (!) No leading space needed.
 
     All messages are written to ``sys.stderr``, and are closed with ``[0m``.  The
-    default color is blue, but can be changed using ``ansi_fmt``.
+    default color is bold blue, but can be changed using ``ansi_fmt``.  See the various
+    constants defined in :class:`utils.AnsiColors`.
 
     Documentation building has a verbose output process, this just helps distinguish an
     error message coming from exhale.
@@ -295,7 +437,6 @@ def exclaimError(msg, ansi_fmt="34;1m"):
             An ansi color format.  ``msg`` is printed as
             ``"\\033[" + ansi_fmt + msg + "\\033[0m\\n``, so you should specify both the
             color code and the format code (after the semicolon).  The default value is
-            ``34;1m`` --- refer to
-            http://misc.flogisoft.com/bash/tip_colors_and_formatting for alternatives.
+            ``34;1m`` (bold blue).
     '''
     sys.stderr.write("\033[{}(!) {}\033[0m\n".format(ansi_fmt, msg))
