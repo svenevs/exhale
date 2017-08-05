@@ -1,6 +1,14 @@
 exhale
 ========================================================================================
 
+.. note::
+
+   This branch exists to keep a record of the original version of the library before it
+   was available as a sphinx extension.  If you did not manually add a single file
+   ``exhale.py`` to your repository, this branch is not for you.
+
+   Even if you did.  You should update to the new version.
+
 Automatic C++ library api documentation generation: breathe doxygen in and exhale it out.
 
 Brief
