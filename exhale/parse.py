@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017, Stephen McDowell.                  #
 # Full BSD 3-Clause license available here:                                            #
@@ -6,7 +7,7 @@
 ########################################################################################
 
 from . import configs
-from .utils import nodeCompoundXMLContents, AnsiColors, exclaimError
+from . import utils
 
 import textwrap
 from bs4 import BeautifulSoup
@@ -140,7 +141,8 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
                 currentTag.string = ":ref:`{}`".format(textRoot.node_by_refid[refid].link_name)
 
         if signal:
-            exclaimError(signal, AnsiColors.BOLD_YELLOW)
+            # << verboseBuild
+            utils.verbose_log(signal, utils.AnsiColors.BOLD_YELLOW)
     else:
         ctr = 0
         for child in children:
@@ -174,17 +176,14 @@ def convertDescriptionToRST(textRoot, fileNode, soupTag, heading):
 
 
 def getFileBriefAndDetailedRST(textRoot, fileNode):
-    node_xml_contents = nodeCompoundXMLContents(fileNode)
+    node_xml_contents = utils.nodeCompoundXMLContents(fileNode)
     if not node_xml_contents:
         return "", ""
 
     try:
         node_soup = BeautifulSoup(node_xml_contents, "lxml-xml")
-    except Exception as e:
-        exclaimError(
-            "Unable to parse [{}] xml using BeautifulSoup:\n{}".format(fileNode.name, e),
-            AnsiColors.BOLD_RED
-        )
+    except:
+        utils.fancyError("Unable to parse [{}] xml using BeautifulSoup".format(fileNode.name))
 
     try:
         # In the file xml definitions, things such as enums or defines are listed inside
@@ -210,9 +209,7 @@ def getFileBriefAndDetailedRST(textRoot, fileNode):
                 detailed_desc = convertDescriptionToRST(textRoot, fileNode, detailed, "Detailed Description")
 
         return brief_desc, detailed_desc
-    except Exception as e:
-        exclaimError(
-            "Could not acquire soup.doxygen.compounddef; likely not a doxygen xml file:\n{0}".format(e),
-            AnsiColors.BOLD_RED
+    except:
+        utils.fancyError(
+            "Could not acquire soup.doxygen.compounddef; likely not a doxygen xml file."
         )
-        return "", ""

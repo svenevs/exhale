@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017, Stephen McDowell.                  #
 # Full BSD 3-Clause license available here:                                            #
@@ -10,10 +11,16 @@ from . import configs
 import os
 import sys
 import types
+import traceback
 
-__all__       = [
-    'AnsiColors', 'nodeCompoundXMLContents', 'exclaimError', 'qualifyKind', 'kindAsBreatheDirective', 'specificationsForKind'
-]
+# Fancy error printing <3
+try:
+    import pygments
+    from pygments import lexers, formatters
+    __USE_PYGMENTS = True
+except:
+    __USE_PYGMENTS = False
+
 __name__      = "utils"
 __docformat__ = "reStructuredText"
 
@@ -257,16 +264,15 @@ def specificationsForKind(kind):
 
     # otherwise, just provide class and struct
     if kind == "class" or kind == "struct":
-        directive = "   :members:\n   :protected-members:\n   :undoc-members:"
-    else:
-        directive = ""
-    return directive
+        return [":members:", ":protected-members:", ":undoc-members:"]
+
+    return []  # use breathe defaults
 
 
 class AnsiColors:
     '''
     A simple wrapper class for convenience definitions of common ANSI formats to enable
-    calling :func:`utils.exclaimError`.  The definitions below only affect the
+    colorizing output in various formats.  The definitions below only affect the
     foreground color of the text, but you can easily change the background color too.
     See `ANSI color codes <http://misc.flogisoft.com/bash/tip_colors_and_formatting>`_
     for a concise overview of how to use the ANSI color codes.
@@ -380,41 +386,154 @@ class AnsiColors:
                     print("\033[{fmt}AnsiColors.{name}\033[0m".format(fmt=color_fmt, name=elem))
 
 
+def indent(text, prefix, predicate=None):
+    '''
+    This is a direct copy of ``textwrap.indent`` for availability in Python 2.
+
+    Their documentation:
+
+    Adds 'prefix' to the beginning of selected lines in 'text'.
+    If 'predicate' is provided, 'prefix' will only be added to the lines
+    where 'predicate(line)' is True. If 'predicate' is not provided,
+    it will default to adding 'prefix' to all non-empty lines that do not
+    consist solely of whitespace characters.
+    '''
+    if predicate is None:
+        def predicate(line):
+            return line.strip()
+
+    def prefixed_lines():
+        for line in text.splitlines(True):
+            yield (prefix + line if predicate(line) else line)
+
+    return ''.join(prefixed_lines())
+
+
+def prefix(token, msg):
+    '''
+    Wrapper call to :func:`exhale.utils.indent` with an always-true predicate so that
+    empty lines (e.g. `\\n`) still get indented by the ``token``.
+
+    :Parameters:
+        ``token`` (str)
+            What to indent the message by (e.g. ``"(!) "``).
+
+        ``msg`` (str)
+            The message to get indented by ``token``.
+
+    :Return:
+        ``str``
+            The message ``msg``, indented by the ``token``.
+    '''
+    return indent(msg, token, predicate=lambda x: True)
+
+
+def exclaim(err_msg):
+    '''
+    Helper method for :func:`Controller.critical`, inserts a leading `(!) `
+    (with a trailing space) to every line of the input message.
+    :Parameters:
+        ``cls`` (class)
+            The :class:`utilities.Controller` class.
+        ``err_msg`` (str)
+            The message to prepend `(!) ` to every line of.
+    :Return (str):
+        The input string with `(!) ` preceding every line.
+    '''
+    return "\n{}".format("(!) ").join("{}{}".format("(!) ", err_msg).splitlines())
+
+
 def colorize(msg, ansi_fmt):
     return "\033[{0}{1}\033[0m".format(ansi_fmt, msg)
 
 
-def progress(msg, ansi_fmt=AnsiColors.BOLD_GREEN):
-    return colorize("[+] {0}".format(msg), ansi_fmt)
-
-
-def info(msg, ansi_fmt=AnsiColors.BOLD_BLUE):
-    return colorize("[~] {0}".format(msg), ansi_fmt)
-
-
-def exclaimError(msg, ansi_fmt=AnsiColors.BOLD_BLUE):
+def _use_color(msg, ansi_fmt, output_stream):
     '''
-    Prints ``msg`` to the console in color with ``(!)`` prepended in color.
+    Based on :data:`exhale.configs.alwaysColorize`, returns the colorized or
+    non-colorized output when ``output_stream`` is not a TTY (e.g. redirecting
+    to a file).
 
-    Example (uncolorized) output of ``exclaimError("No leading space needed.")``::
-
-        (!) No leading space needed.
-
-    All messages are written to ``sys.stderr``, and are closed with ``[0m``.  The
-    default color is bold blue, but can be changed using ``ansi_fmt``.  See the various
-    constants defined in :class:`utils.AnsiColors`.
-
-    Documentation building has a verbose output process, this just helps distinguish an
-    error message coming from exhale.
-
-    :Parameters:
+    **Parameters**
         ``msg`` (str)
-            The message you want printed to standard error.
+            The message that is going to be printed by the caller of this method.
 
         ``ansi_fmt`` (str)
-            An ansi color format.  ``msg`` is printed as
-            ``"\\033[" + ansi_fmt + msg + "\\033[0m\\n``, so you should specify both the
-            color code and the format code (after the semicolon).  The default value is
-            ``34;1m`` (bold blue).
+            The ANSI color format to use when coloring is supposed to happen.
+
+        ``output_stream`` (file)
+            Assumed to be either ``sys.stdout`` or ``sys.stderr``.
+
+    **Return**
+        ``str``
+            The message ``msg`` in color, or not, depending on both
+            :data:`exhale.configs.alwaysColorize` and whether or not the
+            ``output_stream`` is a TTY.
     '''
-    sys.stderr.write("\033[{}(!) {}\033[0m\n".format(ansi_fmt, msg))
+    if not configs.alwaysColorize and not output_stream.isatty():
+        log = msg
+    else:
+        log = colorize(msg, ansi_fmt)
+    return log
+
+
+def progress(msg, ansi_fmt=AnsiColors.BOLD_GREEN, output_stream=sys.stdout):
+    return _use_color(prefix("[+] ", msg), ansi_fmt, output_stream)
+
+
+def info(msg, ansi_fmt=AnsiColors.BOLD_BLUE, output_stream=sys.stdout):
+    return _use_color(prefix("[~] ", msg), ansi_fmt, output_stream)
+
+
+def critical(msg, ansi_fmt=AnsiColors.BOLD_RED, output_stream=sys.stderr):
+    return _use_color(prefix("(!) ", msg), ansi_fmt, output_stream)
+
+
+def verbose_log(msg, ansi_fmt):
+    if configs.verboseBuild:
+        log = _use_color(msg, ansi_fmt, sys.stderr)
+        sys.stderr.write("{log}\n".format(log=log))
+
+
+def __fancy(text, language, fmt):
+    if __USE_PYGMENTS:
+        try:
+            lang_lex = lexers.find_lexer_class_by_name(language)
+            fmt      = formatters.get_formatter_by_name(fmt)
+            highlighted = pygments.highlight(text, lang_lex(), fmt)
+            return highlighted
+        except:
+            return text
+    else:
+        return text
+
+
+def fancyErrorString():
+    try:
+        # fancy error printing aka we want the traceback, but
+        # don't want the exclaimed stuff printed again
+        err = traceback.format_exc()
+        # shenanigans = "During handling of the above exception, another exception occurred:"
+        # err = err.split(shenanigans)[0]
+        return __fancy("{0}\n".format(err), "py3tb", "console")
+    except:
+        return "CRITICAL: could not extract traceback.format_exc!"
+
+
+def fancyError(critical_msg=None, singleton_hook=None):
+    if critical_msg:
+        sys.stderr.write(critical(critical_msg))
+
+    sys.stderr.write(fancyErrorString())
+
+    if singleton_hook:
+        # Only let shutdown happen once.  Useful for when singleton_hook may also create
+        # errors (e.g. why you got here in the first place).
+        fancyError.__defaults__ = (None, None)
+        try:
+            singleton_hook()
+        except Exception as e:
+            sys.stderr.write(critical(
+                "fancyError: `singleton_hook` caused exception: {0}".format(e)
+            ))
+
+    os._exit(1)

@@ -1,6 +1,7 @@
-Helper Class ExhaleNode Reference
+Exhale Deploy Module
 ========================================================================================
 
-.. autoclass:: exhale.ExhaleNode
+.. automodule:: exhale.deploy
    :members:
+   :private-members:
    :special-members:

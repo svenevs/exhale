@@ -1,5 +1,7 @@
-Primary Class ExhaleRoot Reference
+Exhale Parse Module
 ========================================================================================
 
-.. autoclass:: exhale.ExhaleRoot
+.. automodule:: exhale.parse
    :members:
+   :private-members:
+   :special-members:

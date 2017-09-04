@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017, Stephen McDowell.                  #
 # Full BSD 3-Clause license available here:                                            #
@@ -14,7 +15,6 @@ import sys
 import re
 import tempfile
 import textwrap
-from breathe.parser.index import parse as breathe_parse
 from subprocess import PIPE, Popen
 
 
@@ -130,11 +130,11 @@ def _generate_doxygen(doxygen_input):
                 # Making them stick out, ideally users would reduce this output to 0 ;)
                 # This will print a yellow [~] before every line, but not make the
                 # entire line yellow because it's definitively not helpful
-                prefix = utils.info("", utils.AnsiColors.BOLD_YELLOW)
+                # Hack: empty string to utils.info will not give us anything, inserting
+                #       a null character will xD
+                prefix = utils.info("\0", utils.AnsiColors.BOLD_YELLOW, sys.stderr)
                 tmp_err.seek(0)
-                print(tmp_err.read().rstrip().replace("\n", "\n{0}".format(prefix)))
-                # for line in tmp_err.read().splitlines():
-                #     print("{prefix}{line}".format(prefix=prefix, line=line))
+                sys.stderr.write(utils.prefix(prefix, tmp_err.read()))
 
         # Delete the tmpfiles
         tmp_out.close()
@@ -149,10 +149,17 @@ def _generate_doxygen(doxygen_input):
     except Exception as e:
         return "Unable to execute 'doxygen': {0}".format(e)
 
+    # returning None signals _success_
     return None
 
 
 def _valid_config(config, required):
+    '''
+    .. todo:: add documentation of this method
+
+    ``config``: doxygen input we're looking for
+    ``required``: if ``True``, must be present.  if ``False``, NOT ALLOWED to be present
+    '''
     re_template = r"\s*{config}\s*=.*".format(config=config)
     found = re.search(re_template, configs.exhaleDoxygenStdin)
     if required:
@@ -164,7 +171,10 @@ def _valid_config(config, required):
 def generateDoxygenXML():
     # If this happens, we really shouldn't be here...
     if not configs.exhaleExecutesDoxygen:
-        return "`generateDoxygenXML` should *ONLY* be called internally, when `exhaleExecutesDoxygen=True`!"
+        return textwrap.dedent('''
+            `generateDoxygenXML` should *ONLY* be called internally.  You should
+            set `exhaleExecutesDoxygen=True` in `exhale_args` in `conf.py`.
+        ''')
 
     # Case 1: the user has their own `Doxyfile`.
     if configs.exhaleUseDoxyfile:
@@ -174,21 +184,110 @@ def generateDoxygenXML():
         # There are two doxygen specs that we explicitly disallow
         #
         # 1. OUTPUT_DIRECTORY: this is *ALREADY* specified implicitly via breathe
-        # 2. STRIP_FROM_PATH: this is a *REQUIRED* config for exhale (`exhaleDoxygenStripFromPath`)
+        # 2. STRIP_FROM_PATH: this is a *REQUIRED* config (`doxygenStripFromPath`)
         #
-        # There is one doxygen spec that is REQUIRED to be given: INPUT (where doxygen should parse).
+        # There is one doxygen spec that is REQUIRED to be given:
+        #
+        # 1. INPUT (where doxygen should parse).
+        #
         # The below is a modest attempt to validate that these were / were not given.
         if type(configs.exhaleDoxygenStdin) is not str:
             return "`exhaleDoxygenStdin` config must be a string!"
 
         if not _valid_config("OUTPUT_DIRECTORY", False):
-            return "`exhaleDoxygenStdin` may *NOT* specify `OUTPUT_DIRECTORY`.  Exhale does this internally."
+            # If we are hitting this code, these should both exist and be configured
+            # since this method is called **AFTER** the configuration verification code
+            # performed in configs.apply_sphinx_configurations
+            breathe_projects = configs._the_app.config.breathe_projects
+            breathe_default_project = configs._the_app.config.breathe_default_project
+            return textwrap.dedent('''
+                `exhaleDoxygenStdin` may *NOT* specify `OUTPUT_DIRECTORY`.  Exhale does
+                this internally by reading what you provided to `breathe_projects` in
+                your `conf.py`.
+
+                Based on what you had in `conf.py`, Exhale will be using
+
+                - The `breathe_default_project`:
+
+                      {default}
+
+                - The output path specfied (`breathe_projects[breathe_default_project]`):
+
+                      {path}
+
+                  NOTE: the above path has the `xml` portion removed from what you
+                        provided.  This path is what is sent to Doxygen, Breathe
+                        requires you include the `xml` directory path; so Exhale simply
+                        re-uses this variable and adapts the value for our needs.
+            '''.format(
+                default=breathe_default_project,
+                path=breathe_projects[breathe_default_project].rsplit("{sep}xml".format(sep=os.sep), 1)[0]
+            ))
 
         if not _valid_config("STRIP_FROM_PATH", False):
-            return "`exhaleDoxygenStdin` may *NOT* specify `STRIP_FROM_PATH`.  Exhale does this internally."
+            return textwrap.dedent('''
+                `exhaleDoxygenStdin` may *NOT* specify `STRIP_FROM_PATH`.  Exhale does
+                this internally by using the value you provided to `exhale_args` in
+                your `conf.py` for the key `doxygenStripFromPath`.
+
+                Based on what you had in `conf.py`, Exhale will be using:
+
+                    {strip}
+
+                NOTE: the above is what you specified directly in `exhale_args`.  Exhale
+                      will be using an absolute path to send to Doxygen.  It is:
+
+                    {absolute}
+            '''.format(
+                strip=configs._the_app.config.exhale_args["doxygenStripFromPath"],
+                absolute=configs.doxygenStripFromPath
+            ))
 
         if not _valid_config("INPUT", True):
-            return "`exhaleDoxygenStdin` *MUST* specify the `INPUT` doxygen config variable."
+            return textwrap.dedent('''
+                `exhaleDoxygenStdin` *MUST* specify the `INPUT` doxygen config variable.
+                The INPUT variable is what tells Doxygen where to look for code to
+                extract documentation from.  For example, if you had a directory layout
+
+                    project_root/
+                        docs/
+                            conf.py
+                            Makefile
+                            ... etc ...
+                        include/
+                            my_header.hpp
+                        src/
+                            my_header.cpp
+
+                Then you would include the line
+
+                    INPUT = ../include
+
+                in the string provided to `exhale_args["exhaleDoxygenStdin"]`.
+            ''')
+
+        # For these, we just want to warn them of the impact but still allow an override
+        re_template = r"\s*{config}\s*=\s*(.*)"
+        for cfg in ("ALIASES", "PREDEFINED"):
+            found = re.search(re_template.format(config=cfg), configs.exhaleDoxygenStdin)
+            if found:
+                sys.stderr.write(utils.info(textwrap.dedent('''
+                    You have supplied to `exhaleDoxygenStdin` a configuration of:
+
+                        {cfg}   =   {theirs}
+
+                    This has an important impact, as it overrides a default setting that
+                    Exhale is using.
+
+                    1. If you are intentionally overriding this configuration, simply
+                       ignore this message --- what you intended will happen.
+
+                    2. If you meant to _continue_ adding to the defaults Exhale provides,
+                       you need to use a `+=` instead of a raw `=`.  So do instead
+
+                           {cfg}   +=   {theirs}
+
+                '''.format(cfg=cfg, theirs=found.groups()[0])), utils.AnsiColors.BOLD_YELLOW))
 
         # Include their custom doxygen definitions after the defaults so that they can
         # override anything they want to.  Populate the necessary output dir and strip path.
@@ -205,6 +304,16 @@ def generateDoxygenXML():
         full_input = "{base}\n{external}\n{internal}\n\n".format(base=configs.DEFAULT_DOXYGEN_STDIN_BASE,
                                                                  external=external_configs,
                                                                  internal=internal_configs)
+
+        # << verboseBuild
+        if configs.verboseBuild:
+            msg = "[*] The following input will be sent to Doxygen:\n"
+            if not configs.alwaysColorize and not sys.stderr.isatty():
+                sys.stderr.write(msg)
+                sys.stderr.write(full_input)
+            else:
+                sys.stderr.write(utils.colorize(msg, utils.AnsiColors.BOLD_CYAN))
+                sys.stderr.write(utils.__fancy(full_input, "make", "console"))
 
         return _generate_doxygen(full_input)
 
@@ -241,44 +350,13 @@ def explode():
         file that is **calling** exhale.  For example, ``"./generated_api"``.
 
     **key**: ``"rootFileName"`` --- value type: ``str``
-        The name of the file that **you** will be linking to from your reStructuredText
-        documents.  Do not include the ``containmentFolder`` path in this file name,
-        exhale will create the file ``"{}/{}".format(containmentFolder, rootFileName)``.
 
-        In order for Sphinx to be happy, you should include a ``.rst`` suffix.  All of
-        the generated API uses reStructuredText, and that will not ever change.
-
-        For example, if you specify
-
-        - ``"containmentFolder" = "./generated_api"``, and
-        - ``"rootFileName" = "library_root.rst"``
-
-        Then exhale will generate the file ``./generated_api/library_root.rst``.
-
-        You could include this file in a toctree directive (say in ``index.rst``) with::
-
-            .. toctree:
-               :maxdepth: 2
-
-               generated_api/library_root
-
-        Since Sphinx allows for some flexibility (e.g. your primary domain may be using
-        ``.txt`` files), **no error checking will be performed**.
 
     **key**: ``"rootFileTitle"`` --- value type: ``str``
-        The title to be written at the top of ``rootFileName``, which will appear in
-        your file including it in the ``toctree`` directive.
+
 
     **key**: ``"doxygenStripFromPath"`` --- value type: ``str``
-        When building on Read the Docs, there seem to be issues regarding the Doxygen
-        variable ``STRIP_FROM_PATH`` when built remotely.  That is, it isn't stripped at
-        all.  Provide me with a string path (e.g. ``".."``), and I will strip this for
-        you for the File nodes being generated.  I will use the exact value of
-        ``os.path.abspath("..")`` in the example above, so you can supply either a
-        relative or absolute path.  The File view hierarchy **will** break if you do
-        not give me a value for this, and therefore I hesitantly require this argument.
-        The value ``".."`` assumes that ``conf.py`` is in a ``docs/`` or similar folder
-        exactly one level below the repository's root.
+
 
     **Additional Options:**
 
@@ -310,23 +388,6 @@ def explode():
             [[[ GENERATED API BODY ]]]
 
             afterBodySummary (if provided)
-
-    **key**: ``"createTreeView"`` --- value type: ``bool``
-        For portability, the default value if not specified is ``False``, which will
-        generate reStructuredText bulleted lists for the Class View and File View
-        hierarchies.  If ``True``, raw html unordered lists will be generated.  Please
-        refer to the *Clickable Hierarchies* subsection of :ref:`usage_advanced_usage`
-        for more details.
-
-    **key**: ``"fullToctreeMaxDepth"`` --- value type: ``int``
-        Beneath the Class View and File View hierarchies a Full API listing is generated
-        as there are items that may not appear in the Class View hierarchy, as well as
-        without this an obscene amount of warnings are generated from Sphinx because
-        neither view actually uses a ``toctree``, they link directly.
-
-        The default value is 5 if not specified, but you may want to give a smaller
-        value depending on the framework being documented.  This value must be greater
-        than or equal to 1 (this is the value of ``:maxdepth:``).
 
     **key**: ``"appendBreatheFileDirective"`` --- value type: ``bool``
         Currently, I do not know how to reliably extract the brief / detailed file
@@ -380,4 +441,6 @@ def explode():
     except Exception as e:
         raise RuntimeError("Exception caught while generating:\n{0}".format(e))
 
+    # << verboseBuild
+    #   toConsole only prints if verbose mode is enabled
     textRoot.toConsole()

@@ -1,3 +1,6 @@
+# This file is generated dynamically every time `make html` is run
+docs/DEFAULT_DOXYGEN_STDIN_BASE_value.rst
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

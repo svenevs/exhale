@@ -19,9 +19,9 @@ Exhale
 
 .. begin_exhale_brief_desc
 
-Automatic C++ library API documentation generation using Doxygen, Sphinx, and Breathe.
-This project attempts to revive the Doxygen style hierarchies in reStructuredText
-documents to enable powerful documentation syntax and generate beautiful websites.
+Automatic C++ library API documentation generator using Doxygen, Sphinx, and Breathe.
+Exhale revives Doxygen's class / file hierarchies using reStructuredText for superior
+markup syntax / websites.
 
 .. end_exhale_brief_desc
 
@@ -33,6 +33,8 @@ enables parsing Doxygen documentation into the Sphinx domain.  Exhale provides a
 of automation, enabling launching Doxygen and generating the full website all from your
 ``conf.py``.  Exhale will execute these actions by way of ``sphinx-build`` being invoked,
 allowing you to use it for hosting on `Read the Docs <https://readthedocs.org/>`_.
+Exhale was designed for generating html output, and may not be appropriate for other
+builders provided by Sphinx.
 
 .. end_exhale_long_desc
 
@@ -48,10 +50,11 @@ intuitive and flexible as possible, but it does require more machinery to get
 everything started.
 
 **Why use it?**
-    The motivation for writing it was to use Sphinx and Doxygen together.  It was
-    largely inspired by Breathe, but I had a strong desire to have the Class and
-    File hierarchies in an **html** format.  Doxygen can generate websites.  Sphinx
-    can generate them better.
+    You would use Exhale if you want to have beautiful Sphinx generated websites, but
+    also see the value of the Class and File hierarchies provided by Doxygen.  From
+    running Doxygen for you, to organizing your full API every time, you won't need to
+    worry about your documentation getting out of sync with the code --- it's
+    regenerated on the fly every time.
 
 **Why not use it?**
     It may be more involved than you need.  Check out the ``breathe-apidoc`` tool
@@ -59,10 +62,24 @@ everything started.
     `Sphinx API doc tool <http://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html>`_,
     and that may be all you are looking for to get your documentation displayed.
 
-A more comprehensive example repository (which was used for testing once upon a time) is
-located at the companion_ site.
+    If you are working with a small enough framework, you may also be satisfied with
+    just using the ``.. autodoxygenindex::`` directive from ``breathe``.  It works very
+    well!
 
-.. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
+**The Main Difference**
+    To be extra clear, I'm a **huge** fan of ``breathe``, and Exhale could never exist
+    without it.  As it turns out, ``.. autodoxygenindex::`` is largely what inspired
+    this library.  I loved the idea of being able to type ``make html``, and that's it.
+    For larger frameworks, though, everything being generated on one page makes your
+    documentation rather inconvenient to navigate.
+
+    The ``breathe-apidoc`` is also an excellent resource to seriously consider.  The
+    downside is that if you rename, remove, or add things, your documentation gets out
+    of sync with the code.  Fixing isn't that difficult, but I personally always forget
+    things like that.
+
+    And of course, the Class and File hierarchies are only available in Sphinx via
+    Exhale 😊
 
 .. end_exhale_is_it_for_me
 

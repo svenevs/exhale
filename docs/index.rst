@@ -34,6 +34,7 @@ either Doxygen, Sphinx, or Breathe.
    usage
    reference
    faq
+   todo
 
 Indices and tables
 ==================

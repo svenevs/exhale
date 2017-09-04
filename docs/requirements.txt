@@ -1,1 +1,4 @@
-git+git://github.com/michaeljones/breathe@v4.3.1#egg=breathe
+bs4     # BeautifulSoup!
+lxml    # We need the lxml backend for BeautifulSoup.
+sphinx  # Exhale is a Sphinx extension.
+breathe # The directives used for documentation come from the excellent Breathe.
