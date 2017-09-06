@@ -6,6 +6,13 @@
 #                     https://github.com/svenevs/exhale/LICENSE.md                     #
 ########################################################################################
 
+'''
+The deploy module is responsible for two primary actions:
+
+1. Executing Doxygen (if requested in ``exhale_args``).
+2. Launching the full API generation via the :func:`exhale.deploy.explode` function.
+'''
+
 from . import configs
 from . import utils
 from .graph import ExhaleRoot
@@ -17,15 +24,21 @@ import tempfile
 import textwrap
 from subprocess import PIPE, Popen
 
-
-__all__       = ["explode"]
 __name__      = "deploy"
 __docformat__ = "reStructuredText"
 
 
 def _generate_doxygen(doxygen_input):
     '''
-    This method executes doxygen based off of the specified input.  Two versions of the
+    This method executes doxygen based off of the specified input.  By the time this
+    method is executed, it is assumed that Doxygen is intended to be run in the
+    **current working directory**.  Search for ``returnPath`` in the implementation of
+    :func:`exhale.configs.apply_sphinx_configurations` for handling of this aspect.
+
+    This method is intended to be called by :func:`exhale.deploy.generateDoxygenXML`,
+    which is in turn called by :func:`exhale.configs.apply_sphinx_configurations`.
+
+    Two versions of the
     doxygen command can be executed:
 
     1. If ``doxygen_input`` is exactly ``"Doxyfile"``, then it is assumed that a
@@ -34,32 +47,23 @@ def _generate_doxygen(doxygen_input):
     2. For all other values, ``doxygen_input`` represents the arguments as to be
        specified on ``stdin`` to the process.
 
-    .. tip::
-
-       This function is not intended to be used by external APIs.  If you are using
-       ``exhale`` to generate the ``doxygen`` documentation, refer to the
-
-       .. todo::
-
-          WHERE IS THIS DOCUMENTED NOW?
-
-    ``Parameters``
+    **Parameters**
         ``doxygen_input`` (str)
             Either the string ``"Doxyfile"`` to run vanilla ``doxygen``, or the
             selection of doxygen inputs (that would ordinarily be in a ``Doxyfile``)
             that will be ``communicate``d to the ``doxygen`` process on ``stdin``.
 
-    .. note::
+            .. note::
 
-       If using Python **3**, the input **must** still be a ``str``.  This method
-       will convert the input to ``bytes`` as follows:
+               If using Python **3**, the input **must** still be a ``str``.  This
+               method will convert the input to ``bytes`` as follows:
 
-       .. code-block:: py
+               .. code-block:: py
 
-          if sys.version[0] == "3":
-              doxygen_input = bytes(doxygen_input, "ASCII")
+                  if sys.version[0] == "3":
+                      doxygen_input = bytes(doxygen_input, "ASCII")
 
-    ``Return``
+    **Return**
         ``str`` or ``None``
             If an error occurs, a string describing the error is returned with the
             intention of the caller raising the exception.  If ``None`` is returned,

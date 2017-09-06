@@ -2,70 +2,23 @@ Usage
 ========================================================================================
 
 Using exhale can be simple or involved, depending on how much you want to change and
-how familiar you are with things like Sphinx, Breathe, Doxygen, and Jinja.  At the top
-level, what you need is:
+how familiar you are with things like Sphinx, Breathe, Doxygen, etc.  At the top level,
+what you need is:
 
 1. Your C++ code you want to document, with "proper" Doxygen documentation.  Please
    read the :ref:`doxygen_documentaion_specifics` for common documentation pitfalls,
    as well as features previously unavailable in standard Doxygen.
-2. Generating the API using Sphinx, Doxygen, Breathe already working.
+2. A sphinx documentation project ready to go.  See the
+   `First Steps With Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_
+   tutorial for getting that off the ground.
+
+.. contents::
 
 .. _usage_quickstart_guide:
 
-Quickstart
-----------------------------------------------------------------------------------------
-
-In your ``conf.py``
-
-.. code-block:: py
-
-    # setup is called auto-magically for you by Sphinx
-    def setup(app):
-        # create the dictionary to send to exhale
-        exhaleArgs = {
-            "doxygenIndexXMLPath"  : "./doxyoutput/xml/index.xml",
-            "containmentFolder"    : "./generated_api",
-            "rootFileName"         : "library_root.rst",
-            "rootFileTitle"        : "Library API",
-            "doxygenStripFromPath" : ".."
-        }
-
-        # import the exhale module from the current directory and generate the api
-        sys.path.insert(0, os.path.abspath('.')) # exhale.py is in this directory
-        from exhale import generate
-        generate(exhaleArgs)
-
-In your ``index.rst``, you might have something like
-
-.. raw:: html
-
-   <div class="highlight-rest">
-     <div class="highlight">
-       <pre>
-   .. toctree::
-      :maxdepth: 2
-
-      about
-      <b>generated_api/library_root</b></pre>
-     </div>
-   </div>
-
-.. note::
-
-   The above assumes that your Doxygen xml tree has already been created.  The
-   :ref:`usage_fully_automated` section provides additional steps to do this all at once.
-
-Lastly, you will likely want to add these two lines somewhere in ``conf.py`` as well:
-
-.. code-block:: py
-
-    # Tell sphinx what the primary language being documented is.
-    primary_domain = 'cpp'
-
-    # Tell sphinx what the pygments highlight language should be.
-    highlight_language = 'cpp'
-
-The full documentation for the only (official) entry point is: :func:`exhale.generate`.
+.. include:: ../README.rst
+   :start-after: begin_quickstart_guide
+   :end-before:  end_quickstart_guide
 
 .. _usage_advanced_usage:
 
@@ -103,7 +56,7 @@ follows:
 .. _usage_creating_the_treeview:
 
 Clickable Hierarchies
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+****************************************************************************************
 
 While I would love to automate this for you, it is not possible to do so very easily.
 If you would like to have a more interactive hierarchy view (instead of just bulleted
@@ -174,7 +127,7 @@ passing to :func:`exhale.generate`.
 .. _usage_external_linkage:
 
 Linking to a Generated File
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+****************************************************************************************
 
 Every file created by exhale is given a reStructuredText label that you can use to link
 to the API page.  It is easiest to just show how the labels are created.
@@ -211,7 +164,7 @@ as link to a method within that class using ``:func:`namespace::ClassName::metho
 .. _usage_customizing_all_breathe_directives:
 
 Customizing Breathe Output
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+****************************************************************************************
 
 Breathe provides you with many excellent configurations for the various reStructuredText
 directives it provides.  Your preferences will likely be different than mine for what
@@ -255,7 +208,7 @@ and you would then change the declaration of the dictionary you are passing to
 .. _usage_customizing_file_pages:
 
 Customizing ``File`` Pages
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+****************************************************************************************
 
 File pages are structured something like
 

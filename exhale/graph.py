@@ -2759,7 +2759,7 @@ class ExhaleRoot:
                 openFile.write(
                     ".. toctree::\n"
                     "   :maxdepth: {}\n\n"
-                    "   {}\n\n".format(configs.exhaleApiTocTreeMaxDepth, l.file_name)
+                    "   {}\n\n".format(configs.fullToctreeMaxDepth, l.file_name)
                 )
 
     def generateAPIRootSummary(self):

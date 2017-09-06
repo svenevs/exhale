@@ -27,7 +27,7 @@ follows:
    configured **indirectly** by using it as a key in the arguments to ``exhale_args``
    present in your ``conf.py``.  For example, one of the *required* arguments for this
    extension is :data:`exhale.configs.containmentFolder`.  This means that the key
-   ``containmentFolder`` is *expected* to be present in ``exhale_args``.
+   ``"containmentFolder"`` is *expected* to be present in ``exhale_args``.
 
    .. code-block:: py
 
@@ -57,8 +57,10 @@ __name__ = "configs"
 __docformat__ = "reStructuredText"
 
 ########################################################################################
-# Required configurations, these get set indirectly via the dictionary argument given  #
-# to exhale in your conf.py.                                                           #
+##                                                                                     #
+## Required configurations, these get set indirectly via the dictionary argument       #
+## given to exhale in your conf.py.                                                    #
+##                                                                                     #
 ########################################################################################
 containmentFolder = None
 '''
@@ -194,7 +196,11 @@ doxygenStripFromPath = None
 '''
 
 ########################################################################################
-# Additional configurations available to further customize the output of exhale.       #
+##                                                                                     #
+## Additional configurations available to further customize the output of exhale.      #
+##                                                                                     #
+########################################################################################
+# Build Process Logging, Colors, and Debugging                                         #
 ########################################################################################
 verboseBuild = False
 '''
@@ -241,6 +247,30 @@ alwaysColorize = True
        redirected to a file.
 '''
 
+generateBreatheFileDirectives = False
+'''
+**Optional**
+    Append the ``.. doxygenfile::`` directive from Breathe for *every* file page
+    generated in the API.
+
+**Value in** ``exhale_args`` (bool)
+    If True, then the breathe directive (``doxygenfile``) will be incorporated at the
+    bottom of the file.
+
+    .. warning::
+
+       This feature is "deprecated" in lieu of minimal parsing of the input Doxygen xml
+       for a given documented file.  This feature can be used to help determine if
+       Exhale has made a mistake in parsing the file level documentation, but usage of
+       this feature will create **many** duplicate id's and the Sphinx build process
+       will be littered with complaints.
+
+       **This feature is not intended for production release of pages, only debugging.**
+'''
+
+########################################################################################
+# Root API Document Customization and Treeview                                         #
+########################################################################################
 afterTitleDescription = None
 '''
 **Optional**
@@ -335,12 +365,18 @@ fullToctreeMaxDepth = 5
        a value greater than ``5``.
 '''
 
+########################################################################################
+# Breathe Customization                                                                #
+########################################################################################
 customSpecificationsMapping = None
 
 _closure_map_sanity_check = "blargh_BLARGH_blargh"
 # See utils.makeCustomSpecificationsMapping, this is inserted to enforce exhale made the
 # closures needed for pickling with sphinx.
 
+########################################################################################
+# Doxygen Execution and Customization                                                  #
+########################################################################################
 doxygenOutputDirectory = None
 '''
 The absolute path the the root level of the doxygen xml output.  If the path to the
@@ -418,40 +454,10 @@ exhaleSilentDoxygen = False
        being a problem for you is exceptionally small.
 '''
 
-exhaleApiTocTreeMaxDepth = 5
-'''
-**Optional**
-    Sets the ``:maxdepth:`` for the generated API's ``toctree`` directives used to
-    include the full API after the class and file hierarchies.
-
-**Value in** ``exhale_args`` (int)
-    The value used as ``:maxdepth:`` with restructured text ``.. toctree::`` directives.
-    The default value is 5, as any larger will likely produce errors with a LaTeX build.
-'''
-
-generateBreatheFileDirectives = False
-'''
-**Optional**
-    Append the ``.. doxygenfile::`` directive from Breathe for *every* file page
-    generated in the API.
-
-**Value in** ``exhale_args`` (bool)
-    If True, then the breathe directive (``doxygenfile``) will be incorporated at the
-    bottom of the file.
-
-    .. warning::
-
-       This feature is "deprecated" in lieu of minimal parsing of the input Doxygen xml
-       for a given documented file.  This feature can be used to help determine if
-       Exhale has made a mistake in parsing the file level documentation, but usage of
-       this feature will create **many** duplicate id's and the Sphinx build process
-       will be littered with complaints.
-
-       **This feature is not intended for production release of pages, only debugging.**
-'''
-
 ########################################################################################
-# Utility variables.                                                                   #
+##                                                                                     #
+## Utility variables.                                                                  #
+##                                                                                     #
 ########################################################################################
 SECTION_HEADING = "=" * 88
 ''' The restructured text file heading separator (``"=" * 88``). '''
@@ -474,7 +480,10 @@ checks in different places.
 
 
 ########################################################################################
-# Called from exhale/__init__.py:environment_ready during the sphinx build process.    #
+##                                                                                     #
+## Secondary Sphinx Entry Point                                                        #
+## Called from exhale/__init__.py:environment_ready during the sphinx build process.   #
+##                                                                                     #
 ########################################################################################
 def apply_sphinx_configurations(app):
     '''
@@ -693,6 +702,9 @@ def apply_sphinx_configurations(app):
         def similar(a, b):
             return SequenceMatcher(None, a, b).ratio() * 100.0
 
+        # If there are keys left over after taking the differences of keys_processed
+        # (which is all keys Exhale expects to see), inform the user of keys they might
+        # have been trying to provide.
         extras = all_keys - keys_processed
         extra_error = StringIO()
         extra_error.write("Exhale found unexpected keys in `exhale_args`:\n")

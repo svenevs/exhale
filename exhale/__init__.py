@@ -16,7 +16,7 @@ def environment_ready(app):
     from . import deploy
     # First, setup the extension and verify all of the configurations.
     configs.apply_sphinx_configurations(app)
-    # Next, perform any cleanup
+    ####### Next, perform any cleanup
 
     # Generate the full API!
     app.info(utils.info("Exhale: generating reStructuredText documents."))

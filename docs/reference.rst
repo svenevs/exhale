@@ -174,7 +174,7 @@ Full Reference Documentation
 ----------------------------------------------------------------------------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
 
    reference_exhale_configs
    reference_exhale_deploy

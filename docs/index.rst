@@ -3,17 +3,15 @@ Exhale
 
 .. include:: ../README.rst
    :start-after: begin_tmp_danger_warning
-   :end-before: end_tmp_danger_warning
+   :end-before:  end_tmp_danger_warning
 
 .. include:: ../README.rst
    :start-after: begin_exhale_brief_desc
-   :end-before: end_exhale_brief_desc
+   :end-before:  end_exhale_brief_desc
 
 .. include:: ../README.rst
    :start-after: begin_exhale_long_desc
-   :end-before: end_exhale_long_desc
-
-
+   :end-before:  end_exhale_long_desc
 
 Getting Started
 ----------------------------------------------------------------------------------------
@@ -25,7 +23,7 @@ either Doxygen, Sphinx, or Breathe.
 .. tip::
    .. include:: ../README.rst
       :start-after: begin_exhale_is_it_for_me
-      :end-before: end_exhale_is_it_for_me
+      :end-before:  end_exhale_is_it_for_me
 
 .. toctree::
    :maxdepth: 2
@@ -36,12 +34,12 @@ either Doxygen, Sphinx, or Breathe.
    faq
    todo
 
-Indices and tables
-==================
+Credit
+========================================================================================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. include:: ../README.rst
+   :start-after: begin_credit
+   :end-before:  end_credit
 
 Legacy
 ========================================================================================
