@@ -28,17 +28,47 @@ markup syntax / websites.
 .. begin_exhale_long_desc
 
 Exhale is a `Sphinx <http://www.sphinx-doc.org/en/stable/>`_ extension that depends on
-the excellent `Breathe <http://breathe.readthedocs.io/en/latest/>`_ extension which
-enables parsing Doxygen documentation into the Sphinx domain.  Exhale provides a layer
-of automation, enabling launching Doxygen and generating the full website all from your
-``conf.py``.  Exhale will execute these actions by way of ``sphinx-build`` being invoked,
-allowing you to use it for hosting on `Read the Docs <https://readthedocs.org/>`_.
-Exhale was designed for generating html output, and may not be appropriate for other
-builders provided by Sphinx.
+the excellent `Breathe`_ extension which enables parsing Doxygen documentation into the
+Sphinx domain.  Exhale provides a layer of automation, enabling launching Doxygen and
+generating the full website all from your ``conf.py``.  Exhale will execute these
+actions by way of ``sphinx-build`` being invoked, allowing you to use it for hosting on
+`Read the Docs <https://readthedocs.org/>`_.  Exhale was designed for generating html
+output, and may not be appropriate for other builders provided by Sphinx.
+
+.. _Breathe: http://breathe.readthedocs.io/en/latest
 
 .. end_exhale_long_desc
 
 .. contents::
+
+.. begin_installation
+
+Installation
+----------------------------------------------------------------------------------------
+
+Exhale is a `Sphinx Extension`__ that depends on `Breathe`_ for access to the Doxygen
+reStructuredText directives, and both `BeautifulSoup`_ and `lxml`_ for parsing the
+generated Doxygen XML documentation.  The easiest way to install Exhale is:
+
+__ http://www.sphinx-doc.org/en/stable/extensions.html
+
+.. _BeautifulSoup: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+.. _lxml: http://lxml.de/
+
+.. code-block:: bash
+
+   # For python3.
+   # https://wiki.python.org/moin/Python2orPython3#What_are_the_differences.3F
+   $ pip3 install exhale
+
+   # For python2.
+   $ pip install exhale
+
+This will install Exhale, as well as all of its dependencies.  You are of course capable
+of installing Exhale through other means, as it contains a ``setup.py``, but since I
+**strongly discourage this**, I will not provide you with instructions on how to do so.
+
+.. end_installation
 
 Usage
 ----------------------------------------------------------------------------------------

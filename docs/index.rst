@@ -13,6 +13,12 @@ Exhale
    :start-after: begin_exhale_long_desc
    :end-before:  end_exhale_long_desc
 
+.. contents::
+
+.. include:: ../README.rst
+   :start-after: begin_installation
+   :end-before:  end_installation
+
 Getting Started
 ----------------------------------------------------------------------------------------
 
