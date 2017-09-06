@@ -43,7 +43,9 @@ builders provided by Sphinx.
 Usage
 ----------------------------------------------------------------------------------------
 
-See the `full documentation and usage guide <https://exhale.rtfd.io>`_.
+See the `full documentation and usage guide`__.
+
+__ https://exhale.readthedocs.io/en/latest
 
 .. begin_exhale_is_it_for_me
 
