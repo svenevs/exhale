@@ -38,6 +38,8 @@ builders provided by Sphinx.
 
 .. end_exhale_long_desc
 
+.. contents::
+
 Usage
 ----------------------------------------------------------------------------------------
 
