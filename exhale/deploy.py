@@ -295,7 +295,7 @@ def generateDoxygenXML():
 
         # Include their custom doxygen definitions after the defaults so that they can
         # override anything they want to.  Populate the necessary output dir and strip path.
-        doxy_dir = configs.doxygenOutputDirectory.rsplit("{sep}xml".format(sep=os.sep), 1)[0]
+        doxy_dir = configs._doxygen_xml_output_directory.rsplit("{sep}xml".format(sep=os.sep), 1)[0]
         internal_configs = textwrap.dedent('''
             # Tell doxygen to output wherever breathe is expecting things
             OUTPUT_DIRECTORY       = {out}

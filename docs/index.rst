@@ -22,9 +22,9 @@ Exhale
 Getting Started
 ----------------------------------------------------------------------------------------
 
-A :ref:`usage_quickstart_guide` guide gives the bare minimum needed to get things
-working, please read the :ref:`overview` section if you are new to documenting code with
-either Doxygen, Sphinx, or Breathe.
+A :ref:`usage_quickstart_guide` gives the bare minimum needed to get things working,
+please read the :ref:`overview` section if you are new to documenting code with either
+Doxygen, Sphinx, or Breathe.
 
 .. tip::
    .. include:: ../README.rst
@@ -37,8 +37,11 @@ either Doxygen, Sphinx, or Breathe.
    overview
    usage
    reference
+   mastering_doxygen
    faq
    todo
+
+.. _index_credit:
 
 Credit
 ========================================================================================

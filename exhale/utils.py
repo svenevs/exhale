@@ -44,6 +44,29 @@ AVAILABLE_KINDS = [
 
 
 def makeCustomSpecificationsMapping(func):
+    '''
+    Creates the "pickleable" dictionary that will be used with
+    :data:`exhale.configs.customSpecificationsMapping` supplied to ``exhale_args`` in
+    your ``conf.py``.
+
+    **Parameters**
+        ``func`` (types.FunctionType)
+            A callable function that takes as input a string from
+            :data:`exhale.utils.AVAILABLE_KINDS` and returns a ``list`` of strings.
+
+            The empty list ``[]`` indicates to use the Breathe defaults.
+
+    **Return**
+        ``dict``
+            A dictionary where the keys are every value in
+            :data:`exhale.utils.AVAILABLE_KINDS`, and the values are the ``list``
+            returns of the input ``func``.
+
+    .. note::
+
+       To help ensure the dictionary has everything it needs for the rest of Exhale to
+       function, a "secret" key-value pair is inserted to the returned dictionary.
+    '''
     # Make sure they gave us a function
     if not isinstance(func, types.FunctionType):
         raise ValueError(
@@ -59,12 +82,21 @@ def makeCustomSpecificationsMapping(func):
         # through every kind and store its return value.
         for kind in AVAILABLE_KINDS:
             specs = func(kind)
-            if type(specs) is not str:
-                raise RuntimeError(
-                    "The custom specifications function did not return a string for input `{kind}`".format(
-                        kind=kind
-                    )
-                )
+            bad   = type(specs) is not list
+            for s in specs:
+                if type(s) is not str:
+                    bad = True
+                    break
+            if bad:
+                raise RuntimeError(textwrap.dedent('''
+                    The specifications function did not return a valid list for input
+
+                        `{kind}`
+
+                    1. Make sure that every entry in the returned list is a string.
+                    2. If you want to use the breathe defaults, you must return the
+                       empty list `[]`.
+                '''.format(kind=kind)))
             ret[kind] = specs
     except Exception as e:
         raise RuntimeError("Unable to create custom specifications:\n{0}".format(e))
@@ -74,7 +106,7 @@ def makeCustomSpecificationsMapping(func):
 
 
 def nodeCompoundXMLContents(node):
-    node_xml_path = os.path.join(configs.doxygenOutputDirectory, "{0}.xml".format(node.refid))
+    node_xml_path = os.path.join(configs._doxygen_xml_output_directory, "{0}.xml".format(node.refid))
     if os.path.isfile(node_xml_path):
         try:
             with open(node_xml_path, "r") as xml:
@@ -210,6 +242,9 @@ def kindAsBreatheDirective(kind):
 
 
 def specificationsForKind(kind):
+    '''
+    .. todo:: update docs for new list version rather than string returns
+    '''
     '''
     Returns the relevant modifiers for the restructured text directive associated with
     the input kind.  The only considered values for the default implementation are
@@ -429,17 +464,6 @@ def prefix(token, msg):
 
 
 def exclaim(err_msg):
-    '''
-    Helper method for :func:`Controller.critical`, inserts a leading `(!) `
-    (with a trailing space) to every line of the input message.
-    :Parameters:
-        ``cls`` (class)
-            The :class:`utilities.Controller` class.
-        ``err_msg`` (str)
-            The message to prepend `(!) ` to every line of.
-    :Return (str):
-        The input string with `(!) ` preceding every line.
-    '''
     return "\n{}".format("(!) ").join("{}{}".format("(!) ", err_msg).splitlines())
 
 
@@ -507,23 +531,23 @@ def __fancy(text, language, fmt):
         return text
 
 
-def fancyErrorString():
+def fancyErrorString(lex):
     try:
         # fancy error printing aka we want the traceback, but
         # don't want the exclaimed stuff printed again
         err = traceback.format_exc()
         # shenanigans = "During handling of the above exception, another exception occurred:"
         # err = err.split(shenanigans)[0]
-        return __fancy("{0}\n".format(err), "py3tb", "console")
+        return __fancy("{0}\n".format(err), lex, "console")
     except:
         return "CRITICAL: could not extract traceback.format_exc!"
 
 
-def fancyError(critical_msg=None, singleton_hook=None):
+def fancyError(critical_msg=None, lex="py3tb", singleton_hook=None):
     if critical_msg:
         sys.stderr.write(critical(critical_msg))
 
-    sys.stderr.write(fancyErrorString())
+    sys.stderr.write(fancyErrorString(lex))
 
     if singleton_hook:
         # Only let shutdown happen once.  Useful for when singleton_hook may also create

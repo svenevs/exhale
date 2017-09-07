@@ -9,11 +9,16 @@ Exhale
 
 .. begin_tmp_danger_warning
 
-.. danger::
+.. warning::
 
-   These documents are currently largely out of order and most of the documentation you
-   will read pertaining to how it works are out of date.  This code is currently
-   unstable and under-tested.  This admonition will be removed when ready.
+   There is a reason why Exhale is development status 2 as far as ``pip`` is concerned.
+   It is functional enough that it should work for your project, but there are a number
+   of features I still intend to implement when there is more time.
+
+   In particular, Exhale underwent a significant rewrite.  There is a decent amount of
+   redundant, dead, and unused code.  There is also a large portion of documentation
+   that is either outdated or just flat out inaccurate.  The ``graph`` module used to
+   be the entire project (it was a single file library).
 
 .. end_tmp_danger_warning
 
@@ -67,6 +72,14 @@ __ http://www.sphinx-doc.org/en/stable/extensions.html
 This will install Exhale, as well as all of its dependencies.  You are of course capable
 of installing Exhale through other means, as it contains a ``setup.py``, but since I
 **strongly discourage this**, I will not provide you with instructions on how to do so.
+
+.. note::
+
+   If you fail ``pip3 install exhale`` and it is failing on ``lxml``, you will likely
+   need to install the proper development libraries.  See the
+   `lxml installation instructions`__ for possible fixes.
+
+   __ http://lxml.de/installation.html
 
 .. end_installation
 
@@ -296,8 +309,8 @@ license:
 
    This library is exceptionally well thought out and enables an impressive amount of
    customization.  At this time, Exhale does not expose any of the available
-   customizations.  If there is a specific one you'd like to see, please raise an Issue
-   and I'll see what I can do.
+   customizations.  If there is a specific one you'd like to see, please join the
+   `discussion here <https://github.com/svenevs/exhale/issues/7>`_.
 
 Both of these libraries and copies of their licenses can be found in the
 `data folder of the source code <https://github.com/svenevs/exhale/tree/master/exhale/data>`_.
