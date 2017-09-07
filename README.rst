@@ -79,6 +79,10 @@ of installing Exhale through other means, as it contains a ``setup.py``, but sin
    need to install the proper development libraries.  See the
    `lxml installation instructions`__ for possible fixes.
 
+   ``lxml`` **is readily available for Read The Docs** and generally installs
+   seamlessly for Unix systems, but my understanding is Windows users may need to put a
+   little more effort in to get it to install.
+
    __ http://lxml.de/installation.html
 
 .. end_installation
