@@ -82,9 +82,6 @@ try:
 except Exception as e:
     raise RuntimeError("Could not acquire the requirements from docs/requirements.txt:\n{0}".format(e))
 
-# Add flake8 to the requirements :)
-requirements.append("flake8")
-
 ########################################################################################
 # Setup the extension!!!                                                               #
 ########################################################################################
