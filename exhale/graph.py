@@ -219,7 +219,13 @@ class ExhaleNode:
         else:
             return self.kind < other.kind
 
-    def templateParametersString(self, nodeByRefid):
+    def templateParametersStringAsRestList(self, nodeByRefid):
+        '''
+        .. todo::
+
+           document this, create another method for creating this without the need for
+           generating links, to be used in making the node titles and labels
+        '''
         if not self.template_params:
             return None
         else:
@@ -509,133 +515,6 @@ class ExhaleNode:
             return self.kind == "struct" or self.kind == "class" or \
                    self.kind == "enum"   or self.kind == "union"  # noqa
 
-    def toClassView(self, level, stream, treeView, lastChild=False):
-        '''
-        Recursively generates the class view hierarchy using this node and its children,
-        if it is determined by :func:`exhale.ExhaleNode.inClassView` that this node
-        should be included.
-
-        :Parameters:
-            ``level`` (int)
-                An integer greater than or equal to 0 representing the indentation level
-                for this node.
-
-            ``stream`` (StringIO)
-                The stream that is being written to by all of the nodes (created and
-                destroyed by the ExhaleRoot object).
-
-            ``treeView`` (bool)
-                If False, standard reStructuredText bulleted lists will be written to
-                the ``stream``.  If True, then raw html unordered lists will be written
-                to the ``stream``.
-
-            ``lastChild`` (bool)
-                When ``treeView == True``, the unordered lists generated need to have
-                an <li class="lastChild"> tag on the last child for the
-                ``collapsibleList`` to work correctly.  The default value of this
-                parameter is False, and should only ever be set to True internally by
-                recursive calls to this method.
-        '''
-        has_nested_children = False
-        if self.inClassView():
-            if not treeView:
-                stream.write("{}- :ref:`{}`\n".format('    ' * level, self.link_name))
-            else:
-                indent = '  ' * (level * 2)
-                if lastChild:
-                    opening_li = '<li class="lastChild">'
-                else:
-                    opening_li = '<li>'
-                # turn double underscores into underscores, then underscores into hyphens
-                html_link = self.link_name.replace("__", "_").replace("_", "-")
-                # should always have at least two parts (templates will have more)
-                title_as_link_parts = self.title.split(" ")
-                qualifier = title_as_link_parts[0]
-                link_title = " ".join(title_as_link_parts[1:])
-                link_title = link_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                html_link = '{} <a href="{}.html#{}">{}</a>'.format(qualifier,
-                                                                    self.file_name.split('.rst')[0],
-                                                                    html_link,
-                                                                    link_title)
-                # search for nested children to display as sub-items in the tree view
-                if self.kind == "class" or self.kind == "struct":
-                    nested_enums      = []
-                    nested_unions     = []
-                    nested_class_like = []
-                    # important: only scan self.children, do not use recursive findNested* methods
-                    for c in self.children:
-                        if c.kind == "enum":
-                            nested_enums.append(c)
-                        elif c.kind == "union":
-                            nested_unions.append(c)
-                        elif c.kind == "struct" or c.kind == "class":
-                            nested_class_like.append(c)
-
-                    has_nested_children = nested_enums or nested_unions or nested_class_like  # <3 Python
-
-                # if there are sub children, there needs to be a new html list generated
-                if self.kind == "namespace" or has_nested_children:
-                    next_indent = '  {}'.format(indent)
-                    stream.write('{}{}\n{}{}\n{}<ul>\n'.format(indent, opening_li,
-                                                               next_indent, html_link,
-                                                               next_indent))
-                else:
-                    stream.write('{}{}{}</li>\n'.format(indent, opening_li, html_link))
-
-            # include the relevant children (class like or nested namespaces / classes)
-            if self.kind == "namespace":
-                # pre-process and find everything that is relevant
-                kids    = []
-                nspaces = []
-                for c in self.children:
-                    if c.inClassView():
-                        if c.kind == "namespace":
-                            nspaces.append(c)
-                        else:
-                            kids.append(c)
-
-                # always put nested namespaces last; parent dictates to the child if
-                # they are the last child being printed
-                kids.sort()
-                num_kids = len(kids)
-
-                nspaces.sort()
-                num_nspaces = len(nspaces)
-
-                last_child_index = num_kids + num_nspaces - 1
-                child_idx = 0
-
-                # first all of the nested namespaces, then the child class like
-                for node in itertools.chain(nspaces, kids):
-                    node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
-                    child_idx += 1
-
-                # now that all of the children haven been written, close the tags
-                if treeView:
-                    stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
-            # current node is a class or struct with nested children
-            elif has_nested_children:
-                nested_class_like.sort()
-                num_class_like = len(nested_class_like)
-
-                nested_enums.sort()
-                num_enums = len(nested_enums)
-
-                nested_unions.sort()
-                num_unions = len(nested_unions)
-
-                last_child_index = num_class_like + num_enums + num_unions - 1
-                child_idx = 0
-
-                # first all of the classes / structs, then enums, then unions
-                for node in itertools.chain(nested_class_like, nested_enums, nested_unions):
-                    node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
-                    child_idx += 1
-
-                # now that all of the children haven been written, close the tags
-                if treeView:
-                    stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
-
     def inDirectoryView(self):
         '''
         Whether or not this node should be included in the file view hierarchy.  Helper
@@ -657,6 +536,338 @@ class ExhaleNode:
                 if c.inDirectoryView():
                     return True
         return False
+
+    def inHierarchyView(self, classView):
+        if classView:
+            return self.inClassView()
+        else:
+            return self.inDirectoryView()
+
+    def hierarchySortedDirectDescendants(self, classView):
+        if classView:
+            # search for nested children to display as sub-items in the tree view
+            if self.kind == "class" or self.kind == "struct":
+                # first find all of the relevant children
+                nested_class_like = []
+                nested_enums      = []
+                nested_unions     = []
+                # important: only scan self.children, do not use recursive findNested* methods
+                for c in self.children:
+                    if c.kind == "struct" or c.kind == "class":
+                        nested_class_like.append(c)
+                    elif c.kind == "enum":
+                        nested_enums.append(c)
+                    elif c.kind == "union":
+                        nested_unions.append(c)
+
+                # sort the lists we just found
+                nested_class_like.sort()
+                nested_enums.sort()
+                nested_unions.sort()
+
+                # return a flattened listing with everything in the order it should be
+                return [
+                    child for child in itertools.chain(nested_class_like, nested_enums, nested_unions)
+                ]
+            # namespaces include nested namespaces, and any top-level class_like, enums,
+            # and unions.  include nested namespaces first
+            elif self.kind == "namespace":
+                # pre-process and find everything that is relevant
+                nested_nspaces = []
+                nested_kids    = []
+                for c in self.children:
+                    if c.inHierarchyView(classView):
+                        if c.kind == "namespace":
+                            nested_nspaces.append(c)
+                        else:
+                            nested_kids.append(c)
+
+                # sort the lists
+                nested_nspaces.sort()
+                nested_kids.sort()
+
+                # return a flattened listing with everything in the order it should be
+                return [
+                    child for child in itertools.chain(nested_nspaces, nested_kids)
+                ]
+            else:
+                # everything else is a terminal node
+                return []
+        # file view hierarchy
+        else:
+            if self.kind == "dir":
+                # find the nested children of interest
+                nested_dirs = []
+                nested_kids = []
+                for c in self.children:
+                    if c.inHierarchyView(classView):
+                        if c.kind == "dir":
+                            nested_dirs.append(c)
+                        elif c.kind == "file":
+                            nested_kids.append(c)
+
+                # sort the lists
+                nested_dirs.sort()
+                nested_kids.sort()
+
+                # return a flattened listing with everything in the order it should be
+                return [
+                    child for child in itertools.chain(nested_dirs, nested_kids)
+                ]
+            else:
+                # files are terminal nodes in this hierarchy view
+                return []
+
+    def toHierarchyView(self, classView, level, stream, lastChild=False):
+        if self.inHierarchyView(classView):
+            # For the Tree Views, we need to know if there are nested children before
+            # writing anything.  If there are, we need to open a new list
+            nested_children = self.hierarchySortedDirectDescendants(classView)
+
+            ############################################################################
+            # Write out this node.                                                     #
+            ############################################################################
+            # Easy case: just write another bullet point
+            if not configs.createTreeView:
+                stream.write("{indent}- :ref:`{link}`\n".format(
+                    indent='    ' * level,
+                    link=self.link_name
+                ))
+            # Otherwise, we're generating some raw HTML and/or JavaScript depending on
+            # whether we are using bootstrap or not
+            else:
+                # Declare the relevant links needed for the Tree Views
+                indent = "  " * (level * 2)
+                next_indent = "  {0}".format(indent)
+
+                # turn double underscores into underscores, then underscores into hyphens
+                html_link = self.link_name.replace("__", "_").replace("_", "-")
+                href = "{file}.html#{anchor}".format(
+                    file=self.file_name.rsplit(".rst", 1)[0],
+                    anchor=html_link
+                )
+
+                # should always have at least two parts (templates will have more)
+                title_as_link_parts = self.title.split(" ")
+                if self.template_params:
+                    # E.g. 'Template Class Foo'
+                    q_start = 0
+                    q_end   = 2
+                else:
+                    # E.g. 'Class Foo'
+                    q_start = 0
+                    q_end   = 1
+                # the qualifier will not be part of the hyperlink (for clarity of
+                # navigation), the link_title will be
+                qualifier   = " ".join(title_as_link_parts[q_start:q_end])
+                link_title  = " ".join(title_as_link_parts[q_end:])
+                link_title  = link_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                # the actual text / link inside of the list item
+                li_text     = '{qualifier} <a href="{href}">{link_title}</a>'.format(
+                    qualifier=qualifier,
+                    href=href,
+                    link_title=link_title
+                )
+                ############### asdf
+                # html_link = '{} <a href="{}.html#{}">{}</a>'.format(qualifier,
+                #                                                     self.file_name.split('.rst')[0],
+                #                                                     html_link,
+                #                                                     link_title)
+
+                if configs.treeViewIsBootstrap:
+                    pass####################
+                else:
+                    if lastChild:
+                        opening_li = '<li class="lastChild">'
+                    else:
+                        opening_li = "<li>"
+
+                if nested_children:
+                    # write this list element and begin the next list
+                    stream.write("{indent}{li}\n{next_indent}{li_text}\n{next_indent}<ul>\n".format(
+                        indent=indent,
+                        li=opening_li,
+                        next_indent=next_indent,
+                        li_text=li_text
+                    ))
+                else:
+                    # write this list element and end it now (since no children)
+                    stream.write("{indent}{li}{li_text}</li>\n".format(
+                        indent=indent,
+                        li=opening_li,
+                        li_text=li_text
+                    ))
+
+            ############################################################################
+            # Write out all of the children (if there are any).                        #
+            ############################################################################
+            last_child_index = len(nested_children) - 1
+            child_idx        = 0
+            for child in nested_children:
+                child.toHierarchyView(classView, level + 1, stream, child_idx == last_child_index)
+                child_idx += 1
+
+            ############################################################################
+            # If there were children, close the lists we started above.                #
+            ############################################################################
+            if nested_children:
+                if configs.treeViewIsBootstrap:
+                    pass
+                else:
+                    stream.write("{next_indent}</ul>\n{indent}</li>\n".format(
+                        next_indent=next_indent,
+                        indent=indent
+                    ))
+
+            ############### asdf
+            # for node in itertools.chain(nspaces, kids):
+            #         node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
+            #         child_idx += 1
+
+            #     # now that all of the children haven been written, close the tags
+            #     if treeView:
+            #         stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
+                ############### asdf
+                # # if there are sub children, there needs to be a new html list generated
+                # if self.kind == "namespace" or has_nested_children:
+                #     next_indent = '  {}'.format(indent)
+                #     stream.write('{}{}\n{}{}\n{}<ul>\n'.format(indent, opening_li,
+                #                                                next_indent, html_link,
+                #                                                next_indent))
+                # else:
+                #     stream.write('{}{}{}</li>\n'.format(indent, opening_li, html_link))
+
+
+
+
+
+
+    # def toClassView(self, level, stream, treeView, lastChild=False):
+    #     '''
+    #     Recursively generates the class view hierarchy using this node and its children,
+    #     if it is determined by :func:`exhale.ExhaleNode.inClassView` that this node
+    #     should be included.
+
+    #     :Parameters:
+    #         ``level`` (int)
+    #             An integer greater than or equal to 0 representing the indentation level
+    #             for this node.
+
+    #         ``stream`` (StringIO)
+    #             The stream that is being written to by all of the nodes (created and
+    #             destroyed by the ExhaleRoot object).
+
+    #         ``treeView`` (bool)
+    #             If False, standard reStructuredText bulleted lists will be written to
+    #             the ``stream``.  If True, then raw html unordered lists will be written
+    #             to the ``stream``.
+
+    #         ``lastChild`` (bool)
+    #             When ``treeView == True``, the unordered lists generated need to have
+    #             an <li class="lastChild"> tag on the last child for the
+    #             ``collapsibleList`` to work correctly.  The default value of this
+    #             parameter is False, and should only ever be set to True internally by
+    #             recursive calls to this method.
+    #     '''
+    #     has_nested_children = False
+    #     if self.inClassView():
+    #         if not treeView:
+    #             stream.write("{}- :ref:`{}`\n".format('    ' * level, self.link_name))
+    #         else:
+    #             indent = '  ' * (level * 2)
+    #             if lastChild:
+    #                 opening_li = '<li class="lastChild">'
+    #             else:
+    #                 opening_li = '<li>'
+    #             # turn double underscores into underscores, then underscores into hyphens
+    #             html_link = self.link_name.replace("__", "_").replace("_", "-")
+    #             # should always have at least two parts (templates will have more)
+    #             title_as_link_parts = self.title.split(" ")
+    #             qualifier = title_as_link_parts[0]
+    #             link_title = " ".join(title_as_link_parts[1:])
+    #             link_title = link_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    #             html_link = '{} <a href="{}.html#{}">{}</a>'.format(qualifier,
+    #                                                                 self.file_name.split('.rst')[0],
+    #                                                                 html_link,
+    #                                                                 link_title)
+    #             # search for nested children to display as sub-items in the tree view
+    #             if self.kind == "class" or self.kind == "struct":
+    #                 nested_enums      = []
+    #                 nested_unions     = []
+    #                 nested_class_like = []
+    #                 # important: only scan self.children, do not use recursive findNested* methods
+    #                 for c in self.children:
+    #                     if c.kind == "enum":
+    #                         nested_enums.append(c)
+    #                     elif c.kind == "union":
+    #                         nested_unions.append(c)
+    #                     elif c.kind == "struct" or c.kind == "class":
+    #                         nested_class_like.append(c)
+
+    #                 has_nested_children = nested_enums or nested_unions or nested_class_like  # <3 Python
+
+    #             # if there are sub children, there needs to be a new html list generated
+    #             if self.kind == "namespace" or has_nested_children:
+    #                 next_indent = '  {}'.format(indent)
+    #                 stream.write('{}{}\n{}{}\n{}<ul>\n'.format(indent, opening_li,
+    #                                                            next_indent, html_link,
+    #                                                            next_indent))
+    #             else:
+    #                 stream.write('{}{}{}</li>\n'.format(indent, opening_li, html_link))
+
+    #         # include the relevant children (class like or nested namespaces / classes)
+    #         if self.kind == "namespace":
+    #             # pre-process and find everything that is relevant
+    #             kids    = []
+    #             nspaces = []
+    #             for c in self.children:
+    #                 if c.inClassView():
+    #                     if c.kind == "namespace":
+    #                         nspaces.append(c)
+    #                     else:
+    #                         kids.append(c)
+
+    #             # always put nested namespaces last; parent dictates to the child if
+    #             # they are the last child being printed
+    #             kids.sort()
+    #             num_kids = len(kids)
+
+    #             nspaces.sort()
+    #             num_nspaces = len(nspaces)
+
+    #             last_child_index = num_kids + num_nspaces - 1
+    #             child_idx = 0
+
+    #             # first all of the nested namespaces, then the child class like
+    #             for node in itertools.chain(nspaces, kids):
+    #                 node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
+    #                 child_idx += 1
+
+    #             # now that all of the children haven been written, close the tags
+    #             if treeView:
+    #                 stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
+    #         # current node is a class or struct with nested children
+    #         elif has_nested_children:
+    #             nested_class_like.sort()
+    #             num_class_like = len(nested_class_like)
+
+    #             nested_enums.sort()
+    #             num_enums = len(nested_enums)
+
+    #             nested_unions.sort()
+    #             num_unions = len(nested_unions)
+
+    #             last_child_index = num_class_like + num_enums + num_unions - 1
+    #             child_idx = 0
+
+    #             # first all of the classes / structs, then enums, then unions
+    #             for node in itertools.chain(nested_class_like, nested_enums, nested_unions):
+    #                 node.toClassView(level + 1, stream, treeView, child_idx == last_child_index)
+    #                 child_idx += 1
+
+    #             # now that all of the children haven been written, close the tags
+    #             if treeView:
+    #                 stream.write("  {}</ul>\n{}</li>\n".format(indent, indent))
 
     def toDirectoryView(self, level, stream, treeView, lastChild=False):
         '''
@@ -2242,7 +2453,7 @@ class ExhaleRoot:
                 # Template parameter listing.                                          #
                 ########################################################################
                 if configs.includeTemplateParamOrderList:
-                    template = node.templateParametersString(self.node_by_refid)
+                    template = node.templateParametersStringAsRestList(self.node_by_refid)
                     if template:
                         gen_file.write(textwrap.dedent('''
                             {heading}
@@ -2891,22 +3102,22 @@ class ExhaleRoot:
         from here.  Then make sure to ``include`` it in
         :func:`exhale.ExhaleRoot.generateAPIRootBody`.
         '''
-        self.generateClassView(self.use_tree_view)
-        self.generateDirectoryView(self.use_tree_view)
+        ####### asdf
+        self.generateClassView()
+        # self.generateClassView(self.use_tree_view)
+        self.generateDirectoryView()
+        # self.generateDirectoryView(self.use_tree_view)
 
-    def generateClassView(self, treeView):
+    def generateClassView(self):
         '''
         Generates the class view hierarchy, writing it to ``self.class_view_file``.
-
-        :Parameters:
-            ``treeView`` (bool)
-                Whether or not to use the collapsibleList version.  See the
-                ``createTreeView`` description in :func:`exhale.generate`.
         '''
         class_view_stream = StringIO()
 
         for n in self.namespaces:
-            n.toClassView(0, class_view_stream, treeView)
+            ######## asdf
+            # n.toClassView(0, class_view_stream, treeView)
+            n.toHierarchyView(True, 0, class_view_stream)
 
         # Add everything that was not nested in a namespace.
         missing = []
@@ -2927,9 +3138,11 @@ class ExhaleRoot:
             idx = 0
             last_missing_child = len(missing) - 1
             for m in missing:
-                m.toClassView(0, class_view_stream, treeView, idx == last_missing_child)
+                ######## asdf
+                # m.toClassView(0, class_view_stream, treeView, idx == last_missing_child)
+                m.toHierarchyView(True, 0, class_view_stream, idx == last_missing_child)
                 idx += 1
-        elif treeView:
+        elif configs.createTreeView:
             # need to restart since there were no missing children found, otherwise the
             # last namespace will not correctly have a lastChild
             class_view_stream.close()
@@ -2938,14 +3151,16 @@ class ExhaleRoot:
             last_nspace_index = len(self.namespaces) - 1
             for idx in range(last_nspace_index + 1):
                 nspace = self.namespaces[idx]
-                nspace.toClassView(0, class_view_stream, treeView, idx == last_nspace_index)
+                ############ asdf
+                # nspace.toClassView(0, class_view_stream, treeView, idx == last_nspace_index)
+                nspace.toHierarchyView(True, 0, class_view_stream, idx == last_nspace_index)
 
         # extract the value from the stream and close it down
         class_view_string = class_view_stream.getvalue()
         class_view_stream.close()
 
         # inject the raw html for the treeView unordered lists
-        if treeView:
+        if configs.createTreeView:
             # we need to indent everything to be under the .. raw:: html directive, add
             # indentation so the html is readable while we are at it
             indented = re.sub(r'(.+)', r'        \1', class_view_string)
@@ -2967,19 +3182,16 @@ class ExhaleRoot:
         except:
             utils.fancyError("Error writing the class hierarchy.")
 
-    def generateDirectoryView(self, treeView):
+    def generateDirectoryView(self):
         '''
         Generates the file view hierarchy, writing it to ``self.directory_view_file``.
-
-        :Parameters:
-            ``treeView`` (bool)
-                Whether or not to use the collapsibleList version.  See the
-                ``createTreeView`` description in :func:`exhale.generate`.
         '''
         directory_view_stream = StringIO()
 
         for d in self.dirs:
-            d.toDirectoryView(0, directory_view_stream, treeView)
+            ######## asdf
+            # d.toDirectoryView(0, directory_view_stream, treeView)
+            d.toHierarchyView(False, 0, directory_view_stream)
 
         # add potential missing files (not sure if this is possible though)
         missing = []
@@ -2992,9 +3204,11 @@ class ExhaleRoot:
             idx = 0
             last_missing_child = len(missing) - 1
             for m in missing:
-                m.toDirectoryView(0, directory_view_stream, treeView, idx == last_missing_child)
+                ######## asdf
+                # m.toDirectoryView(0, directory_view_stream, treeView, idx == last_missing_child)
+                m.toHierarchyView(False, 0, directory_view_stream, idx == last_missing_child)
                 idx += 1
-        elif treeView:
+        elif configs.createTreeView:
             # need to restart since there were no missing children found, otherwise the
             # last directory will not correctly have a lastChild
             directory_view_stream.close()
@@ -3003,14 +3217,16 @@ class ExhaleRoot:
             last_dir_index = len(self.dirs) - 1
             for idx in range(last_dir_index + 1):
                 curr_d = self.dirs[idx]
-                curr_d.toDirectoryView(0, directory_view_stream, treeView, idx == last_dir_index)
+                ############ asdf
+                # curr_d.toDirectoryView(0, directory_view_stream, treeView, idx == last_dir_index)
+                curr_d.toHierarchyView(False, 0, directory_view_stream, idx == last_dir_index)
 
         # extract the value from the stream and close it down
         directory_view_string = directory_view_stream.getvalue()
         directory_view_stream.close()
 
         # inject the raw html for the treeView unordered lists
-        if treeView:
+        if configs.createTreeView:
             indented = re.sub(r'(.+)', r'        \1', directory_view_string)
             if configs.treeViewIsBootstrap:
                 directory_view_string =                           \
