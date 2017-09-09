@@ -334,4 +334,5 @@ This project uses a BSD 3-clause license, in hopes that it will be accessible to
 projects.  If you require a different license, please raise an issue and I will consider
 a dual license.
 
-The full license is `available here <https://github.com/svenevs/exhale/LICENSE.md>`_.
+The full license is
+`available here <https://github.com/svenevs/exhale/blob/master/LICENSE.md>`_.
