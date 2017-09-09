@@ -1,19 +1,35 @@
 Exhale
 ========================================================================================
 
-Automatic C++ library api documentation generation: breathe doxygen in and exhale it out.
-A :ref:`usage_quickstart_guide` guide gives the bare minimum needed to get things
-working, please read the :ref:`usage_overview_guide` section if you are new to Sphinx or
-Breathe.
+.. include:: ../README.rst
+   :start-after: begin_tmp_danger_warning
+   :end-before:  end_tmp_danger_warning
 
-This project revives the Doxygen style hierarchies in reStructuredText documents so that
-you can keep using the beautiful Sphinx websites, but have a more human-readable Library
-API without having to manually write it out yourself.  Exhale is self-contained and
-easily portable to Read the Docs.  You should be able to use any Sphinx theme of your
-choosing, though some of them likely work better than others.
+.. include:: ../README.rst
+   :start-after: begin_exhale_brief_desc
+   :end-before:  end_exhale_brief_desc
 
-A more comprehensive example repository (which was used for testing once upon a time) is
-located at the companion_ site.
+.. include:: ../README.rst
+   :start-after: begin_exhale_long_desc
+   :end-before:  end_exhale_long_desc
+
+.. contents::
+
+.. include:: ../README.rst
+   :start-after: begin_installation
+   :end-before:  end_installation
+
+Getting Started
+----------------------------------------------------------------------------------------
+
+A :ref:`usage_quickstart_guide` gives the bare minimum needed to get things working,
+please read the :ref:`overview` section if you are new to documenting code with either
+Doxygen, Sphinx, or Breathe.
+
+.. tip::
+   .. include:: ../README.rst
+      :start-after: begin_exhale_is_it_for_me
+      :end-before:  end_exhale_is_it_for_me
 
 .. toctree::
    :maxdepth: 2
@@ -21,13 +37,21 @@ located at the companion_ site.
    overview
    usage
    reference
+   mastering_doxygen
    faq
+   todo
 
-Indices and tables
-==================
+.. _index_credit:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Credit
+========================================================================================
 
-.. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
+.. include:: ../README.rst
+   :start-after: begin_credit
+   :end-before:  end_credit
+
+Legacy
+========================================================================================
+
+Legacy documentation is `available here <http://exhale.readthedocs.io/en/legacy_docs/>`_
+for if you chanced upon this library when it was a single file.

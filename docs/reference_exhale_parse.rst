@@ -1,6 +1,7 @@
-Helper Class ExhaleNode Reference
+Exhale Parse Module
 ========================================================================================
 
-.. autoclass:: exhale.ExhaleNode
+.. automodule:: exhale.parse
    :members:
+   :private-members:
    :special-members:
