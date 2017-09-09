@@ -3,7 +3,7 @@
 # This file is part of exhale.  Copyright (c) 2017, Stephen McDowell.                  #
 # Full BSD 3-Clause license available here:                                            #
 #                                                                                      #
-#                     https://github.com/svenevs/exhale/LICENSE.md                     #
+#               https://github.com/svenevs/exhale/blob/master/LICENSE.md               #
 ########################################################################################
 
 '''
