@@ -29,8 +29,85 @@ Refer to the RTD docs here_.
 
 .. _here: http://docs.readthedocs.io/en/latest/faq.html#my-project-isn-t-building-with-autodoc
 
+Unicode support?
+----------------------------------------------------------------------------------------
+
+Every action Exhale performs with respect to strings is done using unicode strings.  Or
+at least I tried my very best to make sure unicode support works.
+
+1. At the top of every file:
+
+   .. code-block:: py
+
+      from __future__ import unicode_literals
+
+   This is why all of the documentation on this site for strings has a leading ``u``.
+
+2. Every file written to:
+
+   .. code-block:: py
+
+      with codecs.open(file_name, "w", "utf-8") as f:
+
+3. When using Python **3**, ``bytes`` conversion is done as:
+
+   .. code-block:: py
+
+      doxygen_input = bytes(doxygen_input, "utf-8")
+
+The last one may *potentially* cause problems, but in local testing it seems to be OK.
+E.g., if you only specify **ASCII** in your ``conf.py``, everything should work out
+in the end.
+
+.. note::
+
+   Sphinx / reStructuredText supports ``utf-8`` no problem.  The only potential concern
+   is communicating with Doxygen on stdin like this, but it's worked without issue
+   for me so I kept it.  Please speak up if you are experiencing encoding / decoding
+   specific issues in Exhale!
+
+Why does my documentation take so long to build?
+----------------------------------------------------------------------------------------
+
+This is a byproduct of what is actually being done by Exhale.  If you look at the
+build output of Exhale when you execute ``make html``, parsing and generating the
+documents takes on the order of seconds.
+
+What takes long is Sphinx, and the time it takes is directly proportional to the size
+of the API being documented.  The larger the API, the more individual reStructuredText
+documents there are being created.  Meaning there are more documents that Sphinx has
+to read *and* write.
+
+.. note::
+
+   The ``sphinx-bootstrap-theme`` is noticeably slower than others.  I have suspicions
+   as to why, but have not actually investigated potential fixes.
+
+Why are the Sphinx RTD theme "Edit on GitHub" links are invalid?
+----------------------------------------------------------------------------------------
+
+Because I haven't figured out how to implement this correctly yet.  Feel free to give
+input `on the issue`__.  They point to nowhere because you aren't tracking the generated
+API with ``git`` (nor should you be).
+
+__ https://github.com/svenevs/exhale/issues/2
+
+.. tip::
+
+   There is an existing hack you can use to at least make the links go somewhere that
+   exists.  Use the page-level metadata feature of Exhale and point it to the root of
+   your repository:
+
+   .. code-block:: py
+
+      exhale_args = {
+          # ... required / optional arguments ...
+          "pageLevelConfigMeta": ":github_url: https://github.com/you/project"
+      }
+
 Metaprogramming and full template specialization?
 ----------------------------------------------------------------------------------------
+
 Nope.  Partial template specialization at best is supported by Breathe; not full
 template specialization.  Furthermore, Doxygen can barely handle metaprogramming...YMMV.
 

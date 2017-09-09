@@ -53,12 +53,14 @@ Installation
 
 Exhale is a `Sphinx Extension`__ that depends on `Breathe`_ for access to the Doxygen
 reStructuredText directives, and both `BeautifulSoup`_ and `lxml`_ for parsing the
-generated Doxygen XML documentation.  The easiest way to install Exhale is:
+generated Doxygen XML documentation.  Exhale also uses `six`_ help account for the
+Python 2 unicode dilemma.  The easiest way to install Exhale is:
 
 __ http://www.sphinx-doc.org/en/stable/extensions.html
 
 .. _BeautifulSoup: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 .. _lxml: http://lxml.de/
+.. _six: http://pythonhosted.org/six/
 
 .. code-block:: bash
 

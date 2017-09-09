@@ -13,13 +13,17 @@ The deploy module is responsible for two primary actions:
 2. Launching the full API generation via the :func:`exhale.deploy.explode` function.
 '''
 
+from __future__ import unicode_literals
+
 from . import configs
 from . import utils
 from .graph import ExhaleRoot
 
 import os
 import sys
+import six
 import re
+import codecs
 import tempfile
 import textwrap
 from subprocess import PIPE, Popen
@@ -61,7 +65,7 @@ def _generate_doxygen(doxygen_input):
                .. code-block:: py
 
                   if sys.version[0] == "3":
-                      doxygen_input = bytes(doxygen_input, "ASCII")
+                      doxygen_input = bytes(doxygen_input, "utf-8")
 
     **Return**
         ``str`` or ``None``
@@ -79,7 +83,7 @@ def _generate_doxygen(doxygen_input):
             method to restore some state before exiting the program (namely, the working
             directory before propagating an exception to ``sphinx-build``).
     '''
-    if type(doxygen_input) is not str:
+    if not isinstance(doxygen_input, six.string_types):
         return "Error: the `doxygen_input` variable must be of type `str`."
 
     doxyfile = doxygen_input == "Doxyfile"
@@ -91,8 +95,8 @@ def _generate_doxygen(doxygen_input):
         # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
         _, tmp_out_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
         _, tmp_err_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-        tmp_out         = open(tmp_out_path, "r+")  # read/write (read after communicate)
-        tmp_err         = open(tmp_err_path, "r+")
+        tmp_out         = codecs.open(tmp_out_path, "r+", "utf-8")  # read/write (read after communicate)
+        tmp_err         = codecs.open(tmp_err_path, "r+", "utf-8")
 
         # Setup the arguments to launch doxygen
         if doxyfile:
@@ -114,7 +118,7 @@ def _generate_doxygen(doxygen_input):
             # In Py3, make sure we are communicating a bytes-like object which is no
             # longer interchangeable with strings (as was the case in Py2).
             if sys.version[0] == "3":
-                doxygen_input = bytes(doxygen_input, "ASCII")
+                doxygen_input = bytes(doxygen_input, "utf-8")
             comm_kwargs = {"input": doxygen_input}
         else:
             comm_kwargs = {}
@@ -195,7 +199,7 @@ def generateDoxygenXML():
         # 1. INPUT (where doxygen should parse).
         #
         # The below is a modest attempt to validate that these were / were not given.
-        if type(configs.exhaleDoxygenStdin) is not str:
+        if not isinstance(configs.exhaleDoxygenStdin, six.string_types):
             return "`exhaleDoxygenStdin` config must be a string!"
 
         if not _valid_config("OUTPUT_DIRECTORY", False):
@@ -434,16 +438,34 @@ def explode():
     # From here on, we assume that everything else has been checked / configured.
     try:
         textRoot = ExhaleRoot()
-    except Exception as e:
-        raise RuntimeError("Unable to create an `ExhaleRoot` object:\n{0}".format(e))
+    except:
+        utils.fancyError("Unable to create an `ExhaleRoot` object:")
     try:
+        sys.stdout.write("{0}\n".format(utils.info("Exhale: parsing Doxygen XML.")))
+        start = utils.get_time()
         textRoot.parse()
-    except Exception as e:
-        raise RuntimeError("Exception caught while parsing:\n{0}".format(e))
+        end = utils.get_time()
+        sys.stdout.write("{0}\n".format(
+            utils.progress("Exhale: finished parsing Doxygen XML in {0}.".format(
+                utils.time_string(start, end)
+            ))
+        ))
+    except:
+        utils.fancyError("Exception caught while parsing:")
     try:
+        sys.stdout.write("{0}\n".format(
+            utils.info("Exhale: generating reStructuredText documents.")
+        ))
+        start = utils.get_time()
         textRoot.generateFullAPI()
-    except Exception as e:
-        raise RuntimeError("Exception caught while generating:\n{0}".format(e))
+        end = utils.get_time()
+        sys.stdout.write("{0}\n".format(
+            utils.progress("Exhale: generated reStructuredText documents in {0}.".format(
+                utils.time_string(start, end)
+            ))
+        ))
+    except:
+        utils.fancyError("Exception caught while generating:")
 
     # << verboseBuild
     #   toConsole only prints if verbose mode is enabled

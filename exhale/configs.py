@@ -40,7 +40,10 @@ follows:
    options are to modify the behavior of Exhale.
 '''
 
+from __future__ import unicode_literals
+
 import os
+import six
 import textwrap
 
 from sphinx.errors import ConfigError, ExtensionError
@@ -404,6 +407,220 @@ treeViewIsBootstrap = False
     friendly library.
 '''
 
+treeViewBootstrapTextSpanClass = "text-muted"
+'''
+**Optional**
+    What **span** class to use for the *qualifying* text after the icon, but before the
+    hyperlink to the actual documentation page.  For example, ``Struct Foo`` in the
+    hierarchy would have ``Struct`` as the *qualifying* text (controlled by this
+    variable), and ``Foo`` will be a hyperlink to ``Foo``'s actual documentation.
+
+**Value in** ``exhale_args`` (str)
+    A valid class to apply to a ``span``.  The actual HTML being generated is something
+    like:
+
+    .. code-block:: html
+
+       <span class="{span_cls}">{qualifier}</span> {hyperlink text}
+
+    So if the value of this input was ``"text-muted"``, and it was the hierarchy element
+    for ``Struct Foo``, it would be
+
+    .. code-block:: html
+
+       <span class="text-muted">Struct</span> Foo
+
+    The ``Foo`` portion will receive the hyperlink styling elsewhere.
+
+    .. tip::
+
+       Easy choices to consider are the `contextual classes`__ provided by your
+       bootstrap theme.  Alternatively, add your own custom stylesheet to Sphinx
+       directly and create a class with the color you want there.
+
+       __ https://getbootstrap.com/docs/3.3/css/#helper-classes-colors
+
+    .. danger::
+
+       No validity checks are performed.  If you supply a class that cannot be used,
+       there is no telling what will happen.
+'''
+
+treeViewBootstrapIconMimicColor = "text-muted"
+'''
+**Optional**
+    The **paragraph** CSS class to *mimic* for the icon color in the tree view.
+
+**Value in** ``exhale_args`` (str)
+    This value must be a valid CSS class for a **paragraph**.  The way that it is used
+    is in JavaScript, on page-load, a "fake paragraph" is inserted with the class
+    specified by this variable.  The color is extracted, and then a force-override is
+    applied to the page's stylesheet.  This was necessary to override some aspects of
+    what the ``bootstrap-treeview`` library does.  It's full usage looks like this:
+
+    .. code-block:: js
+
+       /* Inspired by very informative answer to get color of links:
+          https://stackoverflow.com/a/2707837/3814202 */
+       /*                         vvvvvvvvvv what you give */
+       var $fake_p = $('<p class="icon_mimic"></p>').hide().appendTo("body");
+       /*                         ^^^^^^^^^^               */
+       var iconColor = $fake_p.css("color");
+       $fake_p.remove();
+
+       /* later on */
+       // Part 2: override the style of the glyphicons by injecting some CSS
+       $('<style type="text/css" id="exhaleTreeviewOverride">' +
+         '    .treeview span[class~=icon] { '                  +
+         '        color: ' + iconColor + ' ! important;'       +
+         '    }'                                               +
+         '</style>').appendTo('head');
+
+
+    .. tip::
+
+       Easy choices to consider are the `contextual classes`__ provided by your
+       bootstrap theme.  Alternatively, add your own custom stylesheet to Sphinx
+       directly and create a class with the color you want there.
+
+       __ https://getbootstrap.com/docs/3.3/css/#helper-classes-colors
+
+    .. danger::
+
+       No validity checks are performed.  If you supply a class that cannot be used,
+       there is no telling what will happen.
+'''
+
+treeViewBootstrapOnhoverColor = "#F5F5F5"
+'''
+**Optional**
+    The hover color for elements in the hierarchy trees.  Default color is a light-grey,
+    as specified by default value of ``bootstrap-treeview``'s `onhoverColor`_.
+
+    .. _onhoverColor: https://github.com/jonmiles/bootstrap-treeview#onhovercolor
+
+*Value in** ``exhale_args`` (str)
+    Any valid color.  See `onhovercolor`_ for information.
+'''
+
+treeViewBootstrapUseBadgeTags = True
+'''
+**Optional**
+    When set to ``True`` (default), a Badge indicating the number of nested children
+    will be included **when 1 or more children are present**.
+
+    When enabled, each node in the json data generated has it's `tags`_ set, and the
+    global `showTags`_ option is set to ``true``.
+
+    .. _tags: https://github.com/jonmiles/bootstrap-treeview#tags
+
+    .. _showTags: https://github.com/jonmiles/bootstrap-treeview#showtags
+
+**Value in** ``exhale_args`` (bool)
+    Set to ``False`` to exclude the badges.  Search for ``Tags as Badges`` on the
+    `example bootstrap treeview page`__, noting that if a given node does not have any
+    children, no badge will be added.  This is simply because a ``0`` badge is likely
+    more confusing than helpful.
+
+    __ http://jonmiles.github.io/bootstrap-treeview/
+'''
+
+treeViewBootstrapExpandIcon = "glyphicon glyphicon-plus"
+'''
+**Optional**
+    Global setting for what the "expand" icon is for the bootstrap treeview.  The
+    default value here is the default of the ``bootstrap-treeview`` library.
+
+**Value in** ``exhale_args`` (str)
+    See the `expandIcon`_ description of ``bootstrap-treeview`` for more information.
+
+    .. _expandIcon: https://github.com/jonmiles/bootstrap-treeview#expandicon
+
+    .. note::
+
+       Exhale handles wrapping this in quotes, you just need to specify the class
+       (making sure that it has spaces where it should).  Exhale does **not** perform
+       any validity checks on the value of this variable.  For example, you could use
+       something like:
+
+       .. code-block:: py
+
+          exhale_args = {
+              # ... required / other optional args ...
+              # you can set one, both, or neither. just showing both in same example
+              # set the icon to show it can be expanded
+              "treeViewBootstrapExpandIcon":   "glyphicon glyphicon-chevron-right",
+              # set the icon to show it can be collapsed
+              "treeViewBootstrapCollapseIcon": "glyphicon glyphicon-chevron-down"
+          }
+'''
+
+treeViewBootstrapCollapseIcon = "glyphicon glyphicon-minus"
+'''
+**Optional**
+    Global setting for what the "collapse" icon is for the bootstrap treeview.  The
+    default value here is the default of the ``bootstrap-treeview`` library.
+
+**Value in** ``exhale_args`` (str)
+    See the `collapseIcon`_ description of ``bootstrap-treeview`` for more information.
+    See :data:`exhale.configs.treeViewBootstrapExpandIcon` for how to specify this
+    CSS class value.
+
+    .. _collapseIcon: https://github.com/jonmiles/bootstrap-treeview#collapseicon
+'''
+
+treeViewBootstrapLevels = 1
+'''
+**Optional**
+    The default number of levels to expand on page load.  Note that the
+    ``bootstrap-treeview`` default `levels`_ value is ``2``.  ``1`` seems like a safer
+    default for Exhale since the value you choose here largely depends on how you have
+    structured your code.
+
+    .. _levels: https://github.com/jonmiles/bootstrap-treeview#levels
+
+**Value in** ``exhale_args`` (int)
+    An integer representing the number of levels to expand for **both** the Class and
+    File hierarchies.  **This value should be greater than or equal to** ``1``, but
+    **no validity checks are performed** on your input.  Buyer beware.
+'''
+
+_class_hierarchy_id = "class-treeView"
+'''
+The ``id`` attribute of the HTML element associated with the **Class** Hierarchy when
+:data:`exhale.configs.createTreeView` is ``True``.
+
+1. When :data:`exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
+   to the outer-most ``ul``.
+2. For bootstrap, an empty ``div`` is inserted with this ``id``, which will be the
+   anchor point for the ``bootstrap-treeview`` library.
+'''
+
+_file_hierarchy_id = "file-treeView"
+'''
+The ``id`` attribute of the HTML element associated with the **Class** Hierarchy when
+:data:`exhale.configs.createTreeView` is ``True``.
+
+1. When :data:`exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
+   to the outer-most ``ul``.
+2. For bootstrap, an empty ``div`` is inserted with this ``id``, which will be the
+   anchor point for the ``bootstrap-treeview`` library.
+'''
+
+_bstrap_class_hierarchy_fn_data_name = "getClassHierarchyTree"
+'''
+The name of the JavaScript function that returns the ``json`` data associated with the
+**Class** Hierarchy when :data:`exhale.configs.createTreeView` is ``True`` **and**
+:data:`exhale.configs.treeViewIsBootstrap` is ``True``.
+'''
+
+_bstrap_file_hierarchy_fn_data_name = "getFileHierarchyTree"
+'''
+The name of the JavaScript function that returns the ``json`` data associated with the
+**File** Hierarchy when :data:`exhale.configs.createTreeView` is ``True`` **and**
+:data:`exhale.configs.treeViewIsBootstrap` is ``True``.
+'''
+
 ########################################################################################
 # Page Level Customization                                                             #
 ########################################################################################
@@ -424,15 +641,35 @@ contentsDirectives = True
 
     This is particularly useful for making the Namespace and File pages navigable by
     the reader of your documentation when the Namespace / File incorporates many parts
-    of the API.  Where classes and structs are concerned, it usually isn't too
-    distracting when needed, but in cases where a class is a common base type of many
-    others, it is also useful.
+    of the API.  Classes and structs have potential for a contents directive to be
+    warranted (e.g., complex inheritance relationships with nested types), and the
+    presence of a ``.. contents::`` directive on simple class / struct pages doesn't
+    seem too distracting.
 
     On the other hand, pages generated for things like Directories, Enums, Variables,
     Defines, Typedefs, etc, are generally only as long as the documentation so they do
     not receive a ``.. contents::`` directive.
 
     .. note::
+
+       The actual directive being used here is:
+
+       .. code-block:: rst
+
+          .. contents::
+             :backlinks: none
+
+       This is because having the section headings link back to the TOC for the specific
+       page is largely pointless, and the headings becoming hyperlinks is (from a style
+       perspective) rather unattractive with most themes I've viewed.
+
+       If you desire to be able to configure this it wouldn't be hard.  Raise an issue.
+
+       The `contents directive options are here`__.
+
+       __ http://docutils.sourceforge.net/docs/ref/rst/directives.html#table-of-contents
+
+    .. warning::
 
        This configuration is all or nothing.  It is not possible to incorporate a
        ``.. contents::`` directive for specific pages (at this time).  Feel free to
@@ -746,7 +983,7 @@ def apply_sphinx_configurations(app):
     breathe_default_project = app.config.breathe_default_project
     if not breathe_default_project:
         raise ConfigError("You must set the `breathe_default_project` in `conf.py`.")
-    elif type(breathe_default_project) is not str:
+    elif not isinstance(breathe_default_project, six.string_types):
         raise ConfigError("The type of `breathe_default_project` must be a string.")
 
     if breathe_default_project not in breathe_projects:
@@ -760,7 +997,7 @@ def apply_sphinx_configurations(app):
     # defer validation of existence until after potentially running Doxygen based on
     # the configs given to exhale
     doxy_xml_dir = breathe_projects[breathe_default_project]
-    if type(doxy_xml_dir) is not str:
+    if not isinstance(doxy_xml_dir, six.string_types):
         raise ConfigError(
             "The type of `breathe_projects[breathe_default_project]` from `conf.py` was not a string."
         )
@@ -792,10 +1029,10 @@ def apply_sphinx_configurations(app):
     val_error = "The type of the value for key `{key}` must be `{exp}`, but was `{got}`."
 
     req_kv = [
-        ("containmentFolder",    str,  True),
-        ("rootFileName",         str, False),
-        ("rootFileTitle",        str, False),
-        ("doxygenStripFromPath", str,  True)
+        ("containmentFolder",    six.string_types,  True),
+        ("rootFileName",         six.string_types, False),
+        ("rootFileTitle",        six.string_types, False),
+        ("doxygenStripFromPath", six.string_types,  True)
     ]
     for key, expected_type, make_absolute in req_kv:
         # Used in error checking later
@@ -805,9 +1042,9 @@ def apply_sphinx_configurations(app):
         if key not in exhale_args:
             raise ConfigError(key_error.format(key=key))
         # Make sure the value is at the very least the correct type
-        val   = exhale_args[key]
-        val_t = type(val)
-        if val_t is not expected_type:
+        val = exhale_args[key]
+        if not isinstance(val, expected_type):
+            val_t = type(val)
             raise ConfigError(val_error.format(key=key, exp=expected_type, got=val_t))
         # Make sure that a value was provided (e.g. no empty strings)
         if not val:
@@ -885,30 +1122,37 @@ def apply_sphinx_configurations(app):
     ####################################################################################
     opt_kv = [
         # Build Process Logging, Colors, and Debugging
-        ("verboseBuild",                  bool),
-        ("alwaysColorize",                bool),
-        ("generateBreatheFileDirectives", bool),
+        ("verboseBuild",                                bool),
+        ("alwaysColorize",                              bool),
+        ("generateBreatheFileDirectives",               bool),
         # Root API Document Customization and Treeview
-        ("afterTitleDescription",          str),
-        ("afterHierarchyDescription",      str),
-        ("fullApiSubSectionTitle",         str),
-        ("afterBodySummary",               str),
-        ("fullToctreeMaxDepth",            int),
+        ("afterTitleDescription",           six.string_types),
+        ("afterHierarchyDescription",       six.string_types),
+        ("fullApiSubSectionTitle",          six.string_types),
+        ("afterBodySummary",                six.string_types),
+        ("fullToctreeMaxDepth",                          int),
         # Clickable Hierarchies <3
-        ("createTreeView",                bool),
-        ("treeViewIsBootstrap",           bool),
+        ("createTreeView",                              bool),
+        ("treeViewIsBootstrap",                         bool),
+        ("treeViewBootstrapTextSpanClass",  six.string_types),
+        ("treeViewBootstrapIconMimicColor", six.string_types),
+        ("treeViewBootstrapOnhoverColor",   six.string_types),
+        ("treeViewBootstrapUseBadgeTags",               bool),
+        ("treeViewBootstrapExpandIcon",     six.string_types),
+        ("treeViewBootstrapCollapseIcon",   six.string_types),
+        ("treeViewBootstrapLevels",                      int),
         # Page Level Customization
-        ("contentsDirectives",            bool),
-        ("includeTemplateParamOrderList", bool),
-        ("pageLevelConfigMeta",            str),
-        ("repoRedirectURL",                str),
+        ("contentsDirectives",                          bool),
+        ("includeTemplateParamOrderList",               bool),
+        ("pageLevelConfigMeta",             six.string_types),
+        ("repoRedirectURL",                 six.string_types),
         # Breathe Customization
-        ("customSpecificationsMapping",   dict),
+        ("customSpecificationsMapping",                 dict),
         # Doxygen Execution and Customization
-        ("exhaleExecutesDoxygen",         bool),
-        ("exhaleUseDoxyfile",             bool),
-        ("exhaleDoxygenStdin",             str),
-        ("exhaleSilentDoxygen",           bool)
+        ("exhaleExecutesDoxygen",                       bool),
+        ("exhaleUseDoxyfile",                           bool),
+        ("exhaleDoxygenStdin",              six.string_types),
+        ("exhaleSilentDoxygen",                         bool)
     ]
     for key, expected_type in opt_kv:
         # Used in error checking later
@@ -917,9 +1161,9 @@ def apply_sphinx_configurations(app):
         # Override the default settings if the key was provided
         if key in exhale_args:
             # Make sure the value is at the very least the correct type
-            val   = exhale_args[key]
-            val_t = type(val)
-            if val_t is not expected_type:
+            val = exhale_args[key]
+            if not isinstance(val, expected_type):
+                val_t = type(val)
                 raise ConfigError(val_error.format(key=key, exp=expected_type, got=val_t))
             # Set the config for use later
             try:
@@ -1047,7 +1291,7 @@ def apply_sphinx_configurations(app):
         # Sanity check #3: make sure the return values are all strings
         for key in customSpecificationsMapping:
             val_t = type(customSpecificationsMapping[key])
-            if val_t is not str:
+            if not isinstance(val_t, six.string_types):
                 raise ConfigError(
                     "`customSpecificationsMapping` key `{key}` gave value type `{val_t}` (need `str`).".format(
                         key=key, val_t=val_t
@@ -1083,6 +1327,7 @@ def apply_sphinx_configurations(app):
 
         # All necessary information ready, go to where the Doxyfile is, run Doxygen
         # and then return back (where applicable) so sphinx can continue
+        start = utils.get_time()
         if returnPath:
             app.info(utils.info(
                 "Exhale: changing directories to [{0}] to execute Doxygen.".format(app.confdir)
@@ -1099,7 +1344,10 @@ def apply_sphinx_configurations(app):
         if status:
             raise ExtensionError(status)
         else:
-            app.info(utils.progress("Exhale: doxygen ran successfully!"))
+            end = utils.get_time()
+            app.info(utils.progress(
+                "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
+            ))
     else:
         if exhaleUseDoxyfile:
             app.warn("Exhale: `exhaleUseDoxyfile` ignored since `exhaleExecutesDoxygen=False`")
@@ -1185,3 +1433,5 @@ def apply_sphinx_configurations(app):
         # Add the javascript
         for js in tree_data_js:
             app.add_javascript(js)
+
+        app.info(utils.progress("Exhale: added tree view css / javascript."))

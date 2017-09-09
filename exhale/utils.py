@@ -6,12 +6,19 @@
 #                     https://github.com/svenevs/exhale/LICENSE.md                     #
 ########################################################################################
 
+from __future__ import unicode_literals
+
 from . import configs
 
 import os
 import sys
+import six
+import datetime
+import time
 import types
+import codecs
 import traceback
+import textwrap
 
 # Fancy error printing <3
 try:
@@ -23,6 +30,58 @@ except:
 
 __name__      = "utils"
 __docformat__ = "reStructuredText"
+
+
+def time_string(start, end):
+    delta = datetime.timedelta(seconds=(end - start))
+    # If the program took this long, the output has X Days, H:MM:S, which makes it
+    # very clear what the units are between the colons.  Just display that directly
+    if delta.days > 0:
+        time_str = str(delta)
+    # Otherwise, I like to make it clear about hours, minutes and seconds
+    else:
+        parts = str(delta).split(":")
+        if len(parts) == 3:
+            try:
+                hours = int(parts[0])
+                mins  = int(parts[1])
+                secs  = round(float(parts[2]), 2)
+
+                if hours == 0:
+                    hours_str = ""
+                elif hours == 1:
+                    hours_str = "1 hour, "
+                else:
+                    hours_str = "{0} hours, ".format(hours)
+
+                if mins == 0:
+                    mins_str = ""
+                elif mins == 1:
+                    mins_str = "1 minute, and "
+                else:
+                    mins_str = "{0} minutes, and ".format(mins)
+
+                if secs == 1.00:  # LOL I would love to see this happen
+                    secs_str = "1.00 second"
+                else:
+                    secs_str = "{0} seconds".format(secs)
+
+                time_str = "{0}{1}{2}".format(hours_str, mins_str, secs_str)
+            except:
+                time_str = str(delta)
+        else:
+            # Uhh. Time to give up pretty printing because this shouldn't happen
+            time_str = str(delta)
+
+    return time_str
+
+
+def get_time():
+    if sys.version_info > (3, 3):
+        # monotonic introduced in 3.3
+        return time.monotonic()
+    else:
+        return time.time()
 
 
 AVAILABLE_KINDS = [
@@ -84,7 +143,7 @@ def makeCustomSpecificationsMapping(func):
             specs = func(kind)
             bad   = type(specs) is not list
             for s in specs:
-                if type(s) is not str:
+                if not isinstance(s, six.string_types):
                     bad = True
                     break
             if bad:
@@ -109,7 +168,7 @@ def nodeCompoundXMLContents(node):
     node_xml_path = os.path.join(configs._doxygen_xml_output_directory, "{0}.xml".format(node.refid))
     if os.path.isfile(node_xml_path):
         try:
-            with open(node_xml_path, "r") as xml:
+            with codecs.open(node_xml_path, "r", "utf-8") as xml:
                 node_xml_contents = xml.read()
 
             return node_xml_contents
@@ -416,7 +475,7 @@ class AnsiColors:
             # ignore specials such as __class__ or __module__
             if not elem.startswith("__"):
                 color_fmt = cls.__dict__[elem]
-                if type(color_fmt) is str and color_fmt != "BOLD" and color_fmt != "DIM" and \
+                if isinstance(color_fmt, six.string_types) and color_fmt != "BOLD" and color_fmt != "DIM" and \
                         color_fmt != "UNDER" and color_fmt != "INV":
                     print("\033[{fmt}AnsiColors.{name}\033[0m".format(fmt=color_fmt, name=elem))
 
@@ -512,9 +571,12 @@ def critical(msg, ansi_fmt=AnsiColors.BOLD_RED, output_stream=sys.stderr):
     return _use_color(prefix("(!) ", msg), ansi_fmt, output_stream)
 
 
-def verbose_log(msg, ansi_fmt):
+def verbose_log(msg, ansi_fmt=None):
     if configs.verboseBuild:
-        log = _use_color(msg, ansi_fmt, sys.stderr)
+        if ansi_fmt:
+            log = _use_color(msg, ansi_fmt, sys.stderr)
+        else:
+            log = msg
         sys.stderr.write("{log}\n".format(log=log))
 
 

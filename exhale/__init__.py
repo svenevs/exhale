@@ -6,6 +6,8 @@
 #                     https://github.com/svenevs/exhale/LICENSE.md                     #
 ########################################################################################
 
+from __future__ import unicode_literals
+
 __version__ = "0.1.0"
 
 
@@ -19,7 +21,6 @@ def environment_ready(app):
     ####### Next, perform any cleanup
 
     # Generate the full API!
-    app.info(utils.info("Exhale: generating reStructuredText documents."))
     try:
         deploy.explode()
     except:

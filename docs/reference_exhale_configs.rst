@@ -238,6 +238,18 @@ theme.  Basically
       your thoughts `on the issue <https://github.com/svenevs/exhale/issues/7>`_,
       explaining which feature you would want to be able to control.
 
+      The currently available customizations :ref:`begin here <bootstrap_mods>`, but it
+      shouldn't be too hard to add more.
+
+   .. tip::
+
+      You will see that many of the color, selection, and search options are **not**
+      available to be customized for ``bootstrap-treeview``.  This is by design.
+      See :data:`exhale.configs.treeViewBootstrapTextSpanClass`,
+      :data:`exhale.configs.treeViewBootstrapIconMimicColor`, and
+      :data:`exhale.configs.treeViewBootstrapOnhoverColor` for your color options.  The
+      links are defined by your bootstrap theme's ``a`` tag color.
+
 See the :ref:`index_credit` section for information on the licensing of these libraries.
 Neither library should produce any legal gray areas for you, but I'm not a lawyer.
 
@@ -248,6 +260,30 @@ Neither library should produce any legal gray areas for you, but I'm not a lawye
 .. autodata:: exhale.configs.createTreeView
 
 .. autodata:: exhale.configs.treeViewIsBootstrap
+
+.. _bootstrap_mods:
+
+.. autodata:: exhale.configs.treeViewBootstrapTextSpanClass
+
+.. autodata:: exhale.configs.treeViewBootstrapIconMimicColor
+
+.. autodata:: exhale.configs.treeViewBootstrapOnhoverColor
+
+.. autodata:: exhale.configs.treeViewBootstrapUseBadgeTags
+
+.. autodata:: exhale.configs.treeViewBootstrapExpandIcon
+
+.. autodata:: exhale.configs.treeViewBootstrapCollapseIcon
+
+.. autodata:: exhale.configs.treeViewBootstrapLevels
+
+.. autodata:: exhale.configs._class_hierarchy_id
+
+.. autodata:: exhale.configs._file_hierarchy_id
+
+.. autodata:: exhale.configs._bstrap_class_hierarchy_fn_data_name
+
+.. autodata:: exhale.configs._bstrap_file_hierarchy_fn_data_name
 
 
 Page Level Customization
