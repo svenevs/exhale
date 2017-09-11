@@ -13,7 +13,9 @@ Exhale
    :start-after: begin_exhale_long_desc
    :end-before:  end_exhale_long_desc
 
-.. contents::
+.. contents:: Contents
+   :local:
+   :backlinks: none
 
 .. include:: ../README.rst
    :start-after: begin_installation

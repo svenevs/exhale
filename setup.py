@@ -8,8 +8,7 @@ from setuptools import setup, find_packages
 ########################################################################################
 b_desc_begin = ".. begin_exhale_brief_desc"
 b_desc_end   = ".. end_exhale_brief_desc"
-l_desc_begin = ".. begin_exhale_long_desc"
-l_desc_end   = ".. end_exhale_long_desc"
+l_desc_begin = ".. begin_exhale_long_desc"  # read from here until remainder of file
 here         = os.path.abspath(os.path.dirname(__file__))
 
 # Process the file, reading the markers.  Store brief / long desc in corresponding lists
@@ -32,9 +31,6 @@ try:
             elif line.startswith(l_desc_begin):
                 inside_long = True
                 continue
-            elif line.startswith(l_desc_end):
-                inside_long = False
-                continue
 
             # If we are inside brief or long, append to the corresponding list
             if inside_brief:
@@ -43,16 +39,16 @@ try:
                 long_desc.append(line)
 
     # Simple sanity check, make sure we got the brief and long descriptions.
-    if not brief_desc or inside_brief:
+    if not brief_desc:
         raise RuntimeError("Did not acquire the brief description from README.rst.")
-    if not long_desc or inside_long:
+    if not long_desc:
         raise RuntimeError("Did not acquire the long description from README.rst.")
 
     # Make the lists strings.  No special reStructuredText formatting is present in the
     # brief / long descriptions (e.g. no block-level .. note:: or listings), which is
     # why we are not joining with a newline
     brief_desc = " ".join(line.strip() for line in brief_desc)
-    long_desc  = " ".join(line.strip() for line in long_desc)
+    long_desc  = "".join(line for line in long_desc)
 except Exception as e:
     raise RuntimeError("Could not acquire the brief / long description from README.rst:\n{0}".format(e))
 
@@ -97,7 +93,7 @@ setup(
     zip_safe=False,
     # Metadata for PyPI
     author="Stephen McDowell",
-    email="exhale.hosted@gmail.com",
+    author_email="exhale.hosted@gmail.com",
     description=brief_desc,
     long_description=long_desc,
     url="https://github.com/svenevs/exhale",

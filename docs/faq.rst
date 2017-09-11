@@ -1,7 +1,9 @@
 FAQ
 ========================================================================================
 
-.. contents::
+.. contents:: Contents
+   :local:
+   :backlinks: none
 
 Nothing is working, where did I go wrong?
 ----------------------------------------------------------------------------------------
@@ -17,6 +19,15 @@ Make sure you set the :data:`exhale.configs.verboseBuild` to ``True``, there may
 useful information being printed there.
 
 .. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
+
+Can I use the formidable Intersphinx extension?
+----------------------------------------------------------------------------------------
+
+Heck yes!  This has almost nothing to do with Exhale, and everything to do with Sphinx.
+I've prepared a crash-course on how to get it up and running on the companion site's
+`Using Intersphinx <using_intersphinx_>`_ page.
+
+.. _using_intersphinx: http://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
 
 Why does it build locally, but not on Read the Docs?
 ----------------------------------------------------------------------------------------
@@ -161,3 +172,13 @@ My documentation is setup using groups, how can I use Exhale?
 I do not support ``groups`` with Doxygen, as I assume if you have gone through the
 effort to group everything then you have a desire to manually control the output.
 Breathe already has an excellent ``doxygengroup`` directive, and you should use that.
+
+Ok seriously, why is there SO MUCH documentation on a documentation system?
+----------------------------------------------------------------------------------------
+
+It's your choice whether or not you read it.  Back when I was getting started on all of
+this stuff it was **overwhelming**.  I did my best to recall where I got confused, as
+well as highlight some of the tricks I've picked up over the years.
+
+Basically, it's because I'm hopeful that I can save *at least one person* from falling
+into some of the more confusing "traps" I've encountered.

@@ -1,7 +1,9 @@
 Exhale Configs Module
 ========================================================================================
 
-.. contents::
+.. contents:: Contents
+   :local:
+   :backlinks: none
 
 .. automodule:: exhale.configs
 

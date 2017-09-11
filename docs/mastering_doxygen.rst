@@ -10,7 +10,9 @@ and arriving at a workflow that seemed to work out.  Your mileage **will** vary,
 **will break**, but if you are patient (and belligerent) enough, the end result is
 totally worth it.  With that, let's begin!
 
-.. contents::
+.. contents:: Contents
+   :local:
+   :backlinks: none
 
 What is Doxygen, and How do I Approach it?
 ----------------------------------------------------------------------------------------

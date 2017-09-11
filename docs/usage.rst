@@ -12,7 +12,9 @@ what you need is:
    `First Steps With Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_
    tutorial for getting that off the ground.
 
-.. contents::
+.. contents:: Contents
+   :local:
+   :backlinks: none
 
 .. _usage_quickstart_guide:
 
