@@ -3,10 +3,12 @@ Exhale Utils Module
 
 .. automodule:: exhale.utils
 
+.. autodata:: exhale.utils.AVAILABLE_KINDS
+
+.. autofunction:: exhale.utils.contentsDirectiveOrNone
+
 Breathe Customization Support
 ----------------------------------------------------------------------------------------
-
-.. autodata:: exhale.utils.AVAILABLE_KINDS
 
 .. autofunction:: exhale.utils.makeCustomSpecificationsMapping
 

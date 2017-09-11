@@ -225,30 +225,7 @@ structure would be created::
 .. note::
 
    You are by no means required to use Exhale to generate Doxygen.  If you choose not to
-   I assume you have the wherewithal to figure it out on your own.  You need to make
-   sure of two things:
-
-   1. The Doxygen XML tree is generated **before** Exhale is run.  The easiest way to
-      guarantee this is to include
-
-      .. code-block:: py
-
-         # At the bottom of your `conf.py`
-         def generateDoxygen():
-             x = 11
-             # ... actually call Doxygen ...
-
-         # Auto-magically called for you by Sphinx when you do `make html`
-         def setup(app):
-             generateDoxygen()
-
-   2. Make sure that the Doxygen configuration variable ``OUTPUT_DIRECTORY`` is set
-      such that what you specified in ``breathe_projects`` is correct.  With the above
-      directory structure you would use ``OUTPUT_DIRECTORY = ./doxyoutput``, noting that
-      ``breathe_projects`` wants you to specify the ``xml`` directory.
-
-   Exhale does all of this and more for you, but in the end it just needs access to the
-   Doxygen XML hierarchy.
+   I assume you have the wherewithal to figure it out on your own.
 
 Make Your Documentation Link to the Generated API
 ****************************************************************************************
@@ -268,6 +245,44 @@ Sphinx to link in the generated ``"{containmentFolder}/{rootFileName}"`` documen
       <b>api/library_root</b></pre>
      </div>
    </div>
+
+Optional: Create a Proper Clean Target
+****************************************************************************************
+
+The ``sphinx-quickstart`` utility will create a ``Makefile`` for you, you are advised
+to create an *explicit* ``clean`` target that removes the generated utilities.
+
+1. You can just as easily specify to ``breathe_projects`` a path such as
+   ``_build/doxyoutput/xml``, or ``../build/doxyoutput/xml`` if you have separate source
+   and build directories.  This will ensure that a ``make clean`` will delete these.
+
+   To avoid confusing users who are new to Sphinx, I encourage something in the same
+   directory as ``conf.py`` for simplicity.
+
+2. The generated API **must** appear in the Sphinx source directory.  If you put it
+   under ``_build``, it will not get parsed.
+
+So bust out the ``Makefile`` provided by Sphinx Quickstart and add ``clean`` to the
+``.PHONY`` line, and the ``clean`` target as shown below (assuming you've been using
+the paths specified above):
+
+.. code-block:: make
+
+   .PHONY: help Makefile clean
+
+   clean:
+       rm -rf doxyoutput/ api/
+       @$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+.. danger::
+
+   ``make`` **requires** ``TAB`` characters!  If you just copy-pasted that, **you got
+   space characters** (sorry).
+
+.. note::
+
+   The above code **must** appear **before** the ``%: Makefile`` "catch-all" target that
+   Sphinx produced by default.  Otherwise...well the catch-all target catches all!
 
 .. end_quickstart_guide
 

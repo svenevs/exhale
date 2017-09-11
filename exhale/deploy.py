@@ -339,90 +339,20 @@ def generateDoxygenXML():
 ########################################################################################
 def explode():
     '''
-    The main entry point to exhale, which parses and generates the full API.
+    This method **assumes** that :func:`exhale.configs.apply_sphinx_configurations` has
+    already been applied.  It performs minimal sanity checking, and then performs in
+    order
 
-    :Parameters:
-        ``exhaleArgs`` (dict)
-            The dictionary of arguments to configure exhale with.  All keys are strings,
-            and most values should also be strings.  See below.
+    1. Creates a :class:`exhale.graph.ExhaleRoot` object.
+    2. Executes :func:`exhale.graph.ExhaleRoot.parse` for this object.
+    3. Executes :func:`exhale.graph.ExhaleRoot.generateFullAPI` for this object.
+    4. Executes :func:`exhale.graph.ExhaleRoot.toConsole` for this object (which will
+       only produce output when :data:`exhale.configs.verboseBuild` is ``True``).
 
-    **Required Entries:**
-
-    **key**: ``"doxygenIndexXMLPath"`` --- value type: ``str``
-        The absolute or relative path to where the Doxygen index.xml is.  A relative
-        path must be relative to the file **calling** exhale.
-
-    **key**: ``"containmentFolder"`` --- value type: ``str``
-        The folder the generated API will be created in.  If the folder does not exist,
-        exhale will create the folder.  The path can be absolute, or relative to the
-        file that is **calling** exhale.  For example, ``"./generated_api"``.
-
-    **key**: ``"rootFileName"`` --- value type: ``str``
-
-
-    **key**: ``"rootFileTitle"`` --- value type: ``str``
-
-
-    **key**: ``"doxygenStripFromPath"`` --- value type: ``str``
-
-
-    **Additional Options:**
-
-    **key**: ``"afterTitleDescription"`` --- value type: ``str``
-        Properly formatted reStructuredText with **no indentation** to be included
-        directly after the title.  You can use any rst directives or formatting you wish
-        in this string.  I suggest using the ``textwrap`` module, e.g.::
-
-            description = textwrap.dedent(\'\'\'
-            This is a description of the functionality of the library being documented.
-
-            .. warning::
-
-               Please be advised that this library does not do anything.
-            \'\'\')
-
-        Then you can add ``"afterTitleDescription" = description`` to your dictionary.
-
-    **key**: ``"afterBodySummary"`` --- value type: ``str``
-        Similar to ``afterTitleDescription``, this is a string with reStructuredText
-        formatting.  This will be inserted after the generated API body.  The layout
-        looks something like this::
-
-            rootFileTitle
-            ============================================================================
-
-            afterTitleDescription (if provided)
-
-            [[[ GENERATED API BODY ]]]
-
-            afterBodySummary (if provided)
-
-    **key**: ``"appendBreatheFileDirective"`` --- value type: ``bool``
-        Currently, I do not know how to reliably extract the brief / detailed file
-        descriptions for a given file node.  Therefore, if you have file level
-        documentation in your project that has meaning, it would otherwise be omitted.
-        As a temporary patch, if you specify this value as ``True`` then at the bottom
-        of the file page the full ``doxygenfile`` directive output from Breathe will
-        be appended to the file documentiation.  File level brief and detailed
-        descriptions will be included, followed by a large amount of duplication.  I
-        hope to remove this value soon, in place of either parsing the xml more
-        carefully or finding out how to extract this information directly from Breathe.
-
-        The default value of this behavior is ``False`` if it is not specified in the
-        dictionary passed as input for this method.  Please refer to the *Customizing
-        File Pages* subsection of :ref:`usage_customizing_file_pages` for more
-        information on what the impact of this variable is.
-
-    **key**: ``"customSpecificationFunction"`` --- value type: ``function``
-        The custom specification function to override the default behavior of exhale.
-        Please refer to the :func:`exhale.specificationsForKind` documentation.
-
-    :raises ValueError:
-        If the required dictionary arguments are not present, or any of the (key, value)
-        pairs are invalid.
-
-    :raises RuntimeError:
-        If any **fatal** error is caught during the generation of the API.
+    This results in the full API being generated, and control is subsequently passed
+    back to Sphinx to now read in the source documents (many of which were just
+    generated in :data:`exhale.configs.containmentFolder`), and proceed to writing the
+    final output.
     '''
     # Quick sanity check to make sure the bare minimum have been set in the configs
     err_msg = "`configs.{config}` was `None`.  Do not call `deploy.explode` directly."
@@ -440,10 +370,13 @@ def explode():
         textRoot = ExhaleRoot()
     except:
         utils.fancyError("Unable to create an `ExhaleRoot` object:")
+
     try:
         sys.stdout.write("{0}\n".format(utils.info("Exhale: parsing Doxygen XML.")))
         start = utils.get_time()
+
         textRoot.parse()
+
         end = utils.get_time()
         sys.stdout.write("{0}\n".format(
             utils.progress("Exhale: finished parsing Doxygen XML in {0}.".format(
@@ -457,7 +390,9 @@ def explode():
             utils.info("Exhale: generating reStructuredText documents.")
         ))
         start = utils.get_time()
+
         textRoot.generateFullAPI()
+
         end = utils.get_time()
         sys.stdout.write("{0}\n".format(
             utils.progress("Exhale: generated reStructuredText documents in {0}.".format(

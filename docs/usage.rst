@@ -113,6 +113,16 @@ Page Level Customization
    :start-after: begin_page_level_customization
    :end-before:  end_page_level_customization
 
+
+.. _using_contents_directives:
+
+Using Contents Directives
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. include:: reference_exhale_configs.rst
+   :start-after: begin_page_level_customization_contents_directives
+   :end-before:  end_page_level_customization_contents_directives
+
 .. _usage_customizing_breathe_output:
 
 Customizing Breathe Output
@@ -165,6 +175,11 @@ Since the Breathe file directives cannot be used, Exhale implements a
 block-level elements such as listings, but it is definitively not robust.  If the file
 level documentation is rendering in unexpected ways, this is because your file
 documentation is too advanced for Exhale's mini-parser.
+
+.. tip::
+
+   See the :func:`exhale.parse.walk` method for the currently supported Doxygen
+   formatting being parsed.
 
 However, the solution is easy: use a verbatim reStructuredText environment in the
 documentation.  See how to do that in the :ref:`Doxygen ALIASES <doxygen_aliases>`

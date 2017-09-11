@@ -118,12 +118,18 @@ rootFileName = None
     Then exhale will generate the file ``./api/library_root.rst``.  You would then
     include this file in a ``toctree`` directive (say in ``index.rst``) with:
 
-    .. code-block:: rst
+    .. raw:: html
 
-       .. toctree:
+       <div class="highlight-rest">
+         <div class="highlight">
+           <pre>
+       .. toctree::
           :maxdepth: 2
 
-          api/library_root
+          about
+          <b>api/library_root</b></pre>
+         </div>
+       </div>
 '''
 
 rootFileTitle = None
@@ -624,64 +630,6 @@ The name of the JavaScript function that returns the ``json`` data associated wi
 ########################################################################################
 # Page Level Customization                                                             #
 ########################################################################################
-contentsDirectives = True
-'''
-**Optional**
-    Include a ``.. contents::`` directive beneath the title on pages that have potential
-    to link to a decent number of documents.
-
-**Value in** ``exhale_args`` (bool)
-    By default, Exhale will include a ``.. contents::`` directive on the individual
-    generated pages for the following types:
-
-    - Classes
-    - Files
-    - Namespaces
-    - Structs
-
-    This is particularly useful for making the Namespace and File pages navigable by
-    the reader of your documentation when the Namespace / File incorporates many parts
-    of the API.  Classes and structs have potential for a contents directive to be
-    warranted (e.g., complex inheritance relationships with nested types), and the
-    presence of a ``.. contents::`` directive on simple class / struct pages doesn't
-    seem too distracting.
-
-    On the other hand, pages generated for things like Directories, Enums, Variables,
-    Defines, Typedefs, etc, are generally only as long as the documentation so they do
-    not receive a ``.. contents::`` directive.
-
-    .. note::
-
-       The actual directive being used here is:
-
-       .. code-block:: rst
-
-          .. contents::
-             :backlinks: none
-
-       This is because having the section headings link back to the TOC for the specific
-       page is largely pointless, and the headings becoming hyperlinks is (from a style
-       perspective) rather unattractive with most themes I've viewed.
-
-       If you desire to be able to configure this it wouldn't be hard.  Raise an issue.
-
-       The `contents directive options are here`__.
-
-       __ http://docutils.sourceforge.net/docs/ref/rst/directives.html#table-of-contents
-
-    .. warning::
-
-       This configuration is all or nothing.  It is not possible to incorporate a
-       ``.. contents::`` directive for specific pages (at this time).  Feel free to
-       raise an Issue with how you think it could be specified, I'll see what I can do.
-'''
-
-_kinds_with_contents_directives = ("class", "file", "namespace", "struct")
-'''
-The kinds of pages that include a ``.. contents::`` directive when
-:data:`exhale.configs.contentsDirectives` is ``True``.
-'''
-
 includeTemplateParamOrderList = False
 '''
 **Optional**
@@ -756,6 +704,86 @@ repoRedirectURL = None
        __ https://github.com/svenevs/exhale/issues/2
 '''
 
+# Using Contents Directives ############################################################
+contentsDirectives = True
+'''
+**Optional**
+    Include a ``.. contents::`` directive beneath the title on pages that have potential
+    to link to a decent number of documents.
+
+**Value in** ``exhale_args`` (bool)
+    By default, Exhale will include a ``.. contents::`` directive on the individual
+    generated pages for the types specified by
+    :data:`exhale.configs.kindsWithContentsDirectives`.  Set this to ``False`` to
+    disable globally.
+
+    See the :ref:`using_contents_directives` section for all pieces of the puzzle.
+'''
+
+contentsTitle = "Contents"
+'''
+**Optional**
+    The title of the ``.. contents::`` directive for an individual file page, when it's
+    ``kind`` is in the list specified by
+    :data:`exhale.configs.kindsWithContentsDirectives` **and**
+    :data:`exhale.configs.contentsDirectives` is ``True``.
+
+**Value in** ``exhale_args`` (str)
+    The default (for both Exhale and reStructuredText) is to label this as ``Contents``.
+    You can choose whatever value you like.  If you prefer to have **no title** for the
+    ``.. contents::`` directives, **specify the empty string**.
+
+    .. note::
+
+       Specifying the empty string only removes the title **when** ``":local:"`` **is
+       present in** :data:`configs.exhale.contentsSpecifiers`.  See the
+       :ref:`using_contents_directives` section for more information.
+'''
+
+contentsSpecifiers = [":local:", ":backlinks: none"]
+'''
+**Optional**
+    The specifications to apply to ``.. contents::`` directives for the individual file
+    pages when it's ``kind`` is in the list specified by
+    :data:`exhale.configs.kindsWithContentsDirectives` **and**
+    :data:`exhale.configs.contentsDirectives` is ``True``.
+
+**Value in** ``exhale_args`` (list)
+    A (one-dimensional) list of strings that will be applied to any ``.. contents::``
+    directives generated.  Provide the **empty list** if you wish to have no specifiers
+    added to these directives.  See the :ref:`using_contents_directives` section for
+    more information.
+'''
+
+kindsWithContentsDirectives = ["file", "namespace"]
+'''
+**Optional**
+    The kinds of compounds that will include a ``.. contents::`` directive on their
+    individual library page.  The default is to generate one for Files and Namespaces.
+    Only takes meaning when :data:`exhale.configs.contentsDirectives` is ``True``.
+
+**Value in** ``exhale_args`` (list)
+    Provide a (one-dimensional) ``list`` or ``tuple`` of strings of the kinds of
+    compounds that should include a ``.. contents::`` directive.  Each kind given
+    must one of the entries in :data:`exhale.utils.AVAILABLE_KINDS`.
+
+    For example, if you wanted to enable Structs and Classes as well you would do
+    something like:
+
+    .. code-block:: py
+
+       # in conf.py
+       exhale_args = {
+           # ... required / optional args ...
+           "kindsWithContentsDirectives": ["file", "namespace", "class", "struct"]
+       }
+
+    .. note::
+
+       This is a "full override".  So if you want to still keep the defaults of
+       ``"file"`` and ``"namespace"``, **you** must include them yourself.
+'''
+
 ########################################################################################
 # Breathe Customization                                                                #
 ########################################################################################
@@ -771,8 +799,8 @@ customSpecificationsMapping = None
 
 _closure_map_sanity_check = "blargh_BLARGH_blargh"
 '''
-See :func:`utils.makeCustomSpecificationsMapping` implementation, this is inserted to
-help enforce that Exhale made the dictionary going into
+See :func:`exhale.utils.makeCustomSpecificationsMapping` implementation, this is
+inserted to help enforce that Exhale made the dictionary going into
 :data:`exhale.configs.customSpecificationsMapping`.
 '''
 
@@ -1142,10 +1170,13 @@ def apply_sphinx_configurations(app):
         ("treeViewBootstrapCollapseIcon",   six.string_types),
         ("treeViewBootstrapLevels",                      int),
         # Page Level Customization
-        ("contentsDirectives",                          bool),
         ("includeTemplateParamOrderList",               bool),
         ("pageLevelConfigMeta",             six.string_types),
         ("repoRedirectURL",                 six.string_types),
+        ("contentsDirectives",                          bool),
+        ("contentsTitle",                   six.string_types),
+        ("contentsSpecifiers",                          list),
+        ("kindsWithContentsDirectives",                 list),
         # Breathe Customization
         ("customSpecificationsMapping",                 dict),
         # Doxygen Execution and Customization
@@ -1175,6 +1206,30 @@ def apply_sphinx_configurations(app):
                         key, val, e
                     )
                 )
+
+    # These two need to be lists of strings, check to make sure
+    def _list_of_strings(lst, title):
+        for spec in lst:
+            if not isinstance(spec, six.string_types):
+                raise ConfigError(
+                    "`{title}` must be a list of strings.  `{spec}` was of type `{spec_t}`".format(
+                        title=title,
+                        spec=spec,
+                        spec_t=type(spec)
+                    )
+                )
+
+    _list_of_strings(         contentsSpecifiers,          "contentsSpecifiers")
+    _list_of_strings(kindsWithContentsDirectives, "kindsWithContentsDirectives")
+
+    # Make sure the kinds they specified are valid
+    for kind in kindsWithContentsDirectives:
+        if kind not in utils.AVAILABLE_KINDS:
+            raise ConfigError(
+                "Unknown `{kind}` given in `kindsWithContentsDirectives`.  See utils.AVAILABLE_KINDS.".format(
+                    kind=kind
+                )
+            )
 
     ####################################################################################
     # Internal consistency check to make sure available keys are accurate.             #

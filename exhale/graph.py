@@ -47,29 +47,25 @@ class ExhaleNode:
     '''
     A wrapper class to track parental relationships, filenames, etc.
 
-    :Parameters:
-        ``breatheCompound`` (breathe.compound)
-            The Breathe compound object we will use to gather the name, chilren, etc.
-
-    :Attributes:
-        ``compound`` (breathe.compound)
-            The compound discovered from breathe that we are going to track.
+    **Parameters**
+        ``name`` (str)
+            The name of the compound.
 
         ``kind`` (str)
-            The string returned by the ``breatheCompound.get_kind()`` method.  Used to
-            qualify this node throughout the framework, as well as for hierarchical
-            sorting.
-
-        ``name`` (str)
-            The string returned by the ``breatheCompound.get_name()`` method.  This name
-            will be fully qualified --- ``class A`` inside of ``namespace n`` will have
-            a ``name`` of ``n::A``.  Files and directories may have ``/`` characters as
-            well.
+            The kind of the compound (see :data:`exhale.utils.AVAILABLE_KINDS`).
 
         ``refid`` (str)
-            The reference ID as created by Doxygen.  This will be used to scrape files
-            and see if a given reference identification number should be associated with
-            that file or not.
+            The reference ID that Doxygen has associated with this compound.
+
+    **Attributes**
+        ``kind`` (str)
+            The value of the ``kind`` parameter.
+
+        ``name`` (str)
+            The value of the ``name`` parameter.
+
+        ``refid`` (str)
+            The value of the ``refid`` parameter.
 
         ``children`` (list)
             A potentially empty list of ``ExhaleNode`` object references that are
@@ -80,13 +76,14 @@ class ExhaleNode:
             children as it is impossible to rebuild that relationship without more
             Doxygen xml parsing.
 
-        ``parent`` (ExhaleNode)
+        ``parent`` (:class:`exhale.graph.ExhaleNode`)
             If an ExhaleNode is determined to be a child of another ExhaleNode, this
             node will be added to its parent's ``children`` list, and a reference to
             the parent will be in this field.  Initialized to ``None``, make sure you
             check that it is an object first.
 
             .. warning::
+
                Do not ever set the ``parent`` of a given node if the would-be parent's
                kind is ``"file"``.  Doing so will break many important relationships,
                such as nested class definitions.  Effectively, **every** node will be
@@ -94,16 +91,16 @@ class ExhaleNode:
                this, but the child should not.
 
         The following three member variables are stored internally, but managed
-        externally by the :class:`exhale.ExhaleRoot` class:
+        externally by the :class:`exhale.graph.ExhaleRoot` class:
 
         ``file_name`` (str)
             The name of the file to create.  Set to ``None`` on creation, refer to
-            :func:`exhale.ExhaleRoot.initializeNodeFilenameAndLink`.
+            :func:`exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`.
 
         ``link_name`` (str)
             The name of the reStructuredText link that will be at the top of the file.
             Set to ``None`` on creation, refer to
-            :func:`exhale.ExhaleRoot.initializeNodeFilenameAndLink`.
+            :func:`exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`.
 
         ``title`` (str)
             The title that will appear at the top of the reStructuredText file
@@ -112,8 +109,8 @@ class ExhaleNode:
 
         The following two fields are used for tracking what has or has not already been
         included in the hierarchy views.  Things like classes or structs in the global
-        namespace will not be found by :func:`exhale.ExhaleNode.inClassHierarchy`, and the
-        ExhaleRoot object will need to track which ones were missed.
+        namespace will not be found by :func:`exhale.graph.ExhaleNode.inClassHierarchy`,
+        and the ExhaleRoot object will need to track which ones were missed.
 
         ``in_class_hierarchy`` (bool)
             Whether or not this node has already been incorporated in the class view.
@@ -149,13 +146,13 @@ class ExhaleNode:
             Managed externally by the root similar to ``file_name`` etc, this is the
             name of the file that will be created to display the program listing if it
             exists.  Set to ``None`` on creation, refer to
-            :func:`exhale.ExhaleRoot.initializeNodeFilenameAndLink`.
+            :func:`exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`.
 
         ``program_link_name`` (str)
             Managed externally by the root similar to ``file_name`` etc, this is the
             reStructuredText link that will be declared at the top of the
             ``program_file``. Set to ``None`` on creation, refer to
-            :func:`exhale.ExhaleRoot.initializeNodeFilenameAndLink`.
+            :func:`exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`.
     '''
     def __init__(self, name, kind, refid):
         self.name        = name
@@ -397,14 +394,14 @@ class ExhaleNode:
         '''
         Recursive helper function for finding nested enums.  If this node is a class or
         struct it may have had an enum added to its child list.  When this occurred, the
-        enum was removed from ``self.enums`` in the :class:`exhale.ExhaleRoot` class and
-        needs to be rediscovered by calling this method on all of its children.  If this
-        node is an enum, it is because a parent class or struct called this method, in
-        which case it is added to ``lst``.
+        enum was removed from ``self.enums`` in the :class:`exhale.graph.ExhaleRoot`
+        class and needs to be rediscovered by calling this method on all of its
+        children.  If this node is an enum, it is because a parent class or struct
+        called this method, in which case it is added to ``lst``.
 
         **Note**: this is used slightly differently than nested directories, namespaces,
-        and classes will be.  Refer to :func:`exhale.ExhaleRoot.generateNodeDocuments`
-        function for details.
+        and classes will be.  Refer to
+        :func:`exhale.graph.ExhaleRoot.generateNodeDocuments`.
 
         :Parameters:
             ``lst`` (list)
@@ -419,14 +416,14 @@ class ExhaleNode:
         '''
         Recursive helper function for finding nested unions.  If this node is a class or
         struct it may have had a union added to its child list.  When this occurred, the
-        union was removed from ``self.unions`` in the :class:`exhale.ExhaleRoot` class
-        and needs to be rediscovered by calling this method on all of its children.  If
-        this node is a union, it is because a parent class or struct called this method,
-        in which case it is added to ``lst``.
+        union was removed from ``self.unions`` in the :class:`exhale.graph.ExhaleRoot`
+        class and needs to be rediscovered by calling this method on all of its
+        children.  If this node is a union, it is because a parent class or struct
+        called this method, in which case it is added to ``lst``.
 
         **Note**: this is used slightly differently than nested directories, namespaces,
-        and classes will be.  Refer to :func:`exhale.ExhaleRoot.generateNodeDocuments`
-        function for details.
+        and classes will be.  Refer to
+        :func:`exhale.graph.ExhaleRoot.generateNodeDocuments`.
 
         :Parameters:
             ``lst`` (list)
@@ -501,8 +498,8 @@ class ExhaleNode:
     def typeSort(self):
         '''
         Sorts ``self.children`` in place, and has each child sort its own children.
-        Refer to :func:`exhale.ExhaleRoot.deepSortList` for more information on when
-        this is necessary.
+        Refer to :func:`exhale.graph.ExhaleRoot.deepSortList` for more information on
+        when this is necessary.
         '''
         self.children.sort()
         for c in self.children:
@@ -511,8 +508,8 @@ class ExhaleNode:
     def inClassHierarchy(self):
         '''
         Whether or not this node should be included in the class view hierarchy.  Helper
-        method for :func:`exhale.ExhaleNode.toClassView`.  Sets the member variable
-        ``self.in_class_hierarchy`` to True if appropriate.
+        method for :func:`exhale.graph.ExhaleNode.toHierarchy`.  Sets the member
+        variable ``self.in_class_hierarchy`` to True if appropriate.
 
         :Return (bool):
             True if this node should be included in the class view --- either it is a
@@ -535,8 +532,8 @@ class ExhaleNode:
     def inFileHierarchy(self):
         '''
         Whether or not this node should be included in the file view hierarchy.  Helper
-        method for :func:`exhale.ExhaleNode.toDirectoryView`.  Sets the member variable
-        ``self.in_file_hierarchy`` to True if appropriate.
+        method for :func:`exhale.graph.ExhaleNode.toHierarchy`.  Sets the member
+        variable ``self.in_file_hierarchy`` to True if appropriate.
 
         :Return (bool):
             True if this node should be included in the file view --- either it is a
@@ -636,6 +633,25 @@ class ExhaleNode:
                 return []
 
     def toHierarchy(self, classView, level, stream, lastChild=False):
+        '''
+        **Parameters**
+            ``classView`` (bool)
+                ``True`` if generating the Class Hierarchy, ``False`` for File Hierarchy.
+
+            ``level`` (int)
+                Recursion level used to determine indentation.
+
+            ``stream`` (StringIO)
+                The stream to write the contents to.
+
+            ``lastChild`` (bool)
+                When :data:`exhale.configs.createTreeView` is ``True`` and
+                :data:`exhale.configs.treeViewIsBootstrap` is ``False``, the generated
+                HTML ``li`` elements need to add a ``class="lastChild"`` to use the
+                appropriate styling.
+
+        .. todo:: add thorough documentation of this
+        '''
         if self.inHierarchy(classView):
             # For the Tree Views, we need to know if there are nested children before
             # writing anything.  If there are, we need to open a new list
@@ -791,53 +807,21 @@ class ExhaleRoot:
 
     The ExhaleRoot class is not designed for reuse at this time.  If you want to
     generate a new hierarchy with a different directory or something, changing all of
-    the right fields may be difficult and / or unsuccessful.  Refer to the bottom of the
-    source code for :func:`exhale.generate` for safe usage (just exception handling),
-    but the design of this class is to be used as follows:
+    the right fields may be difficult and / or unsuccessful.  Refer to the
+    :func:`exhale.deploy.explode` function for intended usage.
 
-    .. code-block:: py
+    .. danger::
 
-       textRoot = ExhaleRoot(... args ...)
-       textRoot.parse()
-       textRoot.generateFullAPI()
+       Zero checks are in place to enforce this usage, and if you are modifying the
+       execution of this class and things are not working make sure you follow the
+       ordering of those methods.
 
-    Zero checks are in place to enforce this usage, and if you are modifying the
-    execution of this class and things are not working make sure you follow the ordering
-    of those methods.
+    .. todo::
 
-    :Parameters:
-        ``rootDirectory`` (str)
-            The name of the root directory to put everything in.  This should be the
-            value of the key ``containmentFolder`` in the dictionary passed to
-            :func:`exhale.generate`.
+       many attributes currently stored do not need to be, refactor in future release
+       to just use the ``configs`` module.
 
-        ``rootFileName`` (str)
-            The name of the file the root library api will be put into.  This should not
-            contain the ``rootDirectory`` path.  This should be the value of the key
-            ``rootFileName`` in the dictionary passed to :func:`exhale.generate`.
-
-        ``rootFileTitle`` (str)
-            The title to be written to the top of ``rootFileName``.  This should be the
-            value of the key ``rootFileTitle`` in the dictionary passed to
-            :func:`exhale.generate`.
-
-        ``rootFileDescription`` (str)
-            The description of the library api file placed after ``rootFileTitle``.
-            This should be the value of the key ``afterTitleDescription`` in the
-            dictionary passed to :func:`exhale.generate`.
-
-        ``rootFileSummary`` (str)
-            The summary of the library api placed after the generated hierarchy views.
-            This should be the value of the key ``afterBodySummary`` in the dictionary
-            passed to :func:`exhale.generate`.
-
-        ``createTreeView`` (bool)
-            Creates the raw html unordered lists for use with ``collapsibleList`` if
-            True.  Otherwise, creates standard reStructuredText bulleted lists.  Should
-            be the value of the key ``createTreeView`` in the dictionary passed to
-            :func:`exhale.generate`.
-
-    :Attributes:
+    **Attributes**
         ``root_directory`` (str)
             The value of the parameter ``rootDirectory``.
 
@@ -858,19 +842,19 @@ class ExhaleRoot:
         ``unabridged_api_file`` (str)
             The full file path the full API will be written to.  This is incorporated
             into ``root_file_name`` using a ``.. toctree:`` directive with a
-            ``:maxdepth:`` according to the value of the key ``fullToctreeMaxDepth``
-            in the dictionary passed into :func:`exhale.generate`.
+            ``:maxdepth:`` according to the value of
+            :data:`exhale.configs.fullToctreeMaxDepth`.
 
         ``use_tree_view`` (bool)
             The value of the parameter ``createTreeView``.
 
         ``all_compounds`` (list)
             A list of all the Breathe compound objects discovered along the way.
-            Populated during :func:`exhale.ExhaleRoot.discoverAllNodes`.
+            Populated during :func:`exhale.graph.ExhaleRoot.discoverAllNodes`.
 
         ``all_nodes`` (list)
             A list of all of the ExhaleNode objects created.  Populated during
-            :func:`exhale.ExhaleRoot.discoverAllNodes`.
+            :func:`exhale.graph.ExhaleRoot.discoverAllNodes`.
 
         ``node_by_refid`` (dict)
             A dictionary with string ExhaleNode ``refid`` values, and values that are the
@@ -913,8 +897,6 @@ class ExhaleRoot:
         ``variables`` (list)
             The full list of ExhaleNodes of kind ``variable``.
     '''
-    # def __init__(self, breatheRoot, rootDirectory, rootFileName, rootFileTitle,
-    #              rootFileDescription, rootFileSummary, createTreeView):
     def __init__(self):
         # file generation location and root index data
         self.root_directory        = configs.containmentFolder
@@ -987,12 +969,12 @@ class ExhaleRoot:
         will be populated.  Lastly, this method sorts all of the internal lists.  The
         order of execution is exactly
 
-        1. :func:`exhale.ExhaleRoot.discoverAllNodes`
-        2. :func:`exhale.ExhaleRoot.reparentAll`
+        1. :func:`exhale.graph.ExhaleRoot.discoverAllNodes`
+        2. :func:`exhale.graph.ExhaleRoot.reparentAll`
         3. Populate ``self.node_by_refid`` using ``self.all_nodes``.
-        4. :func:`exhale.ExhaleRoot.fileRefDiscovery`
-        5. :func:`exhale.ExhaleRoot.filePostProcess`
-        6. :func:`exhale.ExhaleRoot.sortInternals`
+        4. :func:`exhale.graph.ExhaleRoot.fileRefDiscovery`
+        5. :func:`exhale.graph.ExhaleRoot.filePostProcess`
+        6. :func:`exhale.graph.ExhaleRoot.sortInternals`
         '''
         self.discoverAllNodes()
         # now reparent everything we can
@@ -1338,8 +1320,8 @@ class ExhaleRoot:
 
     def trackNodeIfUnseen(self, node):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.discoverAllNodes`.  If the node is
-        not in self.all_nodes yet, add it to both self.all_nodes as well as the
+        Helper method for :func:`exhale.graph.ExhaleRoot.discoverAllNodes`.  If the node
+        is not in self.all_nodes yet, add it to both self.all_nodes as well as the
         corresponding ``self.<breathe_kind>`` list.
 
         :Parameters:
@@ -1377,14 +1359,15 @@ class ExhaleRoot:
     def reparentAll(self):
         '''
         Fixes some of the parental relationships lost in parsing the Breathe graph.
-        File relationships are recovered in :func:`exhale.ExhaleRoot.fileRefDiscovery`.
-        This method simply calls in this order:
+        File relationships are recovered in
+        :func:`exhale.graph.ExhaleRoot.fileRefDiscovery`.  This method simply calls in
+        this order:
 
-        1. :func:`exhale.ExhaleRoot.reparentUnions`
-        2. :func:`exhale.ExhaleRoot.reparentClassLike`
-        3. :func:`exhale.ExhaleRoot.reparentDirectories`
-        4. :func:`exhale.ExhaleRoot.renameToNamespaceScopes`
-        5. :func:`exhale.ExhaleRoot.reparentNamespaces`
+        1. :func:`exhale.graph.ExhaleRoot.reparentUnions`
+        2. :func:`exhale.graph.ExhaleRoot.reparentClassLike`
+        3. :func:`exhale.graph.ExhaleRoot.reparentDirectories`
+        4. :func:`exhale.graph.ExhaleRoot.renameToNamespaceScopes`
+        5. :func:`exhale.graph.ExhaleRoot.reparentNamespaces`
         '''
         self.reparentUnions()
         self.reparentClassLike()
@@ -1398,13 +1381,13 @@ class ExhaleRoot:
 
     def reparentUnions(self):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.reparentAll`.  Namespaces and classes
-        should have the unions defined in them to be in the child list of itself rather
-        than floating around.  Union nodes that are reparented (e.g. a union defined in
-        a class) will be removed from the list ``self.unions`` since the Breathe
-        directive for its parent (e.g. the class) will include the documentation for the
-        union.  The consequence of this is that a union defined in a class will **not**
-        appear in the full api listing of Unions.
+        Helper method for :func:`exhale.graph.ExhaleRoot.reparentAll`.  Namespaces and
+        classes should have the unions defined in them to be in the child list of itself
+        rather than floating around.  Union nodes that are reparented (e.g. a union
+        defined in a class) will be removed from the list ``self.unions`` since the
+        Breathe directive for its parent (e.g. the class) will include the documentation
+        for the union.  The consequence of this is that a union defined in a class will
+        **not** appear in the full api listing of Unions.
         '''
         # unions declared in a class will not link to the individual union page, so
         # we will instead elect to remove these from the list of unions
@@ -1469,7 +1452,7 @@ class ExhaleRoot:
 
     def reparentClassLike(self):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.reparentAll`.  Iterates over the
+        Helper method for :func:`exhale.graph.ExhaleRoot.reparentAll`. Iterates over the
         ``self.class_like`` list and adds each object as a child to a namespace if the
         class, or struct is a member of that namespace.  Many classes / structs will be
         reparented to a namespace node, these will remain in ``self.class_like``.
@@ -1495,10 +1478,10 @@ class ExhaleRoot:
 
     def reparentDirectories(self):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.reparentAll`.  Adds subdirectories as
-        children to the relevant directory ExhaleNode.  If a node in ``self.dirs`` is
-        added as a child to a different directory node, it is removed from the
-        ``self.dirs`` list.
+        Helper method for :func:`exhale.graph.ExhaleRoot.reparentAll`.  Adds
+        subdirectories as children to the relevant directory ExhaleNode.  If a node in
+        ``self.dirs`` is added as a child to a different directory node, it is removed
+        from the ``self.dirs`` list.
         '''
         dir_parts = []
         dir_ranks = []
@@ -1530,7 +1513,7 @@ class ExhaleRoot:
 
     def renameToNamespaceScopes(self):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.reparentAll`.  Some compounds in
+        Helper method for :func:`exhale.graph.ExhaleRoot.reparentAll`. Some compounds in
         Breathe such as functions and variables do not have the namespace name they are
         declared in before the name of the actual compound.  This method prepends the
         appropriate (nested) namespace name before the name of any child that does not
@@ -1548,12 +1531,13 @@ class ExhaleRoot:
 
     def reparentNamespaces(self):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.reparentAll`.  Adds nested namespaces
-        as children to the relevant namespace ExhaleNode.  If a node in
+        Helper method for :func:`exhale.graph.ExhaleRoot.reparentAll`.  Adds nested
+        namespaces as children to the relevant namespace ExhaleNode.  If a node in
         ``self.namespaces`` is added as a child to a different namespace node, it is
         removed from the ``self.namespaces`` list.  Because these are removed from
         ``self.namespaces``, it is important that
-        :func:`exhale.ExhaleRoot.renameToNamespaceScopes` is called before this method.
+        :func:`exhale.graph.ExhaleRoot.renameToNamespaceScopes` is called before this
+        method.
         '''
         namespace_parts = []
         namespace_ranks = []
@@ -1772,8 +1756,8 @@ class ExhaleRoot:
         '''
         The real name of this method should be ``reparentFiles``, but to avoid confusion
         with what stage this must happen at it is called this instead.  After the
-        :func:`exhale.ExhaleRoot.fileRefDiscovery` method has been called, each file
-        will have its location parsed.  This method reparents files to directories
+        :func:`exhale.graph.ExhaleRoot.fileRefDiscovery` method has been called, each
+        file will have its location parsed.  This method reparents files to directories
         accordingly, so the file view hierarchy can be complete.
         '''
         # directories are already reparented, traverse the children and get a flattened
@@ -1829,7 +1813,7 @@ class ExhaleRoot:
         Sort all internal lists (``class_like``, ``namespaces``, ``variables``, etc)
         mostly how doxygen would, alphabetical but also hierarchical (e.g. structs
         appear before classes in listings).  Some internal lists are just sorted, and
-        some are deep sorted (:func:`exhale.ExhaleRoot.deepSortList`).
+        some are deep sorted (:func:`exhale.graph.ExhaleRoot.deepSortList`).
         '''
         # some of the lists only need to be sorted, some of them need to be sorted and
         # have each node sort its children
@@ -1853,7 +1837,7 @@ class ExhaleRoot:
         '''
         For hierarchical internal lists such as ``namespaces``, we want to sort both the
         list as well as have each child sort its children by calling
-        :func:`exhale.ExhaleNode.typeSort`.
+        :func:`exhale.graph.ExhaleNode.typeSort`.
 
         :Parameters:
             ``lst`` (list)
@@ -1886,9 +1870,9 @@ class ExhaleRoot:
 
         This method calls in this order:
 
-        1. :func:`exhale.ExhaleRoot.generateAPIRootHeader`
-        2. :func:`exhale.ExhaleRoot.generateNodeDocuments`
-        3. :func:`exhale.ExhaleRoot.generateAPIRootBody`
+        1. :func:`exhale.graph.ExhaleRoot.generateAPIRootHeader`
+        2. :func:`exhale.graph.ExhaleRoot.generateNodeDocuments`
+        3. :func:`exhale.graph.ExhaleRoot.generateAPIRootBody`
         '''
         self.generateAPIRootHeader()
         self.generateNodeDocuments()
@@ -1911,21 +1895,17 @@ class ExhaleRoot:
             )
         try:
             with codecs.open(self.full_root_file_path, "w", "utf-8") as generated_index:
-                if configs.afterTitleDescription:
-                    description = configs.afterTitleDescription
-                else:
-                    description = ""
                 generated_index.write(textwrap.dedent('''
                     {heading}
                     {heading_mark}
 
-                    {description}
-
                 '''.format(
                     heading=configs.rootFileTitle,
-                    heading_mark=configs.SECTION_HEADING,
-                    description=description
+                    heading_mark=configs.SECTION_HEADING
                 )))
+
+                if configs.afterTitleDescription:
+                    generated_index.write("\n{0}\n\n".format(configs.afterTitleDescription))
         except:
             utils.fancyError(
                 "Unable to create the root api file / header: {0}".format(self.full_root_file_path)
@@ -1947,9 +1927,9 @@ class ExhaleRoot:
         the class hierarchy generation.
 
         When generating the full API, though, we will want to include all of these and
-        therefore must call :func:`exhale.ExhaleRoot.generateSingleNodeRST` with all of
-        the nested items.  For nested classes and structs, this is done by just calling
-        ``node.findNestedClassLike`` for every node in ``self.class_like``.  The
+        therefore must call :func:`exhale.graph.ExhaleRoot.generateSingleNodeRST` with
+        all of the nested items.  For nested classes and structs, this is done by just
+        calling ``node.findNestedClassLike`` for every node in ``self.class_like``.  The
         resulting list then has all of ``self.class_like``, as well as any nested
         classes and structs found.  With ``enum`` and ``union``, these would have been
         reparented to a **class** or **struct** if it was removed from the relevant
@@ -1992,17 +1972,18 @@ class ExhaleRoot:
         include ``self.root_directory`` in this path so that you can just use::
 
             with codecs.open(node.file_name, "w", "utf-8") as gen_file:
-                ... write the file ...
+                # ... write the file ...
 
         Having the ``containmentFolder`` is important for when we want to generate the
         file, but when we want to use it with ``include`` or ``toctree`` this will
-        need to change.  Refer to :func:`exhale.ExhaleRoot.gerrymanderNodeFilenames`.
+        need to change.  Refer to
+        :func:`exhale.graph.ExhaleRoot.gerrymanderNodeFilenames`.
 
         This method also sets the value of ``node.title``, which will be used in both
         the reStructuredText document of the node as well as the links generated in the
         class view hierarchy (<a href="..."> for the ``createTreeView = True`` option).
 
-        :type:  exhale.ExhaleNode
+        :type:  exhale.graph.ExhaleNode
         :param: node
             The node that we are setting the above information for.
         '''
@@ -2135,12 +2116,9 @@ class ExhaleRoot:
                     defined_in=defined_in
                 )))
 
-                if configs.contentsDirectives and node.kind in configs._kinds_with_contents_directives:
-                    gen_file.write(textwrap.dedent('''
-                        .. contents::
-                           :backlinks: none
-
-                    '''))
+                contents = utils.contentsDirectiveOrNone(node.kind)
+                if contents:
+                    gen_file.write(contents)
 
                 ########################################################################
                 # Nested relationships.                                                #
@@ -2324,7 +2302,7 @@ class ExhaleRoot:
 
     def generateSingleNamespace(self, nspace):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.generateNamespaceNodeDocuments`.
+        Helper method for :func:`exhale.graph.ExhaleRoot.generateNamespaceNodeDocuments`.
         Writes the reStructuredText file for the given namespace.
 
         :Parameters:
@@ -2342,15 +2320,13 @@ class ExhaleRoot:
                 children_string = self.generateNamespaceChildrenString(nspace)
                 # write it all out
                 # include the contents directive if requested
-                if configs.contentsDirectives and nspace.kind in configs._kinds_with_contents_directives:
-                    contents_directive = textwrap.dedent('''
-                        .. contents::
-                           :backlinks: none
-
-                    ''')
+                contents = utils.contentsDirectiveOrNone(nspace.kind)
+                if contents:
+                    contents_directive = contents
                 else:
                     contents_directive = ""
-                # TODO: leaving flake8 failure because this needs to be textwrapped / no more {}
+
+                #######flake8fail TODO: leaving flake8 failure because this needs to be textwrapped / no more {}
                 gen_file.write("{}{}{}{}\n\n".format(link_declaration, header, contents_directive, children_string))
         except:
             utils.fancyError(
@@ -2359,8 +2335,8 @@ class ExhaleRoot:
 
     def generateNamespaceChildrenString(self, nspace):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.generateSingleNamespace`, and
-        :func:`exhale.ExhaleRoot.generateFileNodeDocuments`.  Builds the
+        Helper method for :func:`exhale.graph.ExhaleRoot.generateSingleNamespace`, and
+        :func:`exhale.graph.ExhaleRoot.generateFileNodeDocuments`.  Builds the
         body text for the namespace node document that links to all of the child
         namespaces, structs, classes, functions, typedefs, unions, and variables
         associated with this namespace.
@@ -2414,7 +2390,7 @@ class ExhaleRoot:
 
     def generateSortedChildListString(self, stream, sectionTitle, lst):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.generateNamespaceChildrenString`.
+        Helper method for :func:`exhale.graph.ExhaleRoot.generateNamespaceChildrenString`.
         Used to build up a continuous string with all of the children separated out into
         titled sections.
 
@@ -2630,16 +2606,6 @@ class ExhaleRoot:
                         heading_mark=configs.SECTION_HEADING
                     ))
 
-                    # include the contents directive if requested
-                    if configs.contentsDirectives and f.kind in configs._kinds_with_contents_directives:
-                        contents_directive = textwrap.dedent('''
-                            .. contents::
-                               :backlinks: none
-
-                            ''')
-                    else:
-                        contents_directive = ""
-
                     brief, detailed = parse.getFileBriefAndDetailedRST(self, f)
                     gen_file.write(textwrap.dedent('''
                         {heading}
@@ -2649,7 +2615,12 @@ class ExhaleRoot:
                         heading=heading,
                         brief=brief
                     )))
-                    gen_file.write("{0}\n\n\n".format(contents_directive))
+
+                    # include the contents directive if requested
+                    contents = utils.contentsDirectiveOrNone(f.kind)
+                    if contents:
+                        gen_file.write(contents)
+
                     gen_file.write(textwrap.dedent('''
                         {definition}
 
@@ -2714,7 +2685,7 @@ class ExhaleRoot:
 
     def generateDirectoryNodeRST(self, node):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.generateDirectoryNodeDocuments`.
+        Helper method for :func:`exhale.graph.ExhaleRoot.generateDirectoryNodeDocuments`.
         Generates the reStructuredText documents for the given directory node.
         Directory nodes will only link to files and subdirectories within it.
 
@@ -2766,11 +2737,12 @@ class ExhaleRoot:
     def generateAPIRootBody(self):
         '''
         Generates the root library api file's body text.  The method calls
-        :func:`exhale.ExhaleRoot.gerrymanderNodeFilenames` first to enable proper
+        :func:`exhale.graph.ExhaleRoot.gerrymanderNodeFilenames` first to enable proper
         internal linkage between reStructuredText documents.  Afterward, it calls
-        :func:`exhale.ExhaleRoot.generateViewHierarchies` followed by
-        :func:`exhale.ExhaleRoot.generateUnabridgedAPI` to generate both hierarchies as
-        well as the full API listing.  As a result, three files will now be ready:
+        :func:`exhale.graph.ExhaleRoot.generateViewHierarchies` followed by
+        :func:`exhale.graph.ExhaleRoot.generateUnabridgedAPI` to generate both
+        hierarchies as well as the full API listing.  As a result, three files will now
+        be ready:
 
         1. ``self.class_hierarchy_file``
         2. ``self.file_hierarchy_file``
@@ -2915,11 +2887,11 @@ class ExhaleRoot:
     def generateViewHierarchies(self):
         '''
         Wrapper method to create the view hierarchies.  Currently it just calls
-        :func:`exhale.ExhaleRoot.generateClassView` and
-        :func:`exhale.ExhaleRoot.generateDirectoryView` --- if you want to implement
+        :func:`exhale.graph.ExhaleRoot.generateClassView` and
+        :func:`exhale.graph.ExhaleRoot.generateDirectoryView` --- if you want to implement
         additional hierarchies, implement the additionaly hierarchy method and call it
         from here.  Then make sure to ``include`` it in
-        :func:`exhale.ExhaleRoot.generateAPIRootBody`.
+        :func:`exhale.graph.ExhaleRoot.generateAPIRootBody`.
         '''
         # gather the class hierarchy data and write it out
         class_view_data = self.generateClassView()
@@ -3117,9 +3089,9 @@ class ExhaleRoot:
            but not on the main library page.
 
         2. The configurations of Doxygen.  For example, see the warning in
-           :func:`exhale.ExhaleRoot.fileRefDiscovery`.  Items whose parents cannot be
-           rediscovered withouth the programlisting will still be documented, their link
-           appearing in the unabridged API listing.
+           :func:`exhale.graph.ExhaleRoot.fileRefDiscovery`.  Items whose parents cannot
+           be rediscovered withouth the programlisting will still be documented, their
+           link appearing in the unabridged API listing.
 
         Currently, the API is generated in the following (somewhat arbitrary) order:
 
@@ -3135,8 +3107,45 @@ class ExhaleRoot:
         - Files
 
         If you want to change the ordering, just change the order of the calls to
-        :func:`exhale.ExhaleRoot.enumerateAll` in this method.
+        :func:`exhale.graph.ExhaleRoot.enumerateAll` in this method.
         '''
+        ####flake8fail
+        # TODO: I've reverted my decision, the full API should include everything,
+        # including nested types.  the code below invalidates certain portions of the
+        # docs and probably gets rid of a need for the recursive find methods
+        all_namespaces = []
+        all_class_like = []
+        all_enums      = []
+        all_unions     = []
+        all_functions  = []
+        all_variables  = []
+        all_defines    = []
+        all_typedefs   = []
+        all_dirs       = []
+        all_files      = []
+
+        for node in self.all_nodes:
+            if node.kind == "namespace":
+                all_namespaces.append(node)
+            elif node.kind == "class" or node.kind == "struct":
+                all_class_like.append(node)
+            elif node.kind == "enum":
+                all_enums.append(node)
+            elif node.kind == "union":
+                all_unions.append(node)
+            elif node.kind == "function":
+                all_functions.append(node)
+            elif node.kind == "variable":
+                all_variables.append(node)
+            elif node.kind == "define":
+                all_defines.append(node)
+            elif node.kind == "typedef":
+                all_typedefs.append(node)
+            elif node.kind == "dir":
+                all_dirs.append(node)
+            elif node.kind == "file":
+                all_files.append(node)
+
         try:
             with codecs.open(self.unabridged_api_file, "w", "utf-8") as full_api_file:
                 # write the header
@@ -3149,41 +3158,26 @@ class ExhaleRoot:
                     heading_mark=configs.SUB_SECTION_HEADING
                 )))
 
-                # recover all namespaces that were reparented
-                all_namespaces = []
-                for n in self.namespaces:
-                    n.findNestedNamespaces(all_namespaces)
-
-                # recover all directories that were reparented
-                all_directories = []
-                for d in self.dirs:
-                    d.findNestedDirectories(all_directories)
-
-                # recover classes and structs that were reparented
-                all_class_like = []
-                for cl in self.class_like:
-                    cl.findNestedClassLike(all_class_like)
-
                 # write everything to file: reorder these lines for different outcomes
-                self.enumerateAll("Namespaces", all_namespaces, full_api_file)
+                self.enumerateAll(         "Namespaces", all_namespaces, full_api_file)
                 self.enumerateAll("Classes and Structs", all_class_like, full_api_file)
-                self.enumerateAll("Enums", self.enums, full_api_file)
-                self.enumerateAll("Unions", self.unions, full_api_file)
-                self.enumerateAll("Functions", self.functions, full_api_file)
-                self.enumerateAll("Variables", self.variables, full_api_file)
-                self.enumerateAll("Defines", self.defines, full_api_file)
-                self.enumerateAll("Typedefs", self.typedefs, full_api_file)
-                self.enumerateAll("Directories", all_directories, full_api_file)
-                self.enumerateAll("Files", self.files, full_api_file)
+                self.enumerateAll(              "Enums",      all_enums, full_api_file)
+                self.enumerateAll(             "Unions",     all_unions, full_api_file)
+                self.enumerateAll(          "Functions",  all_functions, full_api_file)
+                self.enumerateAll(          "Variables",  all_variables, full_api_file)
+                self.enumerateAll(            "Defines",    all_defines, full_api_file)
+                self.enumerateAll(           "Typedefs",   all_typedefs, full_api_file)
+                self.enumerateAll(        "Directories",       all_dirs, full_api_file)
+                self.enumerateAll(              "Files",      all_files, full_api_file)
         except:
             utils.fancyError("Error writing the unabridged API.")
 
     def enumerateAll(self, subsectionTitle, lst, openFile):
         '''
-        Helper function for :func:`exhale.ExhaleRoot.generateUnabridgedAPI`.  Simply
-        writes a subsection to ``openFile`` (a ``toctree`` to the ``file_name``) of each
-        ExhaleNode in ``sorted(lst)`` if ``len(lst) > 0``.  Otherwise, nothing is
-        written to the file.
+        Helper function for :func:`exhale.graph.ExhaleRoot.generateUnabridgedAPI`.
+        Simply writes a subsection to ``openFile`` (a ``toctree`` to the ``file_name``)
+        of each ExhaleNode in ``sorted(lst)`` if ``len(lst) > 0``.  Otherwise, nothing
+        is written to the file.
 
         :Parameters:
             ``subsectionTitle`` (str)
@@ -3300,11 +3294,11 @@ class ExhaleRoot:
 
     def consoleFormat(self, sectionTitle, lst, fmt_spec):
         '''
-        Helper method for :func:`exhale.ExhaleRoot.toConsole`.  Prints the given
-        ``sectionTitle`` and calls :func:`exhale.ExhaleNode.toConsole` with ``0`` as the
-        level for every ExhaleNode in ``lst``.
+        Helper method for :func:`exhale.graph.ExhaleRoot.toConsole`.  Prints the given
+        ``sectionTitle`` and calls :func:`exhale.graph.ExhaleNode.toConsole` with ``0``
+        as the level for every ExhaleNode in ``lst``.
 
-        :Parameters:
+        **Parameters**
             ``sectionTitle`` (str)
                 The title that will be printed with some visual separators around it.
 

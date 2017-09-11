@@ -102,6 +102,35 @@ AVAILABLE_KINDS = [
 ''' A list of all potential input ``kind`` values coming from Doxygen. '''
 
 
+def contentsDirectiveOrNone(kind):
+    '''
+    Generates a string ``.. contents::`` directives according to the rules outlined in
+    the :ref:`using_contents_directives` section.
+
+    **Parameters**
+        ``kind`` (str)
+            The ``kind`` of the compound (one of :data:`exhale.utils.AVAILABLE_KINDS`).
+
+    **Return**
+        ``str`` or ``None``
+            If this ``kind`` should have a ``.. contents::`` directive, it returns the
+            string that can be written to file.  Otherwise, ``None`` is returned.
+    '''
+    if configs.contentsDirectives and kind in configs.kindsWithContentsDirectives:
+        ret = "\n.. contents:: {contentsTitle}".format(
+            contentsTitle=configs.contentsTitle
+        )
+        if configs.contentsSpecifiers:
+            specs = "\n".join(s for s in configs.contentsSpecifiers)
+            ret   = "{directive}\n{specs}".format(
+                directive=ret,
+                specs=prefix("   ", specs)
+            )
+        return "{full_directive}\n\n".format(full_directive=ret)
+    else:
+        return None
+
+
 def makeCustomSpecificationsMapping(func):
     '''
     Creates the "pickleable" dictionary that will be used with

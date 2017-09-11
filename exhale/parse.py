@@ -14,47 +14,66 @@ from . import utils
 import textwrap
 from bs4 import BeautifulSoup
 
-__all__       = ["getFileBriefAndDetailedRST"]
+__all__       = ["walk", "convertDescriptionToRST", "getFileBriefAndDetailedRST"]
 __name__      = "utils"
 __docformat__ = "reStructuredText"
 
 
 def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara=False):
     '''
+    .. note::
+
+       This method does not cover all possible input doxygen types!  This means that
+       when an unsupported / unrecognized doxygen tag appears in the xml listing, the
+       **raw xml will appear on the file page being documented**.  This traverser is
+       greedily designed to work for what testing revealed as the *bare minimum*
+       required.  **Please** see the :ref:`Doxygen ALIASES <doxygen_aliases>` section
+       for how to bypass invalid documentation coming form Exhale.
+
     Recursive traverser method to parse the input parsed xml tree and convert the nodes
     into raw reStructuredText from the input doxygen format.  **Not all doxygen markup
-    types are handled**, see ``todo`` at bottom of documentation for this method.  The
-    current supported doxygen xml markup tags are:
+    types are handled**.  The current supported doxygen xml markup tags are:
 
     - ``para``
     - ``orderedlist``
     - ``itemizedlist``
-    - ``verbatim``
-        - ``embed:rst:leading-asterisk``
+    - ``verbatim`` (specifically: ``embed:rst:leading-asterisk``)
     - ``formula``
     - ``ref``
+    - ``emphasis`` (e.g., using `em`_)
+    - ``computeroutput`` (e.g., using `c`_)
+    - ``bold`` (e.g., using `b`_)
+
+    .. _em: https://www.stack.nl/~dimitri/doxygen/manual/commands.html#cmdem
+    .. _c:  https://www.stack.nl/~dimitri/doxygen/manual/commands.html#cmdc
+    .. _b:  https://www.stack.nl/~dimitri/doxygen/manual/commands.html#cmdb
 
     The goal of this method is to "explode" input ``xml`` data into raw reStructuredText
     to put at the top of the file pages.  Wielding beautiful soup, this essentially
     means that you need to expand every non ``para`` tag into a ``para``.  So if an
     ordered list appears in the xml, then the raw listing must be built up from the
-    child nodes.  After this is finished, though, the :func:`bs4.BeautifulSoup.get_text`
+    child nodes.  After this is finished, though, the :meth:`bs4.BeautifulSoup.get_text`
     method will happily remove all remaining ``para`` tags to produce the final
     reStructuredText **provided that** the original "exploded" tags (such as the ordered
     list definition and its ``listitem`` children) have been *removed* from the soup.
 
-    :Parameters:
+    **Parameters**
         ``textRoot`` (:class:`exhale.graph.ExhaleRoot`)
             The text root object that is calling this method.  This parameter is
-            necessary in order to retrieve / convert the doxygen ``\ref SomeClass`` tag
+            necessary in order to retrieve / convert the doxygen ``\\ref SomeClass`` tag
             and link it to the appropriate node page.  The ``textRoot`` object is not
             modified by executing this method.
 
-        ``currentTag`` (:class:`bs4.Tag`)
+        ``currentTag`` (:class:`bs4.element.Tag`)
             The current xml tag being processed, either to have its contents directly
             modified or unraveled.
 
         ``level`` (int)
+            .. warning::
+
+               This variable does **not** represent "recursion depth" (as one would
+               typically see with a variable like this)!
+
             The **block** level of indentation currently being parsed.  Because we are
             parsing a tree in order to generate raw reStructuredText code, we need to
             maintain a notion of "block level".  This means tracking when there are
@@ -77,25 +96,9 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
 
                indent = "    " * level
                # ... later ...
-               some_text = "\n{indent}{text}".format(indent=indent, text=some_text)
+               some_text = "\\n{indent}{text}".format(indent=indent, text=some_text)
 
-            .. warning::
-
-               This variable does **not** represent "recursion depth" (as one would
-               typically see with a variable like this)!
-
-    .. todo::
-
-       This method does not cover all possible input doxygen types!  This means that
-       when an unsupported / unrecognized doxygen tag appears in the xml listing, the
-       **raw xml will appear on the file page being documented**.  This traverser is
-       greedily designed to work for what testing revealed as the *bare minimum*
-       required.  **Please** submit an issue with a new tag if you need one!  Adding
-       them in is generally not difficult, but there were too many / I do not intend on
-       reimplementing a doxygen xml parser --- that's what breathe is for.
-
-       AKA this method only exists because I could not identify an easy way to extract
-       this information from breathe.  This method will likely disappear if I ever do.
+            to indent the ordered / unordered lists accordingly.
     '''
     if not currentTag:
         return
@@ -110,13 +113,13 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
     if currentTag.name == "orderedlist":
         idx = 1
         for child in children:
-            walk(textRoot, child, level + 1, "\n{}{}. ".format(indent, idx), None, True)
+            walk(textRoot, child, level + 1, "\n{0}{1}. ".format(indent, idx), None, True)
             idx += 1
             child.unwrap()
         currentTag.unwrap()
     elif currentTag.name == "itemizedlist":
         for child in children:
-            walk(textRoot, child, level + 1, "\n{}- ".format(indent), None, True)
+            walk(textRoot, child, level + 1, "\n{0}- ".format(indent), None, True)
             child.unwrap()
         currentTag.unwrap()
     elif currentTag.name == "verbatim":
@@ -128,30 +131,36 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
             cont = textwrap.dedent(cont.replace("\n*", "\n"))
             currentTag.string = cont
     elif currentTag.name == "formula":
-        currentTag.string = ":math:`{}`".format(currentTag.string[1:-1])
+        currentTag.string = ":math:`{0}`".format(currentTag.string[1:-1])
     elif currentTag.name == "ref":
         signal = None
         if "refid" not in currentTag.attrs:
-            signal = "No 'refid' in `ref` tag attributes of file documentation. Attributes were: {}".format(
+            signal = "No 'refid' in `ref` tag attributes of file documentation. Attributes were: {0}".format(
                 currentTag.attrs
             )
         else:
             refid = currentTag.attrs["refid"]
             if refid not in textRoot.node_by_refid:
-                signal = "Found unknown 'refid' of [{}] in file level documentation.".format(refid)
+                signal = "Found unknown 'refid' of [{0}] in file level documentation.".format(refid)
             else:
-                currentTag.string = ":ref:`{}`".format(textRoot.node_by_refid[refid].link_name)
+                currentTag.string = ":ref:`{0}`".format(textRoot.node_by_refid[refid].link_name)
 
         if signal:
             # << verboseBuild
             utils.verbose_log(signal, utils.AnsiColors.BOLD_YELLOW)
+    elif currentTag.name == "emphasis":
+        currentTag.string = "*{0}*".format(currentTag.string)
+    elif currentTag.name == "computeroutput":
+        currentTag.string = "``{0}``".format(currentTag.string)
+    elif currentTag.name == "bold":
+        currentTag.string = "**{0}**".format(currentTag.string)
     else:
         ctr = 0
         for child in children:
             c_prefix = None
             c_postfix = None
             if ctr > 0 and child.name == "para":
-                c_prefix = "\n{}".format(indent)
+                c_prefix = "\n{0}".format(indent)
 
             walk(textRoot, child, level, c_prefix, c_postfix)
 
@@ -159,6 +168,12 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
 
 
 def convertDescriptionToRST(textRoot, fileNode, soupTag, heading):
+    '''
+    Parses the ``fileNode`` XML document and returns a reStructuredText formatted
+    string.  Helper method for :func:`exhale.parse.getFileBriefAndDetailedRST`.
+
+    .. todo:: actually document this
+    '''
     if soupTag.para:
         children = soupTag.findChildren(recursive=False)
         for child in children:
@@ -172,12 +187,19 @@ def convertDescriptionToRST(textRoot, fileNode, soupTag, heading):
             {heading}
             {heading_mark}
         '''.format(heading=heading, heading_mark=configs.SUB_SECTION_HEADING))
-        return "{}{}".format(start, contents)
+        return "{0}{1}".format(start, contents)
     else:
         return ""
 
 
 def getFileBriefAndDetailedRST(textRoot, fileNode):
+    '''
+    Given an input ``fileNode``, return a tuple of strings where the first element of
+    the return is the ``brief`` description and the second is the ``detailed``
+    description.
+
+    .. todo:: actually document this
+    '''
     node_xml_contents = utils.nodeCompoundXMLContents(fileNode)
     if not node_xml_contents:
         return "", ""
@@ -185,7 +207,7 @@ def getFileBriefAndDetailedRST(textRoot, fileNode):
     try:
         node_soup = BeautifulSoup(node_xml_contents, "lxml-xml")
     except:
-        utils.fancyError("Unable to parse [{}] xml using BeautifulSoup".format(fileNode.name))
+        utils.fancyError("Unable to parse [{0}] xml using BeautifulSoup".format(fileNode.name))
 
     try:
         # In the file xml definitions, things such as enums or defines are listed inside

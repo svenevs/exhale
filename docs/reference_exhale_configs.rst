@@ -128,7 +128,7 @@ that you will link to from your documentation is laid out as follows:
     +------------+----------------------------------------------------+----------------+
     | **7**      | Unabridged API                                     | Section 6      |
     +------------+----------------------------------------------------+----------------+
-    | **8**      | {{ after body description }}                       | Section 7      |
+    | **8**      | {{ afterBodySummary }}                             | Section 7      |
     +------------+----------------------------------------------------+----------------+
 
 1. The title of the document will be the *required* key to ``"rootFileTitle"`` given to
@@ -335,8 +335,7 @@ something like this, where special treatment is given to File pages specifically
               document is generated is affected.  There are numerous graph relationships
               that Exhale **cannot recover without the xml program listing**.
 
-        2. When :data:`exhale.configs.contentsDirectives` is ``True`` (default), a
-           ``.. contents::`` directive is included next.
+        2. See the :ref:`using_contents_directives` section.
 
         For File pages, the ``brief`` description of the File (if provided) is included
         in Section 1 underneath the title.
@@ -345,10 +344,7 @@ something like this, where special treatment is given to File pages specifically
         1. Assuming Exhale was able to infer which file defined a given node, a link to
            the file page that defined it is included here.
 
-        2. For the kinds of nodes defined by
-           :data:`exhale.configs._kinds_with_contents_directives`, when
-           :data:`exhale.configs.contentsDirectives` is ``True`` (default), a
-           ``.. contents::`` directive is included next.
+        2. See the :ref:`using_contents_directives` section.
 
 **Section 2**
     **File Pages**
@@ -406,16 +402,117 @@ something like this, where special treatment is given to File pages specifically
 
 .. end_page_level_customization
 
-.. autodata:: exhale.configs.contentsDirectives
-
-.. autodata:: exhale.configs._kinds_with_contents_directives
-
 .. autodata:: exhale.configs.includeTemplateParamOrderList
 
 .. autodata:: exhale.configs.pageLevelConfigMeta
 
 .. autodata:: exhale.configs.repoRedirectURL
 
+Using Contents Directives
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. begin_page_level_customization_contents_directives
+
+.. note::
+
+   I put a lot of thought into the defaults for the ``.. contents::`` directive.  I
+   believe the chosen defaults are optimal, but this is very much a personal decision.
+   It also depends a lot on what ``html_theme`` you are using in ``conf.py``.  For
+   example, the ``sphinx_rtd_theme`` (while classy) leaves a lot to the imagination
+   where page-level navigation is concerned (and the page is long).
+
+The `Contents Directive`__ can be used to display the table of contents on an individual
+reStructuredText page.  This is **different** than the ``toctree`` directive in that
+it is not specifying a list of documents to include next, it is simply informing the
+reStructuredText parser (Sphinx in our case) that you would like a table of contents
+displayed where this directive appears.
+
+__ http://docutils.sourceforge.net/docs/ref/rst/directives.html#table-of-contents
+
+By default, Exhale includes a ``.. contents::`` directive on all File and Namespace
+pages.  This is particularly useful for making the Namespace and File pages navigable by
+the reader of your documentation when the Namespace / File incorporates many parts of
+the API.  Classes and structs have potential for a contents directive to be warranted
+(e.g., complex inheritance relationships with nested types, core base types that every
+class in the API inherits from).  If you have particular Classes or Structs that warrant
+a ``.. contents::`` directive, you can enable this.  However, at this time, this is a
+global setting for Exhale --- either all have it or none have it.  That said, the
+presence of a ``.. contents::`` directive on simple class / struct pages doesn't seem to
+be *too* distracting.
+
+On the other hand, pages generated for things like Directories, Enums, Variables,
+Defines, Typedefs, etc, are generally only as long as the documentation so they do
+not receive a ``.. contents::`` directive by default.
+
+The way Exhale is setup is to coordinate four variables:
+
+1. :data:`exhale.configs.contentsDirectives` sets globally whether or not *any*
+   ``.. contents::`` directives are generated.
+2. :data:`exhale.configs.contentsTitle` determines the title of these directives.  The
+   default is the reStructuredText default: ``Contents``.
+3. :data:`exhale.configs.contentsSpecifiers` provides the specifications to apply to the
+   ``.. contents::`` directives.  For stylistic reasons, the specifiers Exhale defaults
+   to are ``:local:`` and ``:backlinks: none``.
+4. :data:`exhale.configs.kindsWithContentsDirectives` specifies the kinds of compounds
+   that will include a ``.. contents::`` directive.  The default is to only generate
+   these for ``namespace`` and ``file``.
+
+The implementation, if interested, is in :func:`exhale.utils.contentsDirectiveOrNone`.
+Assuming you use all of the Exhale defaults, then every Namespace and File document will
+include a directive like this:
+
+.. code-block:: rst
+
+   .. contents:: Contents
+      :local:
+      :backlinks: none
+
+These defaults basically have two implications:
+
+**The Effect of** ``:local:`` **on the Title**
+    The ``:local:`` option states to only include the table of contents for the
+    *remainder* of the page.  For Exhale, this means *do not include the title of the
+    page*.
+
+    When using ``:local:``, the title must be explicitly specified.  So if you set
+    :data:`exhale.configs.contentsTitle` to the **empty string** (keeping all other
+    defaults), the directive generated would be
+
+    .. code-block:: rst
+
+       .. contents::
+          :local:
+          :backlinks: none
+
+    which results in a table of contents, without the word **Contents** before it.  This
+    is likely a personal preference.
+
+**The Effect of** ``:backlinks:``
+    Traditional usage of a ``.. contents::`` directive, when ``:backlinks:`` is not
+    explicitly specified, is to create circular links.  When considering writing a long
+    document with many sections and subsections, this is exceptionally convenient.
+
+    This means that when you click on a link in the generated table of contents, it
+    takes you to the heading for that section.  The heading **is also a hyperlink**,
+    which when clicked takes you back to the table of contents.
+
+    I find this to be awkward for Exhale for two reasons:
+
+    1. Section titles as hyperlinks, especially with Bootstrap, are quite unattractive.
+    2. The circular linking is not exactly intuitive for code documentation.
+
+Alas these are things that very much depend on *your personal preferences*, so I've done
+my best to enable as much flexibility as possible.
+
+.. end_page_level_customization_contents_directives
+
+.. autodata:: exhale.configs.contentsDirectives
+
+.. autodata:: exhale.configs.contentsTitle
+
+.. autodata:: exhale.configs.contentsSpecifiers
+
+.. autodata:: exhale.configs.kindsWithContentsDirectives
 
 Breathe Customization
 ****************************************************************************************
