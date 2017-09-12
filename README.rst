@@ -32,7 +32,7 @@ markup syntax / websites.
 
 .. begin_exhale_long_desc
 
-Exhale is a Sphinx <http://www.sphinx-doc.org/en/stable/>`_ extension that depends on
+Exhale is a `Sphinx <http://www.sphinx-doc.org/en/stable/>`_ extension that depends on
 the excellent `Breathe`_ extension which enables parsing Doxygen documentation into the
 Sphinx domain.  Exhale provides a layer of automation, enabling launching Doxygen and
 generating the full website all from your ``conf.py``.  Exhale will execute these
