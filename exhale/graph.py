@@ -782,7 +782,7 @@ class ExhaleNode:
             ############################################################################
             # If there were children, close the lists we started above.                #
             ############################################################################
-            if nested_children:
+            if configs.createTreeView and nested_children:
                 if configs.treeViewIsBootstrap:
                     # close the `nodes: [ ... ]` and final } for element
                     # the final comma IS necessary, and extra commas don't matter in javascript
