@@ -109,7 +109,7 @@ def contentsDirectiveOrNone(kind):
 
     **Parameters**
         ``kind`` (str)
-            The ``kind`` of the compound (one of :data:`exhale.utils.AVAILABLE_KINDS`).
+            The ``kind`` of the compound (one of :data:`~exhale.utils.AVAILABLE_KINDS`).
 
     **Return**
         ``str`` or ``None``
@@ -134,20 +134,20 @@ def contentsDirectiveOrNone(kind):
 def makeCustomSpecificationsMapping(func):
     '''
     Creates the "pickleable" dictionary that will be used with
-    :data:`exhale.configs.customSpecificationsMapping` supplied to ``exhale_args`` in
+    :data:`~exhale.configs.customSpecificationsMapping` supplied to ``exhale_args`` in
     your ``conf.py``.
 
     **Parameters**
         ``func`` (types.FunctionType)
             A callable function that takes as input a string from
-            :data:`exhale.utils.AVAILABLE_KINDS` and returns a ``list`` of strings.
+            :data:`~exhale.utils.AVAILABLE_KINDS` and returns a ``list`` of strings.
 
             The empty list ``[]`` indicates to use the Breathe defaults.
 
     **Return**
         ``dict``
             A dictionary where the keys are every value in
-            :data:`exhale.utils.AVAILABLE_KINDS`, and the values are the ``list``
+            :data:`~exhale.utils.AVAILABLE_KINDS`, and the values are the ``list``
             returns of the input ``func``.
 
     .. note::
@@ -534,7 +534,7 @@ def indent(text, prefix, predicate=None):
 
 def prefix(token, msg):
     '''
-    Wrapper call to :func:`exhale.utils.indent` with an always-true predicate so that
+    Wrapper call to :func:`~exhale.utils.indent` with an always-true predicate so that
     empty lines (e.g. `\\n`) still get indented by the ``token``.
 
     :Parameters:
@@ -561,7 +561,7 @@ def colorize(msg, ansi_fmt):
 
 def _use_color(msg, ansi_fmt, output_stream):
     '''
-    Based on :data:`exhale.configs.alwaysColorize`, returns the colorized or
+    Based on :data:`~exhale.configs.alwaysColorize`, returns the colorized or
     non-colorized output when ``output_stream`` is not a TTY (e.g. redirecting
     to a file).
 
@@ -578,7 +578,7 @@ def _use_color(msg, ansi_fmt, output_stream):
     **Return**
         ``str``
             The message ``msg`` in color, or not, depending on both
-            :data:`exhale.configs.alwaysColorize` and whether or not the
+            :data:`~exhale.configs.alwaysColorize` and whether or not the
             ``output_stream`` is a TTY.
     '''
     if not configs.alwaysColorize and not output_stream.isatty():

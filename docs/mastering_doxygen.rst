@@ -42,7 +42,7 @@ for you to fix the errors.
     2. Since you're reading this page, I'd say the easiest thing to "just get the docs
        going" would be to use the STDIN approach provided by Exhale.
     3. When things aren't appearing correctly, add the **line** ``GENERATE_HTML = YES``
-       to your input to :data:`exhale.configs.exhaleDoxygenStdin` and look at the actual
+       to your input to :data:`~exhale.configs.exhaleDoxygenStdin` and look at the actual
        Doxygen HTML pages.
 
        - If it is broken there, there's no way it's going to work with Exhale.
@@ -93,7 +93,7 @@ started.
     .. note::
 
        Where Exhale is concerned, this is the **only** *required* Doxygen configuration
-       when using :data:`exhale.configs.exhaleDoxygenStdin`.
+       when using :data:`~exhale.configs.exhaleDoxygenStdin`.
 
 .. tip::
 
@@ -109,7 +109,7 @@ started.
 
     For Exhale, since you already needed to supply the path to the ``xml`` output
     directory for Breathe, this configuration is inferred.  Or rather, Exhale searches
-    for ``OUTPUT_DIRECTORY`` when using :data:`exhale.configs.exhaleDoxygenStdin` and
+    for ``OUTPUT_DIRECTORY`` when using :data:`~exhale.configs.exhaleDoxygenStdin` and
     raises an exception if it is found.
 
 ``RECURSIVE = YES``
@@ -131,7 +131,7 @@ started.
     .. warning::
 
        Exhale requires that you specify this variable through ``exhale_args``.  If
-       it is detected in the input to :data:`exhale.configs.exhaleDoxygenStdin`, an
+       it is detected in the input to :data:`~exhale.configs.exhaleDoxygenStdin`, an
        exception is raised.  This is a detail specific to hosting on Read the Docs that
        in all honesty I've never found the cause of.  It likely has to do with the
        environment setup.

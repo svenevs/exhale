@@ -7,7 +7,7 @@ Developer Reference Documentation
    be tracked by the user next to ``conf.py``.  Keeping it in a single file made this
    as convenient as possible for users, but was ultimately inconvenient to maintain.
 
-   Right now, the :mod:`exhale.graph` module is largely the same as it was in the single
+   Right now, the :mod:`~exhale.graph` module is largely the same as it was in the single
    file library version.  Eventually this will be whittled down into the other modules
    present in the library (e.g., modularizing writing nodes to file, parsing of xml).
 
@@ -17,37 +17,37 @@ Project Layout
 The brief overview of what is where in this project:
 
 **Configs**
-    The :mod:`exhale.configs` module contains everything related to what can be
+    The :mod:`~exhale.configs` module contains everything related to what can be
     configured via ``conf.py``, plus a few constants and book-keeping variables.  At the
     bottom of this file is where you will find the bridge between Sphinx and Exhale (the
-    function :func:`exhale.configs.apply_sphinx_configurations`).
+    function :func:`~exhale.configs.apply_sphinx_configurations`).
 
 **Deploy**
-    The :mod:`exhale.deploy` module is responsible assisting in the creation of the
-    Doxygen documentation (see :data:`exhale.configs.exhaleExecutesDoxygen`) as well as
+    The :mod:`~exhale.deploy` module is responsible assisting in the creation of the
+    Doxygen documentation (see :data:`~exhale.configs.exhaleExecutesDoxygen`) as well as
     "exploding" the documentation into all of the various reStructuredText documents.
-    The :func:`exhale.deploy.explode` is what triggers the creation of the graph, and is
-    called by :func:`exhale.configs.apply_sphinx_configurations`.
+    The :func:`~exhale.deploy.explode` is what triggers the creation of the graph, and is
+    called by :func:`~exhale.configs.apply_sphinx_configurations`.
 
 **Graph**
-    The :mod:`exhale.graph` module is the main representation of all the various items
+    The :mod:`~exhale.graph` module is the main representation of all the various items
     being documented.  This is by far the most important, and confusing, module.  The
-    brief version is that the :func:`exhale.deploy.explode` function will create an
-    :class:`exhale.graph.ExhaleRoot` object, which could be thought of as the equivalent
+    brief version is that the :func:`~exhale.deploy.explode` function will create an
+    :class:`~exhale.graph.ExhaleRoot` object, which could be thought of as the equivalent
     of the ``index.xml`` produced by Doxygen.  The ``ExhaleRoot`` object will parse the
-    Doxygen xml files and instantiate :class:`exhale.graph.ExhaleNode` objects to
+    Doxygen xml files and instantiate :class:`~exhale.graph.ExhaleNode` objects to
     represent the different items being documented.
 
 **Parse**
-    The :mod:`exhale.parse` module does **not** currently do the parsing you would
+    The :mod:`~exhale.parse` module does **not** currently do the parsing you would
     think.   It currently only parses the file level documentation from the xml
     documents and gives a best-faith effort to turn this into valid reStructuredText.
 
-    The future intent is to have the parsing done in the :mod:`exhale.graph` module
+    The future intent is to have the parsing done in the :mod:`~exhale.graph` module
     get stripped out and placed in this module.
 
 **Utils**
-    The :mod:`exhale.utils` module contains various helper methods for consistent
+    The :mod:`~exhale.utils` module contains various helper methods for consistent
     formatting, colorized error reporting, and serialization of the Exhale
     configurations (Sphinx requires this in order to pickle the environment / identify
     what has changed, etc).

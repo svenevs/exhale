@@ -58,7 +58,7 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
     list definition and its ``listitem`` children) have been *removed* from the soup.
 
     **Parameters**
-        ``textRoot`` (:class:`exhale.graph.ExhaleRoot`)
+        ``textRoot`` (:class:`~exhale.graph.ExhaleRoot`)
             The text root object that is calling this method.  This parameter is
             necessary in order to retrieve / convert the doxygen ``\\ref SomeClass`` tag
             and link it to the appropriate node page.  The ``textRoot`` object is not
@@ -170,7 +170,7 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
 def convertDescriptionToRST(textRoot, fileNode, soupTag, heading):
     '''
     Parses the ``fileNode`` XML document and returns a reStructuredText formatted
-    string.  Helper method for :func:`exhale.parse.getFileBriefAndDetailedRST`.
+    string.  Helper method for :func:`~exhale.parse.getFileBriefAndDetailedRST`.
 
     .. todo:: actually document this
     '''

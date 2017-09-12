@@ -73,7 +73,7 @@ Users must provide the following values to ``exhale_args`` in their ``conf.py``.
 .. tip::
 
    Recall the variable name conventions from above.  If you want to specify the value
-   for ``containmentFolder`` so that :data:`exhale.configs.containmentFolder` is
+   for ``containmentFolder`` so that :data:`~exhale.configs.containmentFolder` is
    populated, the name of the *key* is the string ``"containmentFolder"``.  Each entry
    below details what the ``type`` of the *value* of the key should be.  So in this case
    you might have
@@ -134,10 +134,10 @@ that you will link to from your documentation is laid out as follows:
     +------------+----------------------------------------------------+----------------+
 
 1. The title of the document will be the *required* key to ``"rootFileTitle"`` given to
-   ``exhale_args`` in ``conf.py``.  See :data:`exhale.configs.rootFileTitle`.
+   ``exhale_args`` in ``conf.py``.  See :data:`~exhale.configs.rootFileTitle`.
 
 2. If provided, the value of the key ``"afterTitleDescription"`` given to
-   ``exhale_args`` will be included.  See :data:`exhale.configs.afterTitleDescription`.
+   ``exhale_args`` will be included.  See :data:`~exhale.configs.afterTitleDescription`.
 
 3. The Class Hierarchy will be included next.  By default this is a bulleted list; see
    the :ref:`usage_creating_the_treeview` section.
@@ -157,12 +157,12 @@ that you will link to from your documentation is laid out as follows:
 
 5. If provided, the value of the key ``"afterHierarchyDescription"`` given to
    ``exhale_args`` will be included.  See
-   :data:`exhale.configs.afterHierarchyDescription`.
+   :data:`~exhale.configs.afterHierarchyDescription`.
 
 6. After the Class and File Hierarchies, the unabridged API index is generated.  The
    default title for this section is ``"Full API"``, but can be changed using the key
    ``"fullApiSubSectionTitle"`` in ``exhale_args``.  See
-   :data:`exhale.configs.fullApiSubSectionTitle`.
+   :data:`~exhale.configs.fullApiSubSectionTitle`.
 
 7. After the title or default value for (6), the full API is included.  This includes
    links to things such as defines, functions, typedefs, etc. that are not included in
@@ -178,10 +178,10 @@ that you will link to from your documentation is laid out as follows:
       The ``unabridged_api.rst`` performs a large number of ``.. toctree::`` directives
       to link up all of the documents.  You can control the number of bullets shown for
       each section be setting the key ``"fullToctreeMaxDepth"`` (e.g. to a smaller
-      number such as ``2``).  See :data:`exhale.configs.fullToctreeMaxDepth`.
+      number such as ``2``).  See :data:`~exhale.configs.fullToctreeMaxDepth`.
 
 8. If provided, the value of the key ``"afterBodySummary"`` will be included at the
-   bottom of the document.  See :data:`exhale.configs.afterBodySummary`.
+   bottom of the document.  See :data:`~exhale.configs.afterBodySummary`.
 
 .. tip::
 
@@ -247,9 +247,9 @@ theme.  Basically
 
       You will see that many of the color, selection, and search options are **not**
       available to be customized for ``bootstrap-treeview``.  This is by design.
-      See :data:`exhale.configs.treeViewBootstrapTextSpanClass`,
-      :data:`exhale.configs.treeViewBootstrapIconMimicColor`, and
-      :data:`exhale.configs.treeViewBootstrapOnhoverColor` for your color options.  The
+      See :data:`~exhale.configs.treeViewBootstrapTextSpanClass`,
+      :data:`~exhale.configs.treeViewBootstrapIconMimicColor`, and
+      :data:`~exhale.configs.treeViewBootstrapOnhoverColor` for your color options.  The
       links are defined by your bootstrap theme's ``a`` tag color.
 
 See the :ref:`index_credit` section for information on the licensing of these libraries.
@@ -311,12 +311,12 @@ something like this, where special treatment is given to File pages specifically
     +----------------------------------------------------------+-----------+
 
 **Meta**
-    The page-level metadata is controlled by :data:`exhale.configs.pageLevelConfigMeta`.
+    The page-level metadata is controlled by :data:`~exhale.configs.pageLevelConfigMeta`.
     It is only included if provided.
 
 **Heading**
     The internal reStructuredText link and page heading are included.  These are
-    determined by the :class:`exhale.graph.ExhaleNode` object's ``link_name`` and
+    determined by the :class:`~exhale.graph.ExhaleNode` object's ``link_name`` and
     ``title`` members, respectively.
 
 **Section 1**
@@ -326,7 +326,7 @@ something like this, where special treatment is given to File pages specifically
 
            .. tip::
 
-              The value of :data:`exhale.configs.doxygenStripFromPath` **directly**
+              The value of :data:`~exhale.configs.doxygenStripFromPath` **directly**
               affects what path is displayed here.
 
            .. danger::
@@ -366,7 +366,7 @@ something like this, where special treatment is given to File pages specifically
             is a nested type) are included.  Afterward, links to any base or derived
             classes are included.
 
-            If :data:`exhale.configs.includeTemplateParamOrderList` is ``True``, the
+            If :data:`~exhale.configs.includeTemplateParamOrderList` is ``True``, the
             template parameter list enumeration is included next.
 
         **Namespaces**
@@ -377,7 +377,7 @@ something like this, where special treatment is given to File pages specifically
 **Section 3**
     **File Pages**
         If Exhale is producing unexpected output for file level documentation, you can
-        set :data:`exhale.configs.generateBreatheFileDirectives` to ``True`` **as a
+        set :data:`~exhale.configs.generateBreatheFileDirectives` to ``True`` **as a
         debugging feature**.
 
         Please refer to the :ref:`doxygen_documentaion_specifics` section for potential
@@ -448,18 +448,18 @@ not receive a ``.. contents::`` directive by default.
 
 The way Exhale is setup is to coordinate four variables:
 
-1. :data:`exhale.configs.contentsDirectives` sets globally whether or not *any*
+1. :data:`~exhale.configs.contentsDirectives` sets globally whether or not *any*
    ``.. contents::`` directives are generated.
-2. :data:`exhale.configs.contentsTitle` determines the title of these directives.  The
+2. :data:`~exhale.configs.contentsTitle` determines the title of these directives.  The
    default is the reStructuredText default: ``Contents``.
-3. :data:`exhale.configs.contentsSpecifiers` provides the specifications to apply to the
+3. :data:`~exhale.configs.contentsSpecifiers` provides the specifications to apply to the
    ``.. contents::`` directives.  For stylistic reasons, the specifiers Exhale defaults
    to are ``:local:`` and ``:backlinks: none``.
-4. :data:`exhale.configs.kindsWithContentsDirectives` specifies the kinds of compounds
+4. :data:`~exhale.configs.kindsWithContentsDirectives` specifies the kinds of compounds
    that will include a ``.. contents::`` directive.  The default is to only generate
    these for ``namespace`` and ``file``.
 
-The implementation, if interested, is in :func:`exhale.utils.contentsDirectiveOrNone`.
+The implementation, if interested, is in :func:`~exhale.utils.contentsDirectiveOrNone`.
 Assuming you use all of the Exhale defaults, then every Namespace and File document will
 include a directive like this:
 
@@ -477,7 +477,7 @@ These defaults basically have two implications:
     page*.
 
     When using ``:local:``, the title must be explicitly specified.  So if you set
-    :data:`exhale.configs.contentsTitle` to the **empty string** (keeping all other
+    :data:`~exhale.configs.contentsTitle` to the **empty string** (keeping all other
     defaults), the directive generated would be
 
     .. code-block:: rst
@@ -577,7 +577,7 @@ possible inputs and outputs in a dictionary.  Details aside, it's easier than it
    .. tip::
 
       The full list of inputs your function will be called with are defined by
-      :data:`exhale.utils.AVAILABLE_KINDS`.
+      :data:`~exhale.utils.AVAILABLE_KINDS`.
 
 2. Use Exhale's utility function to create the correct dictionary.  Below that function
    you can now do
@@ -596,7 +596,7 @@ possible inputs and outputs in a dictionary.  Details aside, it's easier than it
 
    .. note::
 
-      The parameter to :func:`exhale.utils.makeCustomSpecificationsMapping` is the
+      The parameter to :func:`~exhale.utils.makeCustomSpecificationsMapping` is the
       **function** itself.
 
 .. end_customizing_breathe_output
@@ -613,25 +613,25 @@ Doxygen Execution and Customization
 .. begin_doxygen_execution_and_customization
 
 To have Exhale launch Doxygen when you run ``make html``, you will need to set
-:data:`exhale.configs.exhaleExecutesDoxygen` to ``True``.  After setting that, you will
+:data:`~exhale.configs.exhaleExecutesDoxygen` to ``True``.  After setting that, you will
 need to choose how Exhale is executing Doxygen.  If you already know what you are doing,
 continue on.  If you've *never* used Doxygen before, skim this, but refer to the
 :ref:`Mastering Doxygen <mastering_doxygen>` for more information on areas that you may
 get confused by.
 
 **Suggested Approach**
-    Provide a (multiline) string to :data:`exhale.configs.exhaleDoxygenStdin`.  In the
+    Provide a (multiline) string to :data:`~exhale.configs.exhaleDoxygenStdin`.  In the
     :ref:`usage_quickstart_guide`, the bare minimum needed to get things off the ground
     was used: ``INPUT`` must be set to tell Doxygen where to look.
 
     .. tip::
 
-       If you set :data:`exhale.configs.verboseBuild` to ``True``, Exhale will print out
+       If you set :data:`~exhale.configs.verboseBuild` to ``True``, Exhale will print out
        exactly what it sends to Doxygen.
 
     Presumably just specifying ``INPUT`` will not be enough, particularly if the Doxygen
     preprocessor is not understanding your code.  Exhale uses a number of defaults
-    to send to Doxygen as specified by :data:`exhale.configs.DEFAULT_DOXYGEN_STDIN_BASE`.
+    to send to Doxygen as specified by :data:`~exhale.configs.DEFAULT_DOXYGEN_STDIN_BASE`.
     The way these are used with your argument are as follows:
 
     .. code-block:: py
@@ -681,7 +681,7 @@ get confused by.
 **Using a Doxyfile**
     If you have your own customized ``Doxyfile``, just make sure it is in the same
     directory as ``conf.py``.  See the documentation for
-    :data:`exhale.configs.exhaleUseDoxyfile` for items you need to make sure agree with
+    :data:`~exhale.configs.exhaleUseDoxyfile` for items you need to make sure agree with
     the configurations you have applied elsewhere to Breathe / Exhale.
 
 .. end_doxygen_execution_and_customization

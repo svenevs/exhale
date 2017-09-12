@@ -17,6 +17,13 @@ Exhale
    :local:
    :backlinks: none
 
+See it in Action
+----------------------------------------------------------------------------------------
+
+.. include:: ../README.rst
+   :start-after: begin_in_action
+   :end-before:  end_in_action
+
 .. include:: ../README.rst
    :start-after: begin_installation
    :end-before:  end_installation

@@ -52,7 +52,7 @@ Linking to a Generated File
 
    This section describes writing links on the reStructuredText side of your
    documentation, e.g. inside of the value you provided in
-   :data:`exhale.configs.afterTitleDescription` or on your ``index.rst`` or something.
+   :data:`~exhale.configs.afterTitleDescription` or on your ``index.rst`` or something.
 
    In the actual code documentation, Breathe is typically able to infer links
    automatically (which is really great!), as well as you can also use ``\ref`` from
@@ -94,7 +94,7 @@ functions that users should be aware of.
        does not have available, e.g. a File page being generated.
 
     As the generation of these links becomes a little entrenched (it takes place in the
-    function :func:`exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`) I advise you
+    function :func:`~exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`) I advise you
     to simply generate the API once with ``make html``, and look at the **top** of the
     reStructuredText document.  For example, if you wanted to link to the file
     ``directory/common.hpp``, the link at the top of the file will usually be
@@ -105,6 +105,89 @@ functions that users should be aware of.
 
     Meaning in your reStructuredText you would write
     ``:ref:`file_directory_common.hpp```.
+
+.. _usage_external_linkage_templates:
+
+Linking to a Generated Template
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. tip::
+
+   See the three ``DerivedClass`` examples on the `ExhaleCompanion File Page <ecfp_>`_
+   that defines these examples.
+
+   .. _ecfp: http://my-favorite-documentation-test.readthedocs.io/en/latest/api/file_arbitrary_DerivedClass.h.html#classes
+
+.. note::
+
+   **All** templates produce build warnings, but should still give "usable" output.
+   See the FAQ entry on :ref:`faq_metaprogramming_and_template_specialization`
+
+The links generated for templates are particularly obtuse.  Consider the following
+definitions (implementation redacted):
+
+.. code-block:: cpp
+
+   namespace arbitrary {
+       // the unspecialized template class
+       template <typename T, unsigned int N>
+       DerivedClass : BaseClass { /* ... */ };
+
+       // a partial specialization; `struct arbitrary_struct` defined elsewhere
+       template <unsigned int N>
+       class DerivedClass<arbitrary_struct, N> : BaseClass { /* ... */ };
+
+       // a full specialization
+       template <>
+       class DerivedClass<bool, 2> : arbitrary::BaseClass { /* ... */ };
+   }
+
+Keeping in mind that template classes with the same name but different template
+parameters are not allowed, e.g.:
+
+.. code-block:: cpp
+
+   // definition 1
+   template <typename T, unsigned int N>
+   DerivedClass : arbitrary::BaseClass { /* ... */ };
+
+   // definition 2
+   template <bool useFloat, unsigned int N>
+   DerivedClass : arbitrary::BaseClass { /* ... */ };
+
+The challenge really amounts to how Doxygen is presenting this information, and the fact
+that the filenames / reStructuredText links need to be "HTML Safe" (no ``<``, ``>``, or
+``,``).
+
+**Unspecialized Templates**
+    The ``node.name`` has no templates, and the Doxygen XML provides a
+    ``templateparamlist`` which is parsed into ``node.template_params``.
+
+    **Filename**
+        ``class_arbitrary__DerivedClass.rst``
+
+    **reStructuredText Label**
+        ``.. _template_class_arbitrary__DerivedClass:``.
+
+**Partial Specializations**
+    The ``node.name`` **has** templates, and the remaining unspecialized template
+    parameters are parsed from the XML into ``node.template_params``.
+
+    **Filename**
+        ``class_arbitrary__DerivedClassLT__arbitrary__arbitrary_struct_COMMA_N__GT.rst``
+
+    **reStructuredText Label**
+        ``.. _template_class_arbitrary__DerivedClassLT__arbitrary__arbitrary_struct_COMMA_N__GT:``
+
+**Full Specializations**
+    The ``node.name`` **has** templates, but there is nothing to put into
+    ``node.template_params``.
+
+    **Filename**
+        ``class_arbitrary__DerivedClassLT__bool_COMMA_2__GT.rst``
+
+    **reStructuredText Label**
+        ``.. _template_class_arbitrary__DerivedClassLT__bool_COMMA_2__GT:``
 
 .. _usage_customizing_file_pages:
 
@@ -180,7 +263,7 @@ documentation is too advanced for Exhale's mini-parser.
 
 .. tip::
 
-   See the :func:`exhale.parse.walk` method for the currently supported Doxygen
+   See the :func:`~exhale.parse.walk` method for the currently supported Doxygen
    formatting being parsed.
 
 However, the solution is easy: use a verbatim reStructuredText environment in the

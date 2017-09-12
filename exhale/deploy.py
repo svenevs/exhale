@@ -10,7 +10,7 @@
 The deploy module is responsible for two primary actions:
 
 1. Executing Doxygen (if requested in ``exhale_args``).
-2. Launching the full API generation via the :func:`exhale.deploy.explode` function.
+2. Launching the full API generation via the :func:`~exhale.deploy.explode` function.
 '''
 
 from __future__ import unicode_literals
@@ -37,10 +37,10 @@ def _generate_doxygen(doxygen_input):
     This method executes doxygen based off of the specified input.  By the time this
     method is executed, it is assumed that Doxygen is intended to be run in the
     **current working directory**.  Search for ``returnPath`` in the implementation of
-    :func:`exhale.configs.apply_sphinx_configurations` for handling of this aspect.
+    :func:`~exhale.configs.apply_sphinx_configurations` for handling of this aspect.
 
-    This method is intended to be called by :func:`exhale.deploy.generateDoxygenXML`,
-    which is in turn called by :func:`exhale.configs.apply_sphinx_configurations`.
+    This method is intended to be called by :func:`~exhale.deploy.generateDoxygenXML`,
+    which is in turn called by :func:`~exhale.configs.apply_sphinx_configurations`.
 
     Two versions of the
     doxygen command can be executed:
@@ -339,19 +339,19 @@ def generateDoxygenXML():
 ########################################################################################
 def explode():
     '''
-    This method **assumes** that :func:`exhale.configs.apply_sphinx_configurations` has
+    This method **assumes** that :func:`~exhale.configs.apply_sphinx_configurations` has
     already been applied.  It performs minimal sanity checking, and then performs in
     order
 
-    1. Creates a :class:`exhale.graph.ExhaleRoot` object.
-    2. Executes :func:`exhale.graph.ExhaleRoot.parse` for this object.
-    3. Executes :func:`exhale.graph.ExhaleRoot.generateFullAPI` for this object.
-    4. Executes :func:`exhale.graph.ExhaleRoot.toConsole` for this object (which will
-       only produce output when :data:`exhale.configs.verboseBuild` is ``True``).
+    1. Creates a :class:`~exhale.graph.ExhaleRoot` object.
+    2. Executes :func:`~exhale.graph.ExhaleRoot.parse` for this object.
+    3. Executes :func:`~exhale.graph.ExhaleRoot.generateFullAPI` for this object.
+    4. Executes :func:`~exhale.graph.ExhaleRoot.toConsole` for this object (which will
+       only produce output when :data:`~exhale.configs.verboseBuild` is ``True``).
 
     This results in the full API being generated, and control is subsequently passed
     back to Sphinx to now read in the source documents (many of which were just
-    generated in :data:`exhale.configs.containmentFolder`), and proceed to writing the
+    generated in :data:`~exhale.configs.containmentFolder`), and proceed to writing the
     final output.
     '''
     # Quick sanity check to make sure the bare minimum have been set in the configs

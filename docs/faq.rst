@@ -15,7 +15,7 @@ If things look similar enough, or something isn't clear, raise an issue on GitHu
 do my best to support what I can, and if similar questions come up then I can add them
 to this FAQ.
 
-Make sure you set the :data:`exhale.configs.verboseBuild` to ``True``, there may be some
+Make sure you set the :data:`~exhale.configs.verboseBuild` to ``True``, there may be some
 useful information being printed there.
 
 .. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
@@ -39,6 +39,17 @@ website enabled, and provide a ``requirements.txt`` that has at the very least t
 Refer to the RTD docs here_.
 
 .. _here: http://docs.readthedocs.io/en/latest/faq.html#my-project-isn-t-building-with-autodoc
+
+Why are there build warnings about generated files not being included?
+----------------------------------------------------------------------------------------
+
+This means that you have changed your API in a way that the files being generated have
+changed.  For example, you changed the template parameters on something, or you deleted
+a class.  So now when you run ``make html``, the original generated files are still
+floating around down there even though the current execution of Exhale will not use
+them.
+
+Solution: see the :ref:`quickstart_clean_target` section of the Quickstart guide.
 
 Unicode support?
 ----------------------------------------------------------------------------------------
@@ -113,22 +124,52 @@ __ https://github.com/svenevs/exhale/issues/2
 
       exhale_args = {
           # ... required / optional arguments ...
-          "pageLevelConfigMeta": ":github_url: https://github.com/you/project"
+          "pageLevelConfigMeta": ":github_url: https://github.com/username/project"
       }
 
-Metaprogramming and full template specialization?
+.. note::
+
+   The consequence of fixing the link is that *locally* the "View Page Source" that
+   would let you see the generated reStructuredText (e.g. to get the link name) is
+   now gone.  You will have to open the file *manually* in a text editor.  Recall that
+   the generated files get placed in the folder specified by
+   :data:`~exhale.configs.containmentFolder`.
+
+.. _faq_metaprogramming_and_template_specialization:
+
+Metaprogramming and template (specialization)?
 ----------------------------------------------------------------------------------------
 
-Nope.  Partial template specialization at best is supported by Breathe; not full
-template specialization.  Furthermore, Doxygen can barely handle metaprogramming...YMMV.
+Yes and no.  Partial and full template specialization are supported, but not elegantly.
 
-For partial templates, see the breathe templates_ section for how you would specialize.
-My understanding is the spacing is sensitive.  I have yet to be able to include any form
-of template specialization in breathe, though, including their example code.
+1.  Currently there are no links from partial and full specializations back to their
+    original (unspecialized) type.  This may change in a future release.  Finding the
+    unspecialized type is complicated due to how things are presented by Doxygen.
 
-.. _templates: http://breathe.readthedocs.io/en/latest/class.html#template-specialisation-example
+2. Template classes / structs were given the most attention.  Functions may or may not
+   work.
 
-Support of this is in progress, but for now just force Doxygen to skip it.
+3. **All** template classes, specialized or not, **produce build warnings**.  These
+   warnings come from Breathe.  The documentation appears, but the layout is a little
+   strange.  For specializations in particular, they seem to produce an extra
+   ``template <>`` in the output.
+
+   For example, with a ``template <typename T, unsigned int N> DerivedClass``,
+
+   **Partial Specialization** ``template <unsigned int N> DerivedClass<int, N>``
+       Produces ``template <unsigned int N> template<> DerivedClass<int, N>``.
+
+   **Full Specialization** ``template <> DerivedClass<bool, 2>``
+       Produces ``template <> template<> DerivedClass<bool, 2>``
+
+4. See the :ref:`usage_external_linkage_templates`.
+
+5. Where metaprogramming is concerned, it is more likely that Doxygen's preprocessor
+   needs to have everything ``PREDEFINED``.  YMMV.
+
+.. tip::
+
+   If all else fails, you can force Doxygen to skip things.  See the next FAQ entry.
 
 How can I get Doxygen to skip code it cannot process?
 ----------------------------------------------------------------------------------------

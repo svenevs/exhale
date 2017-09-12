@@ -14,10 +14,10 @@ follows:
 1. Things that are **not** supposed to change, because their value is expected to be
    constant, are declared in ``ALL_CAPS``.  See
 
-   - :data:`exhale.configs.SECTION_HEADING`
-   - :data:`exhale.configs.SUB_SECTION_HEADING`
-   - :data:`exhale.configs.SUB_SUB_SECTION_HEADING`
-   - :data:`exhale.configs.DEFAULT_DOXYGEN_STDIN_BASE`
+   - :data:`~exhale.configs.SECTION_HEADING`
+   - :data:`~exhale.configs.SUB_SECTION_HEADING`
+   - :data:`~exhale.configs.SUB_SUB_SECTION_HEADING`
+   - :data:`~exhale.configs.DEFAULT_DOXYGEN_STDIN_BASE`
 
 2. Internal / private variables that are **not** supposed to changed except for by this
    extension are declared as ``_lower_case_with_single_leading_underscore`` as is common
@@ -26,7 +26,7 @@ follows:
 3. Every other variable is declared as ``camelCase``, indicating that it can be
    configured **indirectly** by using it as a key in the arguments to ``exhale_args``
    present in your ``conf.py``.  For example, one of the *required* arguments for this
-   extension is :data:`exhale.configs.containmentFolder`.  This means that the key
+   extension is :data:`~exhale.configs.containmentFolder`.  This means that the key
    ``"containmentFolder"`` is *expected* to be present in ``exhale_args``.
 
    .. code-block:: py
@@ -160,7 +160,7 @@ doxygenStripFromPath = None
 **Value in** ``exhale_args`` (str)
     The value of the key ``"doxygenStripFromPath"`` should be a string representing the
     (relative or absolute) path to be stripped from the final documentation.  As with
-    :data:`exhale.configs.containmentFolder`, relative paths are relative to the Sphinx
+    :data:`~exhale.configs.containmentFolder`, relative paths are relative to the Sphinx
     source directory (where ``conf.py`` is).  Consider the following directory structure::
 
         my_project/
@@ -226,7 +226,7 @@ verboseBuild = False
     .. warning::
 
        There is only one level of verbosity: excessively verbose.  **All logging is
-       written to** ``sys.stderr``.  See :data:`exhale.configs.alwaysColorize`.
+       written to** ``sys.stderr``.  See :data:`~exhale.configs.alwaysColorize`.
 
     .. tip::
 
@@ -291,7 +291,7 @@ generateBreatheFileDirectives = False
 afterTitleDescription = None
 '''
 **Optional**
-    Provide a description to appear just after :data:`exhale.configs.rootFileTitle`.
+    Provide a description to appear just after :data:`~exhale.configs.rootFileTitle`.
 
 **Value in** ``exhale_args`` (str)
     If you want to provide a brief summary of say the layout of the API, or call
@@ -321,7 +321,7 @@ afterHierarchyDescription = None
     the full (and usually very long) API listing.
 
 **Value in** ``exhale_args`` (str)
-    Similar to :data:`exhale.configs.afterTitleDescription`, only it is included in the
+    Similar to :data:`~exhale.configs.afterTitleDescription`, only it is included in the
     middle of the document.
 '''
 
@@ -347,15 +347,15 @@ afterBodySummary = None
     Provide a summary to be included at the bottom of the root library file.
 
 **Value in** ``exhale_args`` (str)
-    Similar to :data:`exhale.configs.afterTitleDescription`, only it is included at the
+    Similar to :data:`~exhale.configs.afterTitleDescription`, only it is included at the
     bottom of the document.
 
     .. note::
 
        The root library document generated can be quite long, depending on your
        framework.  Important notes to developers should be included at the top of the
-       file using :data:`exhale.configs.afterTitleDescription`, or after the hierarchies
-       using :data:`exhale.configs.afterHierarchyDescription`.
+       file using :data:`~exhale.configs.afterTitleDescription`, or after the hierarchies
+       using :data:`~exhale.configs.afterHierarchyDescription`.
 '''
 
 fullToctreeMaxDepth = 5
@@ -395,7 +395,7 @@ createTreeView = False
     .. tip::
 
        Using ``html_theme = "bootstrap"`` (the `Sphinx Bootstrap Theme`__)?  Make sure
-       you set :data:`exhale.configs.treeViewIsBootstrap` to ``True``!
+       you set :data:`~exhale.configs.treeViewIsBootstrap` to ``True``!
 
     __ https://ryan-roemer.github.io/sphinx-bootstrap-theme/
 '''
@@ -569,7 +569,7 @@ treeViewBootstrapCollapseIcon = "glyphicon glyphicon-minus"
 
 **Value in** ``exhale_args`` (str)
     See the `collapseIcon`_ description of ``bootstrap-treeview`` for more information.
-    See :data:`exhale.configs.treeViewBootstrapExpandIcon` for how to specify this
+    See :data:`~exhale.configs.treeViewBootstrapExpandIcon` for how to specify this
     CSS class value.
 
     .. _collapseIcon: https://github.com/jonmiles/bootstrap-treeview#collapseicon
@@ -594,9 +594,9 @@ treeViewBootstrapLevels = 1
 _class_hierarchy_id = "class-treeView"
 '''
 The ``id`` attribute of the HTML element associated with the **Class** Hierarchy when
-:data:`exhale.configs.createTreeView` is ``True``.
+:data:`~exhale.configs.createTreeView` is ``True``.
 
-1. When :data:`exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
+1. When :data:`~exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
    to the outer-most ``ul``.
 2. For bootstrap, an empty ``div`` is inserted with this ``id``, which will be the
    anchor point for the ``bootstrap-treeview`` library.
@@ -605,9 +605,9 @@ The ``id`` attribute of the HTML element associated with the **Class** Hierarchy
 _file_hierarchy_id = "file-treeView"
 '''
 The ``id`` attribute of the HTML element associated with the **Class** Hierarchy when
-:data:`exhale.configs.createTreeView` is ``True``.
+:data:`~exhale.configs.createTreeView` is ``True``.
 
-1. When :data:`exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
+1. When :data:`~exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
    to the outer-most ``ul``.
 2. For bootstrap, an empty ``div`` is inserted with this ``id``, which will be the
    anchor point for the ``bootstrap-treeview`` library.
@@ -616,15 +616,15 @@ The ``id`` attribute of the HTML element associated with the **Class** Hierarchy
 _bstrap_class_hierarchy_fn_data_name = "getClassHierarchyTree"
 '''
 The name of the JavaScript function that returns the ``json`` data associated with the
-**Class** Hierarchy when :data:`exhale.configs.createTreeView` is ``True`` **and**
-:data:`exhale.configs.treeViewIsBootstrap` is ``True``.
+**Class** Hierarchy when :data:`~exhale.configs.createTreeView` is ``True`` **and**
+:data:`~exhale.configs.treeViewIsBootstrap` is ``True``.
 '''
 
 _bstrap_file_hierarchy_fn_data_name = "getFileHierarchyTree"
 '''
 The name of the JavaScript function that returns the ``json`` data associated with the
-**File** Hierarchy when :data:`exhale.configs.createTreeView` is ``True`` **and**
-:data:`exhale.configs.treeViewIsBootstrap` is ``True``.
+**File** Hierarchy when :data:`~exhale.configs.createTreeView` is ``True`` **and**
+:data:`~exhale.configs.treeViewIsBootstrap` is ``True``.
 '''
 
 ########################################################################################
@@ -697,7 +697,7 @@ repoRedirectURL = None
        URL.  I should be able to get the URL from ``git remote`` and construct the
        URL from that and ``git branch``.  Probably just some path hacking with
        ``git rev-parse --show-toplevel`` and comparing that to
-       :data:`exhale.configs.doxygenStripFromPath`?
+       :data:`~exhale.configs.doxygenStripFromPath`?
 
        Please feel free to `add your input here`__.
 
@@ -714,7 +714,7 @@ contentsDirectives = True
 **Value in** ``exhale_args`` (bool)
     By default, Exhale will include a ``.. contents::`` directive on the individual
     generated pages for the types specified by
-    :data:`exhale.configs.kindsWithContentsDirectives`.  Set this to ``False`` to
+    :data:`~exhale.configs.kindsWithContentsDirectives`.  Set this to ``False`` to
     disable globally.
 
     See the :ref:`using_contents_directives` section for all pieces of the puzzle.
@@ -725,8 +725,8 @@ contentsTitle = "Contents"
 **Optional**
     The title of the ``.. contents::`` directive for an individual file page, when it's
     ``kind`` is in the list specified by
-    :data:`exhale.configs.kindsWithContentsDirectives` **and**
-    :data:`exhale.configs.contentsDirectives` is ``True``.
+    :data:`~exhale.configs.kindsWithContentsDirectives` **and**
+    :data:`~exhale.configs.contentsDirectives` is ``True``.
 
 **Value in** ``exhale_args`` (str)
     The default (for both Exhale and reStructuredText) is to label this as ``Contents``.
@@ -736,7 +736,7 @@ contentsTitle = "Contents"
     .. note::
 
        Specifying the empty string only removes the title **when** ``":local:"`` **is
-       present in** :data:`configs.exhale.contentsSpecifiers`.  See the
+       present in** :data:`~exhale.configs.contentsSpecifiers`.  See the
        :ref:`using_contents_directives` section for more information.
 '''
 
@@ -745,8 +745,8 @@ contentsSpecifiers = [":local:", ":backlinks: none"]
 **Optional**
     The specifications to apply to ``.. contents::`` directives for the individual file
     pages when it's ``kind`` is in the list specified by
-    :data:`exhale.configs.kindsWithContentsDirectives` **and**
-    :data:`exhale.configs.contentsDirectives` is ``True``.
+    :data:`~exhale.configs.kindsWithContentsDirectives` **and**
+    :data:`~exhale.configs.contentsDirectives` is ``True``.
 
 **Value in** ``exhale_args`` (list)
     A (one-dimensional) list of strings that will be applied to any ``.. contents::``
@@ -760,12 +760,12 @@ kindsWithContentsDirectives = ["file", "namespace"]
 **Optional**
     The kinds of compounds that will include a ``.. contents::`` directive on their
     individual library page.  The default is to generate one for Files and Namespaces.
-    Only takes meaning when :data:`exhale.configs.contentsDirectives` is ``True``.
+    Only takes meaning when :data:`~exhale.configs.contentsDirectives` is ``True``.
 
 **Value in** ``exhale_args`` (list)
     Provide a (one-dimensional) ``list`` or ``tuple`` of strings of the kinds of
     compounds that should include a ``.. contents::`` directive.  Each kind given
-    must one of the entries in :data:`exhale.utils.AVAILABLE_KINDS`.
+    must one of the entries in :data:`~exhale.utils.AVAILABLE_KINDS`.
 
     For example, if you wanted to enable Structs and Classes as well you would do
     something like:
@@ -794,14 +794,14 @@ customSpecificationsMapping = None
 
 **Value in** ``exhale_args`` (dict)
     The dictionary produced by calling
-    :func:`exhale.utils.makeCustomSpecificationsMapping` with your custom function.
+    :func:`~exhale.utils.makeCustomSpecificationsMapping` with your custom function.
 '''
 
 _closure_map_sanity_check = "blargh_BLARGH_blargh"
 '''
-See :func:`exhale.utils.makeCustomSpecificationsMapping` implementation, this is
+See :func:`~exhale.utils.makeCustomSpecificationsMapping` implementation, this is
 inserted to help enforce that Exhale made the dictionary going into
-:data:`exhale.configs.customSpecificationsMapping`.
+:data:`~exhale.configs.customSpecificationsMapping`.
 '''
 
 ########################################################################################
@@ -826,15 +826,15 @@ exhaleExecutesDoxygen = False
 
 **Value in** ``exhale_args`` (bool)
     Set to ``True`` to enable launching Doxygen.  You must set either
-    :data:`exhale.configs.exhaleUseDoxyfile` or :data:`exhale.configs.exhaleDoxygenStdin`.
+    :data:`~exhale.configs.exhaleUseDoxyfile` or :data:`~exhale.configs.exhaleDoxygenStdin`.
 '''
 
 exhaleUseDoxyfile = False
 '''
 **Optional**
-    If :data:`exhale.configs.exhaleExecutesDoxygen` is ``True``, this tells Exhale to
+    If :data:`~exhale.configs.exhaleExecutesDoxygen` is ``True``, this tells Exhale to
     use your own ``Doxyfile``.  The encouraged approach is to use
-    :data:`exhale.configs.exhaleDoxygenStdin`.
+    :data:`~exhale.configs.exhaleDoxygenStdin`.
 
 **Value in** ``exhale_args`` (bool)
     Set to ``True`` to have Exhale use your ``Doxyfile``.
@@ -856,7 +856,7 @@ exhaleUseDoxyfile = False
           section.
 
        2. ``STRIP_FROM_PATH`` is configured to be identical to what is specified with
-          :data:`exhale.configs.doxygenStripFromPath`.
+          :data:`~exhale.configs.doxygenStripFromPath`.
 
        I have no idea what happens when these conflict, but it likely will never result
        in valid documentation.
@@ -865,9 +865,9 @@ exhaleUseDoxyfile = False
 exhaleDoxygenStdin = None
 '''
 **Optional**
-    If :data:`exhale.configs.exhaleExecutesDoxygen` is ``True``, this tells Exhale to
+    If :data:`~exhale.configs.exhaleExecutesDoxygen` is ``True``, this tells Exhale to
     use the (multiline string) value specified in this argument *in addition to* the
-    :data:`exhale.configs.DEFAULT_DOXYGEN_STDIN_BASE`.
+    :data:`~exhale.configs.DEFAULT_DOXYGEN_STDIN_BASE`.
 
 **Value in** ``exhale_args`` (str)
     This string describes your project's specific Doxygen configurations.  At the very
@@ -905,15 +905,15 @@ DEFAULT_DOXYGEN_STDIN_BASE = textwrap.dedent(r'''
 ''')
 '''
 These are the default values sent to Doxygen along stdin when
-:data:`exhale.configs.exhaleExecutesDoxygen` is ``True``.  This is sent to Doxygen
-immediately **before** the :data:`exhale.configs.exhaleDoxygenStdin` provided to
+:data:`~exhale.configs.exhaleExecutesDoxygen` is ``True``.  This is sent to Doxygen
+immediately **before** the :data:`~exhale.configs.exhaleDoxygenStdin` provided to
 ``exhale_args`` in your ``conf.py``.  In this way, you can override any of the specific
 defaults shown here.
 
 .. tip::
 
-   See the documentation for :data:`exhale.configs.exhaleDoxygenStdin`, as well as
-   :data:`exhale.configs.exhaleUseDoxyfile`.  Only **one** may be provided to the
+   See the documentation for :data:`~exhale.configs.exhaleDoxygenStdin`, as well as
+   :data:`~exhale.configs.exhaleUseDoxyfile`.  Only **one** may be provided to the
    ``exhale_args`` in your ``conf.py``.
 
 .. include:: DEFAULT_DOXYGEN_STDIN_BASE_value.rst
