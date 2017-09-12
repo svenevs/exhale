@@ -1110,8 +1110,7 @@ def apply_sphinx_configurations(app):
     #    _parts[1] acceptable ;)
     _one     = containmentFolder == app.srcdir
     _two     = not containmentFolder.startswith(app.srcdir)
-    _abs_rel = os.path.abspath(os.path.relpath(containmentFolder, app.srcdir))
-    _parts   = _abs_rel.split(app.srcdir)
+    _parts   = containmentFolder.split(app.srcdir)
     _three   = _parts[0] != "" or len(_parts[1].split(os.path.sep)) > 2 or \
                    os.path.join(app.srcdir, _parts[1].replace(os.path.sep, "", 1)) != containmentFolder  # noqa
     # If they are equal, containmentFolder points somewhere entirely differently, or the
