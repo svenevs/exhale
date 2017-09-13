@@ -271,6 +271,8 @@ Make Your Documentation Link to the Generated API
 So the final step is, in your ``index.rst`` or some other ``toctree`` directive, tell
 Sphinx to link in the generated ``"{containmentFolder}/{rootFileName}"`` document:
 
+.. begin_strip_raw_for_pypi:
+
 .. raw:: html
 
    <div class="highlight-rest">
@@ -283,6 +285,8 @@ Sphinx to link in the generated ``"{containmentFolder}/{rootFileName}"`` documen
       <b>api/library_root</b></pre>
      </div>
    </div>
+
+.. end_strip_raw_for_pypi:
 
 .. _quickstart_clean_target:
 

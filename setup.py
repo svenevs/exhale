@@ -3,12 +3,19 @@ import sys
 # NOTE: full `setuptools` is required for this project
 from setuptools import setup, find_packages
 
+# TIP: hello!  It was challenging to get the right long description to show up on pypi,
+#      I eventually discovered this tool, which you should also use!
+#
+#          https://github.com/pypa/readme_renderer
+
 ########################################################################################
 # Gather brief and long descriptions from README.rst.                                  #
 ########################################################################################
 b_desc_begin = ".. begin_exhale_brief_desc"
 b_desc_end   = ".. end_exhale_brief_desc"
 l_desc_begin = ".. begin_exhale_long_desc"  # read from here until remainder of file
+b_avoid_raw  = ".. begin_strip_raw_for_pypi" # fancy highlighting with bold not allowed
+e_avoid_raw  = ".. end_strip_raw_for_pypi"   # because of .. raw:: html
 here         = os.path.abspath(os.path.dirname(__file__))
 
 # Process the file, reading the markers.  Store brief / long desc in corresponding lists
@@ -19,6 +26,7 @@ try:
     inside_brief = False
     long_desc    = []
     inside_long  = False
+    inside_raw   = False
     with open(readme_path) as readme:
         for line in readme:
             # See if we are at a being / end marker
@@ -31,11 +39,36 @@ try:
             elif line.startswith(l_desc_begin):
                 inside_long = True
                 continue
+            elif line.startswith(b_avoid_raw):
+                inside_raw = True
+                # the code that breaks pypi is
+                # .. raw:: html
+                #    <div class="highlight-rest">
+                #      <div class="highlight">
+                #        <pre>
+                #    .. toctree::
+                #       :maxdepth: 2
+                #
+                #       about
+                #       <b>api/library_root</b></pre>
+                #      </div>
+                #    </div>
+                #
+                # so just add the unstylized version
+                long_desc.append(".. code-block:: rst\n\n")
+                long_desc.append("   .. toctree::\n")
+                long_desc.append("      :maxdepth: 2\n\n")
+                long_desc.append("      about\n")
+                long_desc.append("      api/library_root\n\n")
+                continue
+            elif line.startswith(e_avoid_raw):
+                inside_raw = False
+                continue
 
             # If we are inside brief or long, append to the corresponding list
             if inside_brief:
                 brief_desc.append(line)
-            elif inside_long:
+            elif inside_long and not inside_raw:
                 long_desc.append(line)
 
     # Simple sanity check, make sure we got the brief and long descriptions.
