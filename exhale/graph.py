@@ -1895,6 +1895,10 @@ class ExhaleRoot:
             )
         try:
             with codecs.open(self.full_root_file_path, "w", "utf-8") as generated_index:
+                # Add the metadata if they requested it
+                if configs.pageLevelConfigMeta:
+                    generated_index.write("{0}\n\n".format(configs.pageLevelConfigMeta))
+
                 generated_index.write(textwrap.dedent('''
                     {heading}
                     {heading_mark}
@@ -2163,12 +2167,11 @@ class ExhaleRoot:
                             {heading}
                             {heading_mark}
 
-                            {children}
                         '''.format(
                             heading="Nested Types",
-                            heading_mark=configs.SUB_SUB_SECTION_HEADING,
-                            children=nested_child_string
+                            heading_mark=configs.SUB_SUB_SECTION_HEADING
                         ))
+                        nested_defs = "{0}{1}\n".format(nested_defs, nested_child_string)
 
                 if nested_type_of or nested_defs:
                     gen_file.write(textwrap.dedent('''
@@ -2317,6 +2320,10 @@ class ExhaleRoot:
         '''
         try:
             with codecs.open(nspace.file_name, "w", "utf-8") as gen_file:
+                # Add the metadata if they requested it
+                if configs.pageLevelConfigMeta:
+                    gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
+
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(nspace.link_name)
                 # every generated file must have a header for sphinx to be happy
@@ -2464,6 +2471,10 @@ class ExhaleRoot:
                 # create the programlisting file
                 try:
                     with codecs.open(f.program_file, "w", "utf-8") as gen_file:
+                        # Add the metadata if they requested it
+                        if configs.pageLevelConfigMeta:
+                            gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
+
                         # generate a link label for every generated file
                         link_declaration = ".. _{}:".format(f.program_link_name)
                         # every generated file must have a header for sphinx to be happy
@@ -2597,6 +2608,10 @@ class ExhaleRoot:
 
             try:
                 with codecs.open(f.file_name, "w", "utf-8") as gen_file:
+                    # Add the metadata if they requested it
+                    if configs.pageLevelConfigMeta:
+                        gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
+
                     # generate a link label for every generated file
                     link_declaration = ".. _{}:".format(f.link_name)
                     # every generated file must have a header for sphinx to be happy
@@ -2728,6 +2743,10 @@ class ExhaleRoot:
         try:
             #flake8fail get rid of {} in this method
             with codecs.open(node.file_name, "w", "utf-8") as gen_file:
+                # Add the metadata if they requested it
+                if configs.pageLevelConfigMeta:
+                    gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
+
                 # generate a link label for every generated file
                 link_declaration = ".. _{}:\n\n".format(node.link_name)
                 header = "{}\n{}\n\n".format(node.title, configs.SECTION_HEADING)
