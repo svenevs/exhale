@@ -17,6 +17,8 @@ Unsorted Misc
 
 .. todo:: cleanup / reorder these
 
+.. autofunction:: exhale.utils.heading_mark
+
 .. autofunction:: exhale.utils.nodeCompoundXMLContents
 
 .. autofunction:: exhale.utils.qualifyKind

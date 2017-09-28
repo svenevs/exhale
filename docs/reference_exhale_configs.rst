@@ -701,11 +701,11 @@ get confused by.
 Utility Variables
 ----------------------------------------------------------------------------------------
 
-.. autodata:: exhale.configs.SECTION_HEADING
+.. autodata:: exhale.configs.SECTION_HEADING_CHAR
 
-.. autodata:: exhale.configs.SUB_SECTION_HEADING
+.. autodata:: exhale.configs.SUB_SECTION_HEADING_CHAR
 
-.. autodata:: exhale.configs.SUB_SUB_SECTION_HEADING
+.. autodata:: exhale.configs.SUB_SUB_SECTION_HEADING_CHAR
 
 .. autodata:: exhale.configs._the_app
 

@@ -32,6 +32,26 @@ __name__      = "utils"
 __docformat__ = "reStructuredText"
 
 
+def heading_mark(title, char):
+    '''
+    Given an input title and character, creates the reStructuredText underline
+    according to the length of the title.
+
+    **Parameters**
+        **title** (str)
+            The title that is being underlined, length assumed to be >= 1.
+
+        **char** (str)
+            The single character being used for this heading, e.g.
+            :data:`~exhale.configs.SECTION_HEADING_CHAR`.
+
+    **Return**
+        **str**
+            Returns ``len(title) * char``.
+    '''
+    return len(title) * char
+
+
 def time_string(start, end):
     delta = datetime.timedelta(seconds=(end - start))
     # If the program took this long, the output has X Days, H:MM:S, which makes it

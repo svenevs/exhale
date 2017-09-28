@@ -1905,7 +1905,10 @@ class ExhaleRoot:
 
                 '''.format(
                     heading=configs.rootFileTitle,
-                    heading_mark=configs.SECTION_HEADING
+                    heading_mark=utils.heading_mark(
+                        configs.rootFileTitle,
+                        configs.SECTION_HEADING_CHAR
+                    )
                 )))
 
                 if configs.afterTitleDescription:
@@ -2122,7 +2125,10 @@ class ExhaleRoot:
                 '''.format(
                     link=link_declaration,
                     heading=node.title,
-                    heading_mark=configs.SECTION_HEADING,
+                    heading_mark=utils.heading_mark(
+                        node.title,
+                        configs.SECTION_HEADING_CHAR
+                    ),
                     defined_in=defined_in
                 )))
 
@@ -2163,24 +2169,32 @@ class ExhaleRoot:
                         # extract the list of links and add them as a subsection in the header
                         nested_child_string = nested_child_stream.getvalue()
                         nested_child_stream.close()
+                        heading = "Nested Types"
                         nested_defs = textwrap.dedent('''
                             {heading}
                             {heading_mark}
 
                         '''.format(
-                            heading="Nested Types",
-                            heading_mark=configs.SUB_SUB_SECTION_HEADING
+                            heading=heading,
+                            heading_mark=utils.heading_mark(
+                                heading,
+                                configs.SUB_SUB_SECTION_HEADING_CHAR
+                            )
                         ))
                         nested_defs = "{0}{1}\n".format(nested_defs, nested_child_string)
 
                 if nested_type_of or nested_defs:
+                    heading = "Nested Relationships"
                     gen_file.write(textwrap.dedent('''
                         {heading}
                         {heading_mark}
 
                     '''.format(
-                        heading="Nested Relationships",
-                        heading_mark=configs.SUB_SECTION_HEADING
+                        heading=heading,
+                        heading_mark=utils.heading_mark(
+                            heading,
+                            configs.SUB_SECTION_HEADING_CHAR
+                        )
                     )))
                     if nested_type_of:
                         gen_file.write("{0}\n\n".format(nested_type_of))
@@ -2192,12 +2206,16 @@ class ExhaleRoot:
                 ########################################################################
                 ##### remove this duplicated nonsense someday
                 if node.base_compounds or node.derived_compounds:
+                    heading = "Inheritance Relationships"
                     gen_file.write(textwrap.dedent('''
                         {heading}
                         {heading_mark}
                     '''.format(
-                        heading="Inheritance Relationships",
-                        heading_mark=configs.SUB_SECTION_HEADING
+                        heading=heading,
+                        heading_mark=utils.heading_mark(
+                            heading,
+                            configs.SUB_SECTION_HEADING_CHAR
+                        )
                     )))
                     if node.base_compounds:
                         if len(node.base_compounds) == 1:
@@ -2211,7 +2229,10 @@ class ExhaleRoot:
 
                         '''.format(
                             heading=title,
-                            heading_mark=configs.SUB_SUB_SECTION_HEADING,
+                            heading_mark=utils.heading_mark(
+                                title,
+                                configs.SUB_SUB_SECTION_HEADING_CHAR
+                            )
                         )))
                         gen_file.write("{0}\n".format(node.baseOrDerivedListString(
                             node.base_compounds, self.node_by_refid
@@ -2227,7 +2248,10 @@ class ExhaleRoot:
 
                         '''.format(
                             heading=title,
-                            heading_mark=configs.SUB_SUB_SECTION_HEADING,
+                            heading_mark=utils.heading_mark(
+                                title,
+                                configs.SUB_SUB_SECTION_HEADING_CHAR
+                            )
                         )))
                         gen_file.write("{0}\n".format(node.baseOrDerivedListString(
                             node.derived_compounds, self.node_by_refid
@@ -2239,13 +2263,17 @@ class ExhaleRoot:
                 if configs.includeTemplateParamOrderList:
                     template = node.templateParametersStringAsRestList(self.node_by_refid)
                     if template:
+                        heading = "Template Parameter Order"
                         gen_file.write(textwrap.dedent('''
                             {heading}
                             {heading_mark}
 
                         '''.format(
-                            heading="Template Parameter Order",
-                            heading_mark=configs.SUB_SECTION_HEADING
+                            heading=heading,
+                            heading_mark=utils.heading_mark(
+                                heading,
+                                configs.SUB_SECTION_HEADING_CHAR
+                            )
                         )))
 
                         gen_file.write("{template_params}\n\n".format(template_params=template))
@@ -2263,13 +2291,17 @@ class ExhaleRoot:
                 ########################################################################
                 # The Breathe directive!!!                                             #
                 ########################################################################
+                heading = "{kind} Documentation".format(kind=utils.qualifyKind(node.kind))
                 gen_file.write(textwrap.dedent('''
                     {heading}
                     {heading_mark}
 
                 '''.format(
-                    heading="{kind} Documentation".format(kind=utils.qualifyKind(node.kind)),
-                    heading_mark=configs.SUB_SECTION_HEADING
+                    heading=heading,
+                    heading_mark=utils.heading_mark(
+                        heading,
+                        configs.SUB_SECTION_HEADING_CHAR
+                    )
                 )))
                 # inject the appropriate doxygen directive and name of this node
                 directive = ".. {directive}:: {name}".format(
@@ -2325,10 +2357,13 @@ class ExhaleRoot:
                     gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
 
                 # generate a link label for every generated file
-                link_declaration = ".. _{}:\n\n".format(nspace.link_name)
+                link_declaration = ".. _{0}:\n\n".format(nspace.link_name)
                 # every generated file must have a header for sphinx to be happy
-                nspace.title = "{} {}".format(utils.qualifyKind(nspace.kind), nspace.name)
-                header = "{}\n{}\n\n".format(nspace.title, configs.SECTION_HEADING)
+                nspace.title = "{0} {1}".format(utils.qualifyKind(nspace.kind), nspace.name)
+                header = "{0}\n{1}\n\n".format(
+                    nspace.title,
+                    utils.heading_mark(nspace.title, configs.SECTION_HEADING_CHAR)
+                )
                 # generate the headings and links for the children
                 children_string = self.generateNamespaceChildrenString(nspace)
                 # write it all out
@@ -2340,7 +2375,7 @@ class ExhaleRoot:
                     contents_directive = ""
 
                 ######flake8fail TODO: leaving flake8 failure because this needs to be textwrapped / no more {}
-                gen_file.write("{}{}{}{}\n\n".format(link_declaration, header, contents_directive, children_string))
+                gen_file.write("{0}{1}{2}{3}\n\n".format(link_declaration, header, contents_directive, children_string))
         except:
             utils.fancyError(
                 "Critical error while generating the file for [{0}]".format(nspace.file_name)
@@ -2429,7 +2464,13 @@ class ExhaleRoot:
                 {heading}
                 {heading_mark}
 
-            '''.format(heading=sectionTitle, heading_mark=configs.SUB_SECTION_HEADING)))
+            '''.format(
+                heading=sectionTitle,
+                heading_mark=utils.heading_mark(
+                    sectionTitle,
+                    configs.SUB_SECTION_HEADING_CHAR
+                )
+            )))
             for l in lst:
                 stream.write(textwrap.dedent('''
                     - :ref:`{link}`
@@ -2488,8 +2529,12 @@ class ExhaleRoot:
                             - Return to documentation for :ref:`{parent}`
 
                         '''.format(
-                            link=link_declaration, heading=prog_title,
-                            heading_mark=configs.SECTION_HEADING,
+                            link=link_declaration,
+                            heading=prog_title,
+                            heading_mark=utils.heading_mark(
+                                prog_title,
+                                configs.SECTION_HEADING_CHAR
+                            ),
                             parent=f.link_name,
                         )))
                         gen_file.write(full_program_listing)
@@ -2502,11 +2547,18 @@ class ExhaleRoot:
 
         for f in self.files:
             if len(f.location) > 0:
+                heading = "Definition (``{where}``)".format(where=f.location)
                 file_definition = textwrap.dedent('''
-                    Definition (``{where}``)
+                    {heading}
                     {heading_mark}
 
-                '''.format(where=f.location, heading_mark=configs.SUB_SECTION_HEADING))
+                '''.format(
+                    heading=heading,
+                    heading_mark=utils.heading_mark(
+                        heading,
+                        configs.SUB_SECTION_HEADING_CHAR
+                    )
+                ))
             else:
                 file_definition = ""
 
@@ -2521,11 +2573,18 @@ class ExhaleRoot:
 
             if len(f.includes) > 0:
                 file_includes_stream = StringIO()
+                heading = "Includes"
                 file_includes_stream.write(textwrap.dedent('''
-                    Includes
+                    {heading}
                     {heading_mark}
 
-                '''.format(heading_mark=configs.SUB_SECTION_HEADING)))
+                '''.format(
+                    heading=heading,
+                    heading_mark=utils.heading_mark(
+                        heading,
+                        configs.SUB_SECTION_HEADING_CHAR
+                    )
+                )))
                 for incl in sorted(f.includes):
                     local_file = None
                     for incl_file in self.files:
@@ -2548,11 +2607,18 @@ class ExhaleRoot:
 
             if len(f.included_by) > 0:
                 file_included_by_stream = StringIO()
+                heading = "Included By"
                 file_included_by_stream.write(textwrap.dedent('''
-                    Included By
+                    {heading}
                     {heading_mark}
 
-                '''.format(heading_mark=configs.SUB_SECTION_HEADING)))
+                '''.format(
+                    heading=heading,
+                    heading_mark=utils.heading_mark(
+                        heading,
+                        configs.SUB_SECTION_HEADING_CHAR
+                    )
+                )))
                 for incl_ref, incl_name in f.included_by:
                     for incl_file in self.files:
                         if incl_ref == incl_file.refid:
@@ -2613,9 +2679,9 @@ class ExhaleRoot:
                         gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
 
                     # generate a link label for every generated file
-                    link_declaration = ".. _{}:".format(f.link_name)
+                    link_declaration = ".. _{0}:".format(f.link_name)
                     # every generated file must have a header for sphinx to be happy
-                    f.title = "{} {}".format(utils.qualifyKind(f.kind), f.name)
+                    f.title = "{0} {1}".format(utils.qualifyKind(f.kind), f.name)
                     heading = textwrap.dedent('''
                         {link}
 
@@ -2624,7 +2690,10 @@ class ExhaleRoot:
                     '''.format(
                         link=link_declaration,
                         heading=f.title,
-                        heading_mark=configs.SECTION_HEADING
+                        heading_mark=utils.heading_mark(
+                            f.title,
+                            configs.SECTION_HEADING_CHAR
+                        )
                     ))
 
                     brief, detailed = parse.getFileBriefAndDetailedRST(self, f)
@@ -2668,7 +2737,9 @@ class ExhaleRoot:
                 try:
                     with codecs.open(f.file_name, "a", "utf-8") as gen_file:
                         heading        = "Full File Listing"
-                        heading_mark   = configs.SUB_SECTION_HEADING
+                        heading_mark   = utils.heading_mark(
+                            heading, configs.SUB_SECTION_HEADING_CHAR
+                        )
                         directive      = utils.kindAsBreatheDirective(f.kind)
                         node           = f.location
                         specifications = "\n   ".join(
@@ -2725,7 +2796,18 @@ class ExhaleRoot:
 
         # generate the subdirectory section
         if len(child_dirs) > 0:
-            child_dirs_string = "Subdirectories\n{}\n\n".format(configs.SUB_SECTION_HEADING)
+            heading = "Subdirectories"
+            child_dirs_string = textwrap.dedent('''
+                {heading}
+                {heading_mark}
+
+            '''.format(
+                heading=heading,
+                heading_mark=utils.heading_mark(
+                    heading,
+                    configs.SUB_SECTION_HEADING_CHAR
+                )
+            ))
             for child_dir in sorted(child_dirs):
                 child_dirs_string = "{}- :ref:`{}`\n".format(child_dirs_string, child_dir.link_name)
         else:
@@ -2733,7 +2815,18 @@ class ExhaleRoot:
 
         # generate the files section
         if len(child_files) > 0:
-            child_files_string = "Files\n{}\n\n".format(configs.SUB_SECTION_HEADING)
+            heading = "Files"
+            child_files_string = textwrap.dedent('''
+                {heading}
+                {heading_mark}
+
+            '''.format(
+                heading=heading,
+                heading_mark=utils.heading_mark(
+                    heading,
+                    configs.SUB_SECTION_HEADING_CHAR
+                )
+            ))
             for child_file in sorted(child_files):
                 child_files_string = "{}- :ref:`{}`\n".format(child_files_string, child_file.link_name)
         else:
@@ -2748,10 +2841,20 @@ class ExhaleRoot:
                     gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
 
                 # generate a link label for every generated file
-                link_declaration = ".. _{}:\n\n".format(node.link_name)
-                header = "{}\n{}\n\n".format(node.title, configs.SECTION_HEADING)
+                link_declaration = ".. _{0}:\n\n".format(node.link_name)
+                header = textwrap.dedent('''
+                    {heading}
+                    {heading_mark}
+
+                '''.format(
+                    heading=node.title,
+                    heading_mark=utils.heading_mark(
+                        node.title,
+                        configs.SECTION_HEADING_CHAR
+                    )
+                ))
                 # write it all out
-                gen_file.write("{}{}{}\n{}\n\n".format(
+                gen_file.write("{0}{1}{2}\n{3}\n\n".format(
                     link_declaration, header, child_dirs_string, child_files_string)
                 )
         except:
@@ -3007,7 +3110,10 @@ class ExhaleRoot:
 
                 ''').format(
                     heading=file_title,
-                    heading_mark=configs.SUB_SECTION_HEADING
+                    heading_mark=utils.heading_mark(
+                        file_title,
+                        configs.SUB_SECTION_HEADING_CHAR
+                    )
                 ))
                 hierarchy_file.write(final_data_string)
                 hierarchy_file.write("\n\n")  # just in case, extra whitespace causes no harm
@@ -3180,7 +3286,10 @@ class ExhaleRoot:
 
                 '''.format(
                     heading=configs.fullApiSubSectionTitle,
-                    heading_mark=configs.SUB_SECTION_HEADING
+                    heading_mark=utils.heading_mark(
+                        configs.fullApiSubSectionTitle,
+                        configs.SUB_SECTION_HEADING_CHAR
+                    )
                 )))
 
                 # write everything to file: reorder these lines for different outcomes
@@ -3217,13 +3326,27 @@ class ExhaleRoot:
                 closed already.
         '''
         if len(lst) > 0:
-            openFile.write("{}\n{}\n\n".format(subsectionTitle, configs.SUB_SUB_SECTION_HEADING))
-            for l in sorted(lst):
-                openFile.write(
-                    ".. toctree::\n"
-                    "   :maxdepth: {}\n\n"
-                    "   {}\n\n".format(configs.fullToctreeMaxDepth, l.file_name)
+            openFile.write(textwrap.dedent('''
+                {heading}
+                {heading_mark}
+
+            '''.format(
+                heading=subsectionTitle,
+                heading_mark=utils.heading_mark(
+                    subsectionTitle,
+                    configs.SUB_SUB_SECTION_HEADING_CHAR
                 )
+            )))
+            for l in sorted(lst):
+                openFile.write(textwrap.dedent('''
+                    .. toctree::
+                       :maxdepth: {depth}
+
+                       {file}
+                '''.format(
+                    depth=configs.fullToctreeMaxDepth,
+                    file=l.file_name
+                )))
 
     ####################################################################################
     #

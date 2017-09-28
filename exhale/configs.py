@@ -14,9 +14,9 @@ follows:
 1. Things that are **not** supposed to change, because their value is expected to be
    constant, are declared in ``ALL_CAPS``.  See
 
-   - :data:`~exhale.configs.SECTION_HEADING`
-   - :data:`~exhale.configs.SUB_SECTION_HEADING`
-   - :data:`~exhale.configs.SUB_SUB_SECTION_HEADING`
+   - :data:`~exhale.configs.SECTION_HEADING_CHAR`
+   - :data:`~exhale.configs.SUB_SECTION_HEADING_CHAR`
+   - :data:`~exhale.configs.SUB_SUB_SECTION_HEADING_CHAR`
    - :data:`~exhale.configs.DEFAULT_DOXYGEN_STDIN_BASE`
 
 2. Internal / private variables that are **not** supposed to changed except for by this
@@ -334,11 +334,6 @@ fullApiSubSectionTitle = "Full API"
 **Value in** ``exhale_args`` (str)
     The default value is simply ``"Full API"``.  Change this to be something else if you
     so desire.
-
-    .. warning::
-
-       This entry is un-checked, but be careful there are no newline characters nor the
-       section title is longer than ``88`` characters.
 '''
 
 afterBodySummary = None
@@ -945,14 +940,14 @@ exhaleSilentDoxygen = False
 ## Utility variables.                                                                  #
 ##                                                                                     #
 ########################################################################################
-SECTION_HEADING = "=" * 88
-''' The restructured text file heading separator (``"=" * 88``). '''
+SECTION_HEADING_CHAR = "="
+''' The restructured text H1 heading character used to underline sections. '''
 
-SUB_SECTION_HEADING = "-" * 88
-''' The restructured text section heading separator (``"-" * 88``). '''
+SUB_SECTION_HEADING_CHAR = "-"
+''' The restructured text H2 heading character used to underline subsections. '''
 
-SUB_SUB_SECTION_HEADING = "*" * 88
-''' The restructured text sub-section heading separator (``"*" * 88``).'''
+SUB_SUB_SECTION_HEADING_CHAR = "*"
+''' The restructured text H3 heading character used to underline sub-subsections. '''
 
 _the_app = None
 ''' The Sphinx ``app`` object.  Currently unused, saved for availability in future. '''

@@ -186,7 +186,13 @@ def convertDescriptionToRST(textRoot, fileNode, soupTag, heading):
         start = textwrap.dedent('''
             {heading}
             {heading_mark}
-        '''.format(heading=heading, heading_mark=configs.SUB_SECTION_HEADING))
+        '''.format(
+            heading=heading,
+            heading_mark=utils.heading_mark(
+                heading,
+                configs.SUB_SECTION_HEADING_CHAR
+            )
+        ))
         return "{0}{1}".format(start, contents)
     else:
         return ""
