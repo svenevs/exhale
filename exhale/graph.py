@@ -2007,6 +2007,7 @@ class ExhaleRoot:
         else:
             # begin html_safe_name, templates will do more work
             html_safe_name = node.name.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
+            html_safe_name = html_safe_name.replace("&", "_AMP").replace("*", "_STAR")
             # special treatment for templates
             first_lt = node.name.find("<")
             last_gt  = node.name.rfind(">")
