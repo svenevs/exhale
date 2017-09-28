@@ -36,7 +36,7 @@ markup syntax / websites.
 
 .. begin_exhale_long_desc
 
-Exhale is a `Sphinx <https://www.sphinx-doc.org/en/stable/>`_ extension that depends on
+Exhale is a `Sphinx <http://www.sphinx-doc.org/en/stable/>`_ extension that depends on
 the excellent `Breathe`_ extension which enables parsing Doxygen documentation into the
 Sphinx domain.  Exhale provides a layer of automation, enabling launching Doxygen and
 generating the full website all from your ``conf.py``.  Exhale will execute these
@@ -44,7 +44,7 @@ actions by way of ``sphinx-build`` being invoked, allowing you to use it for hos
 `Read the Docs <https://readthedocs.org/>`_.  Exhale was designed for generating html
 output, and may not be appropriate for other builders provided by Sphinx.
 
-.. _Breathe: https://breathe.readthedocs.io/en/latest
+.. _Breathe: http://breathe.readthedocs.io/en/latest
 
 .. end_exhale_long_desc
 
@@ -74,13 +74,13 @@ HTML Theme choices:
 .. _alabaster: https://alabaster.readthedocs.io/en/latest/
 
 .. |docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=latest
-   :target: https://my-favorite-documentation-test.readthedocs.io/en/latest/
+   :target: http://my-favorite-documentation-test.readthedocs.io/en/latest/
 
 .. |bootstrap| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=bootstrap
-   :target: https://my-favorite-documentation-test.readthedocs.io/en/bootstrap
+   :target: http://my-favorite-documentation-test.readthedocs.io/en/bootstrap
 
 .. |alabaster| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=alabaster
-   :target: https://my-favorite-documentation-test.readthedocs.io/en/alabaster
+   :target: http://my-favorite-documentation-test.readthedocs.io/en/alabaster
 
 .. end_in_action
 
@@ -94,10 +94,10 @@ reStructuredText directives, and both `BeautifulSoup`_ and `lxml`_ for parsing t
 generated Doxygen XML documentation.  Exhale also uses `six`_ help account for the
 Python 2 unicode dilemma.  The easiest way to install Exhale is:
 
-__ https://www.sphinx-doc.org/en/stable/extensions.html
+__ http://www.sphinx-doc.org/en/stable/extensions.html
 
 .. _BeautifulSoup: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-.. _lxml: https://lxml.de/
+.. _lxml: http://lxml.de/
 .. _six: https://pythonhosted.org/six/
 
 .. code-block:: bash
@@ -123,7 +123,7 @@ of installing Exhale through other means, as it contains a ``setup.py``, but sin
    seamlessly for Unix systems, but my understanding is Windows users may need to put a
    little more effort in to get it to install.
 
-   __ https://lxml.de/installation.html
+   __ http://lxml.de/installation.html
 
 .. end_installation
 
@@ -132,7 +132,7 @@ Usage
 
 See the `full documentation and usage guide`__.
 
-__ https://exhale.readthedocs.io/en/latest
+__ http://exhale.readthedocs.io/en/latest
 
 .. begin_exhale_is_it_for_me
 
@@ -150,7 +150,7 @@ everything started.
 **Why not use it?**
     It may be more involved than you need.  Check out the ``breathe-apidoc`` tool
     that comes with your installation of ``breathe``.  It is quite similar to the
-    `Sphinx API doc tool <https://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html>`_,
+    `Sphinx API doc tool <http://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html>`_,
     and that may be all you are looking for to get your documentation displayed.
 
     If you are working with a small enough framework, you may also be satisfied with
@@ -362,7 +362,7 @@ license:
 
 1. For non-bootstrap, I used Stephen Morley's excellent and lightweight
    collapsibleLists_ including the sample CSS / images on that post.  He includes a
-   generous `CC0 license <https://code.stephenmorley.org/about-this-site/copyright/>`_
+   generous `CC0 license <http://code.stephenmorley.org/about-this-site/copyright/>`_
    for these files, as well as the rest of his website.
 
    For every HTML Theme I have tried, except for ones using bootstrap, this library
@@ -380,7 +380,7 @@ license:
 Both of these libraries and copies of their licenses can be found in the
 `data folder of the source code <https://github.com/svenevs/exhale/tree/master/exhale/data>`_.
 
-.. _collapsibleLists: https://code.stephenmorley.org/javascript/collapsible-lists/
+.. _collapsibleLists: http://code.stephenmorley.org/javascript/collapsible-lists/
 
 __ https://github.com/jonmiles/bootstrap-treeview
 
