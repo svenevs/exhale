@@ -312,7 +312,7 @@ documenting specific aspects:
 +-----------------+--------------------------------------------------------------------+
 | ``\namespace``  | To document a ``namespace``.                                       |
 +-----------------+--------------------------------------------------------------------+
-| Inline Formatting Supported (see also :ref:`file_level_documentation_in_exhale`)     |
+| Inline Formatting (see :ref:`file_and_namespace_level_documentation_in_exhale`)      |
 +-----------------+--------------------------------------------------------------------+
 | ``\b``          | Bold a single word (e.g. ``\b bold``).                             |
 +-----------------+--------------------------------------------------------------------+

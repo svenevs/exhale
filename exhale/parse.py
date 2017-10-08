@@ -14,7 +14,7 @@ from . import utils
 import textwrap
 from bs4 import BeautifulSoup
 
-__all__       = ["walk", "convertDescriptionToRST", "getFileBriefAndDetailedRST"]
+__all__       = ["walk", "convertDescriptionToRST", "getBriefAndDetailedRST"]
 __name__      = "utils"
 __docformat__ = "reStructuredText"
 
@@ -167,10 +167,10 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
             ctr += 1
 
 
-def convertDescriptionToRST(textRoot, fileNode, soupTag, heading):
+def convertDescriptionToRST(textRoot, node, soupTag, heading):
     '''
-    Parses the ``fileNode`` XML document and returns a reStructuredText formatted
-    string.  Helper method for :func:`~exhale.parse.getFileBriefAndDetailedRST`.
+    Parses the ``node`` XML document and returns a reStructuredText formatted
+    string.  Helper method for :func:`~exhale.parse.getBriefAndDetailedRST`.
 
     .. todo:: actually document this
     '''
@@ -198,22 +198,22 @@ def convertDescriptionToRST(textRoot, fileNode, soupTag, heading):
         return ""
 
 
-def getFileBriefAndDetailedRST(textRoot, fileNode):
+def getBriefAndDetailedRST(textRoot, node):
     '''
-    Given an input ``fileNode``, return a tuple of strings where the first element of
+    Given an input ``node``, return a tuple of strings where the first element of
     the return is the ``brief`` description and the second is the ``detailed``
     description.
 
     .. todo:: actually document this
     '''
-    node_xml_contents = utils.nodeCompoundXMLContents(fileNode)
+    node_xml_contents = utils.nodeCompoundXMLContents(node)
     if not node_xml_contents:
         return "", ""
 
     try:
         node_soup = BeautifulSoup(node_xml_contents, "lxml-xml")
     except:
-        utils.fancyError("Unable to parse [{0}] xml using BeautifulSoup".format(fileNode.name))
+        utils.fancyError("Unable to parse [{0}] xml using BeautifulSoup".format(node.name))
 
     try:
         # In the file xml definitions, things such as enums or defines are listed inside
@@ -228,7 +228,7 @@ def getFileBriefAndDetailedRST(textRoot, fileNode):
             # Empty descriptions will usually get parsed as a single newline, which we
             # want to ignore ;)
             if not brief.get_text().isspace():
-                brief_desc = convertDescriptionToRST(textRoot, fileNode, brief, None)
+                brief_desc = convertDescriptionToRST(textRoot, node, brief, None)
 
         # process the detailed description if provided
         detailed      = node_soup.doxygen.compounddef.find_all("detaileddescription", recursive=False)
@@ -236,7 +236,7 @@ def getFileBriefAndDetailedRST(textRoot, fileNode):
         if len(detailed) == 1:
             detailed = detailed[0]
             if not detailed.get_text().isspace():
-                detailed_desc = convertDescriptionToRST(textRoot, fileNode, detailed, "Detailed Description")
+                detailed_desc = convertDescriptionToRST(textRoot, node, detailed, "Detailed Description")
 
         return brief_desc, detailed_desc
     except:

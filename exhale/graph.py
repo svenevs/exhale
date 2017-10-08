@@ -2007,7 +2007,7 @@ class ExhaleRoot:
         else:
             # begin html_safe_name, templates will do more work
             html_safe_name = node.name.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
-            html_safe_name = html_safe_name.replace("&", "_AMP").replace("*", "_STAR")
+
             # special treatment for templates
             first_lt = node.name.find("<")
             last_gt  = node.name.rfind(">")
@@ -2024,7 +2024,6 @@ class ExhaleRoot:
                     cls=node.name[:first_lt].split("::")[-1],  # remove namespaces
                     templates=node.name[first_lt:last_gt + 1]  # template params
                 )
-                html_safe_name = html_safe_name.replace("<", "LT_").replace(">", "_GT").replace(",", "_COMMA")
             else:
                 title = node.name.split("::")[-1]
 
@@ -2039,6 +2038,14 @@ class ExhaleRoot:
                     parent=node.parent.name.split("::")[-1],
                     child=title
                 )
+
+        # account for decltype(&T::var) etc, could be in name or template params
+        html_safe_name = html_safe_name.replace("&", "_AMP_").replace("*", "_STAR_")
+        html_safe_name = html_safe_name.replace("(", "_LPAREN_").replace(")", "_RPAREN_")
+        html_safe_name = html_safe_name.replace("<", "_LT_").replace(">", "_GT_").replace(",", "_COMMA_")
+
+        if html_safe_name.endswith("_"):
+            html_safe_name = html_safe_name[:-1]
 
         # create the file and link names
         node.file_name = "{dir}/{kind}_{name}.rst".format(
@@ -2357,26 +2364,36 @@ class ExhaleRoot:
                 if configs.pageLevelConfigMeta:
                     gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
 
-                # generate a link label for every generated file
-                link_declaration = ".. _{0}:\n\n".format(nspace.link_name)
-                # every generated file must have a header for sphinx to be happy
                 nspace.title = "{0} {1}".format(utils.qualifyKind(nspace.kind), nspace.name)
-                header = "{0}\n{1}\n\n".format(
-                    nspace.title,
-                    utils.heading_mark(nspace.title, configs.SECTION_HEADING_CHAR)
-                )
-                # generate the headings and links for the children
-                children_string = self.generateNamespaceChildrenString(nspace)
-                # write it all out
+
+                # generate a link label for every generated file
+                gen_file.write(textwrap.dedent('''
+                    .. _{link}:
+
+                    {heading}
+                    {heading_mark}
+
+                '''.format(
+                    link=nspace.link_name,
+                    heading=nspace.title,
+                    heading_mark=utils.heading_mark(nspace.title, configs.SECTION_HEADING_CHAR)
+                )))
+
+                brief, detailed = parse.getBriefAndDetailedRST(self, nspace)
+                if brief:
+                    gen_file.write("{0}\n\n".format(brief))
+
                 # include the contents directive if requested
                 contents = utils.contentsDirectiveOrNone(nspace.kind)
                 if contents:
-                    contents_directive = contents
-                else:
-                    contents_directive = ""
+                    gen_file.write("{0}\n\n".format(contents))
 
-                ######flake8fail TODO: leaving flake8 failure because this needs to be textwrapped / no more {}
-                gen_file.write("{0}{1}{2}{3}\n\n".format(link_declaration, header, contents_directive, children_string))
+                if detailed:
+                    gen_file.write("{0}\n\n".format(detailed))
+
+                # generate the headings and links for the children
+                children_string = self.generateNamespaceChildrenString(nspace)
+                gen_file.write(children_string)
         except:
             utils.fancyError(
                 "Critical error while generating the file for [{0}]".format(nspace.file_name)
@@ -2697,7 +2714,7 @@ class ExhaleRoot:
                         )
                     ))
 
-                    brief, detailed = parse.getFileBriefAndDetailedRST(self, f)
+                    brief, detailed = parse.getBriefAndDetailedRST(self, f)
                     gen_file.write(textwrap.dedent('''
                         {heading}
 

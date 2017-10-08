@@ -250,16 +250,16 @@ Doxygen Documentation Specifics
    :start-after: begin_doxygen_execution_and_customization
    :end-before:  end_doxygen_execution_and_customization
 
-.. _file_level_documentation_in_exhale:
+.. _file_and_namespace_level_documentation_in_exhale:
 
-File Level Documentation in Exhale
+File and Namespace Level Documentation in Exhale
 ****************************************************************************************
 
-Since the Breathe file directives cannot be used, Exhale implements a
-"best-faith-effort" file documentation parser.  It includes support for a few basic
+Since the Breathe file / namespace directives cannot be used, Exhale implements a
+"best-faith-effort" documentation parser.  It includes support for a few basic
 block-level elements such as listings, but it is definitively not robust.  If the file
-level documentation is rendering in unexpected ways, this is because your file
-documentation is too advanced for Exhale's mini-parser.
+or namespace level documentation is rendering in unexpected ways, this is because your
+documentation is "too advanced" for Exhale's mini-parser.
 
 .. tip::
 
@@ -269,6 +269,24 @@ documentation is too advanced for Exhale's mini-parser.
 However, the solution is easy: use a verbatim reStructuredText environment in the
 documentation.  See how to do that in the :ref:`Doxygen ALIASES <doxygen_aliases>`
 section.
+
+.. note::
+
+   By entering a verbatim RST environment, doxygen commands such as ``\ref`` are **no
+   longer available**.  Or rather, they will be parsed as-is without actually generating
+   a link to the desired target.  Since you've now entered a verbatim RST environment,
+   you would instead use the Sphinx domain links.
+
+   So if you were linking to ``class namespace::ClassName`` using
+   ``\ref namespace::ClassName``, this would now change to be
+   ``:class:`namespace::ClassName```.  See the `Sphinx Cross Referencing Guide <cross_>`_
+   for some more examples.  There is also an `Intersphinx Guide <intersphinx_>`_
+   available on the companion website with some examples of linking to macros.
+
+.. _cross: http://www.sphinx-doc.org/en/stable/domains.html#cross-referencing-syntax
+
+.. _intersphinx: http://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
+
 
 Start to finish for Read the Docs
 ----------------------------------------------------------------------------------------

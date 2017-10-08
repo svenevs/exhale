@@ -340,13 +340,18 @@ something like this, where special treatment is given to File pages specifically
         2. See the :ref:`using_contents_directives` section.
 
         For File pages, the ``brief`` description of the File (if provided) is included
-        in Section 1 underneath the title.
+        in Section 1 underneath the title.  See
+        :ref:`file_and_namespace_level_documentation_in_exhale`
 
     **Other Pages**
         1. Assuming Exhale was able to infer which file defined a given node, a link to
            the file page that defined it is included here.
 
         2. See the :ref:`using_contents_directives` section.
+
+        For Namespace pages, the ``brief`` description of the Namespace (if provided) is
+        included in Section 1 underneath the title.  See
+        :ref:`file_and_namespace_level_documentation_in_exhale`.
 
 **Section 2**
     **File Pages**
@@ -382,16 +387,14 @@ something like this, where special treatment is given to File pages specifically
 
         Please refer to the :ref:`doxygen_documentaion_specifics` section for potential
         causes, in particular the subsection describing
-        :ref:`file_level_documentation_in_exhale`.
+        :ref:`file_and_namespace_level_documentation_in_exhale`.
 
     **Namespaces**
         No Breathe directives for namespaces are used, as they will cause the same
         problems that the file directives do.
 
-        .. todo::
-
-           I have not explored acquiring namespace documentation from the Doxygen xml.
-           This should be possible, but is currently not implemented.
+        Please refer to the :ref:`file_and_namespace_level_documentation_in_exhale`
+        section.
 
     **Other Pages**
         For all other pages (except for directories, which simply link to subdirectories
