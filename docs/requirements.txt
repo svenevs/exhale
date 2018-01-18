@@ -1,5 +1,5 @@
 bs4==0.0.1     # BeautifulSoup!
 lxml==4.1.1    # We need the lxml backend for BeautifulSoup.
 sphinx==1.6.6  # Exhale is a Sphinx extension.
-breathe # The directives used for documentation come from the excellent Breathe.
+breathe==4.7.3 # The directives used for documentation come from the excellent Breathe.
 six     # Primarily for Unicode string types
