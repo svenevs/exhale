@@ -1223,7 +1223,7 @@ class ExhaleRoot:
                 '''.format(refid))))
                 bullet = "  -"
                 utils.verbose_log(utils.critical(
-                    "{0}{1}".format(bullet, "\n{0}".format(bullet).join(str(c) for c in candidates))
+                    "{0}{1}".format(bullet, "\n{0}".format(bullet).join("{0}, {1}".format(c.name, c.refid) for c in candidates))
                 ))
 
         # now that all nodes have been discovered, process template parameters, and
