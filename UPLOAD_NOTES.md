@@ -2,7 +2,7 @@
 
 For when I forget how I did this...
 
-```py
+```console
 # Build the source distribution
 $ python setup.py sdist
 
