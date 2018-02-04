@@ -20,7 +20,7 @@ from setuptools import setup, find_packages
 ########################################################################################
 b_desc_begin = ".. begin_exhale_brief_desc"
 b_desc_end   = ".. end_exhale_brief_desc"
-l_desc_begin = ".. begin_exhale_long_desc"  # read from here until remainder of file
+l_desc_begin = ".. begin_exhale_long_desc"   # read from here until remainder of file
 b_avoid_raw  = ".. begin_strip_raw_for_pypi" # fancy highlighting with bold not allowed
 e_avoid_raw  = ".. end_strip_raw_for_pypi"   # because of .. raw:: html
 here         = os.path.abspath(os.path.dirname(__file__))
@@ -150,6 +150,8 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
         "Topic :: Documentation :: Sphinx",
         "Topic :: Software Development :: Documentation",
     ]
