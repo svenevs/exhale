@@ -394,4 +394,4 @@ projects.  If you require a different license, please raise an issue and I will 
 a dual license.
 
 The full license is
-`available here <https://github.com/svenevs/exhale/blob/master/LICENSE.md>`_.
+`available here <https://github.com/svenevs/exhale/blob/master/LICENSE>`_.

@@ -1,3 +1,10 @@
+########################################################################################
+# This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
+# Full BSD 3-Clause license available here:                                            #
+#                                                                                      #
+#                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
+########################################################################################
+
 import os
 import sys
 # NOTE: full `setuptools` is required for this project

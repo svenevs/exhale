@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
 ########################################################################################
-# This file is part of exhale.  Copyright (c) 2017, Stephen McDowell.                  #
+# This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
 #                                                                                      #
-#               https://github.com/svenevs/exhale/blob/master/LICENSE.md               #
+#                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 '''
 The ``configs`` module exists to contain the Sphinx Application configurations specific
