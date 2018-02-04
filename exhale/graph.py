@@ -1133,7 +1133,7 @@ class ExhaleRoot:
                     # the location of the file as determined by doxygen
                     location = cdef.find("location")
                     if location and "file" in location.attrs:
-                        f.def_in_file_location = location.attrs["file"]
+                        f.location = location.attrs["file"]
                 except:
                     utils.fancyError(
                         "Could not process Doxygen xml for file [{0}]".format(f.name)
@@ -1180,20 +1180,23 @@ class ExhaleRoot:
                                     if "file" in location.attrs:
                                         filedef = location.attrs["file"]
                                         for f in self.files:
-                                            if filedef == f.def_in_file_location:
+                                            if filedef == f.location:
                                                 node.def_in_file = f
                                                 if node not in f.children:
                                                     f.children.append(node)
                                                 break
 
-        missing_file_def = {}
-        missing_file_def_candidates = {}
+        # Find the nodes that did not have their file location definition assigned
+        missing_file_def            = {} # keys: refid, values: ExhaleNode
+        missing_file_def_candidates = {} # keys: refid, values: ExhaleNode (file kind only!)
         for refid in self.node_by_refid:
             node = self.node_by_refid[refid]
-            if node.def_in_file is None and node.kind not in ("file", "dir", "group", "namespace"):
+            if node.def_in_file is None and node.kind not in ("file", "dir", "group", "namespace", "enumvalue"):
                 missing_file_def[refid] = node
                 missing_file_def_candidates[refid] = []
 
+        # Go through every file and see if the refid associated with a node missing a
+        # file definition location is present in the <programlisting>
         for f in self.files:
             cdef = f.soup.doxygen.compounddef
             # try and find things in the programlisting as a last resort
@@ -1209,22 +1212,38 @@ class ExhaleRoot:
                             if refid in missing_file_def and f not in missing_file_def_candidates[refid]:
                                 missing_file_def_candidates[refid].append(f)
 
+        # For every refid missing a file definition location, see if we found it only
+        # once in a file node's <programlisting>.  If so, assign that as the file the
+        # node was defined in
         for refid in missing_file_def:
             node = missing_file_def[refid]
             candidates = missing_file_def_candidates[refid]
             # If only one found, life is good!
             if len(candidates) == 1:
                 node.def_in_file = candidates[0]
+                # << verboseBuild
+                utils.verbose_log(utils.info(
+                    "Manually setting file definition of {0} {1} to [{2}]".format(
+                        node.kind, node.name, node.def_in_file.location
+                    ),
+                    utils.AnsiColors.BOLD_CYAN
+                ))
+            # More than one found, don't know what to do...
             elif len(candidates) > 1:
                 # << verboseBuild
-                utils.verbose_log(utils.critical(textwrap.dedent('''
+                err_msg = StringIO()
+                err_msg.write(textwrap.dedent('''
                     While attempting to discover the file that Doxygen refid `{0}` was
                     defined in, more than one candidate was found.  The candidates were:
-                '''.format(refid))))
-                bullet = "  -"
-                utils.verbose_log(utils.critical(
-                    "{0}{1}".format(bullet, "\n{0}".format(bullet).join(c for c in candidates))
-                ))
+                '''.format(refid)))
+                # NOTE: candidates should only ever contain File nodes (thus c.location
+                #       should exist, and already be populated).
+                for c in candidates:
+                    err_msg.write("  - path=[{0}], refid={1}\n".format(c.location, c.refid))
+                err_msg.write("\n")
+                utils.verbose_log(utils.critical(err_msg.getvalue()))
+            # NOTE: no 'else' clause here, a warning about no file link generated is
+            #       produced when the rst file is written
 
         # now that all nodes have been discovered, process template parameters, and
         # coordinate any base / derived inheritance relationships
