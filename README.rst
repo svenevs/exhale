@@ -1,11 +1,16 @@
 Exhale
 ========================================================================================
-|docs|
+|docs| |license|
 
 .. |docs| image:: https://readthedocs.org/projects/exhale/badge/?version=latest
    :alt: Documentation Status
    :scale: 100%
    :target: https://exhale.readthedocs.io/en/latest/?badge=latest
+
+.. |license| image:: https://img.shields.io/github/license/svenevs/exhale.svg
+   :alt: License BSD-3 Clause
+   :scale: 100%
+   :target: https://github.com/svenevs/exhale/blob/master/LICENSE
 
 .. begin_tmp_danger_warning
 
@@ -60,11 +65,11 @@ HTML Theme choices:
 +------------------------------+------------------+----------------------+
 | HTML Theme Choice            | TreeView Created | ExhaleCompanion Docs |
 +==============================+==================+======================+
-| `RTD Theme <rtd_>`_          | Yes              | |docs|               |
+| `RTD Theme <rtd_>`_          | Yes              | |rtd-docs|           |
 +------------------------------+------------------+----------------------+
-| `Bootstrap Theme <bstrap_>`_ | Yes              | |bootstrap|          |
+| `Bootstrap Theme <bstrap_>`_ | Yes              | |bootstrap-docs|     |
 +------------------------------+------------------+----------------------+
-| `Alabaster`_                 | No               | |alabaster|          |
+| `Alabaster`_                 | No               | |alabaster-docs|     |
 +------------------------------+------------------+----------------------+
 
 .. _companion:  https://github.com/svenevs/exhale-companion
@@ -73,13 +78,13 @@ HTML Theme choices:
 .. _bstrap:    https://ryan-roemer.github.io/sphinx-bootstrap-theme/
 .. _alabaster: https://alabaster.readthedocs.io/en/latest/
 
-.. |docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=latest
+.. |rtd-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=latest
    :target: http://my-favorite-documentation-test.readthedocs.io/en/latest/
 
-.. |bootstrap| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=bootstrap
+.. |bootstrap-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=bootstrap
    :target: http://my-favorite-documentation-test.readthedocs.io/en/bootstrap
 
-.. |alabaster| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=alabaster
+.. |alabaster-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=alabaster
    :target: http://my-favorite-documentation-test.readthedocs.io/en/alabaster
 
 .. end_in_action
