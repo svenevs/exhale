@@ -1382,7 +1382,7 @@ def apply_sphinx_configurations(app):
                 "Exhale: changing directories to [{0}] to execute Doxygen.".format(app.confdir)
             ))
             os.chdir(app.confdir)
-        app.info(utils.info("Exhale: executing doxygen."))
+        # app.info(utils.info("Exhale: executing doxygen."))
         status = deploy.generateDoxygenXML()
         # Being overly-careful to put sphinx back where it was before potentially erroring out
         if returnPath:
@@ -1394,9 +1394,9 @@ def apply_sphinx_configurations(app):
             raise ExtensionError(status)
         else:
             end = utils.get_time()
-            app.info(utils.progress(
-                "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
-            ))
+            # app.info(utils.progress(
+            #     "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
+            # ))
     else:
         if exhaleUseDoxyfile:
             app.warn("Exhale: `exhaleUseDoxyfile` ignored since `exhaleExecutesDoxygen=False`")
@@ -1472,7 +1472,7 @@ def apply_sphinx_configurations(app):
         # We have all the files we need, the extra files will be copied automatically by
         # sphinx to the correct _static/ location, but stylesheets and javascript need
         # to be added explicitly
-        app.info(utils.info("Exhale: adding tree view css / javascript."))
+        # app.info(utils.info("Exhale: adding tree view css / javascript."))
         app.config.html_static_path.append(collapse_data)
 
         # Add the stylesheets
@@ -1483,4 +1483,4 @@ def apply_sphinx_configurations(app):
         for js in tree_data_js:
             app.add_javascript(js)
 
-        app.info(utils.progress("Exhale: added tree view css / javascript."))
+        # app.info(utils.progress("Exhale: added tree view css / javascript."))

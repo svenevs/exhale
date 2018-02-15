@@ -621,6 +621,7 @@ def critical(msg, ansi_fmt=AnsiColors.BOLD_RED, output_stream=sys.stderr):
 
 
 def verbose_log(msg, ansi_fmt=None):
+    return
     if configs.verboseBuild:
         if ansi_fmt:
             log = _use_color(msg, ansi_fmt, sys.stderr)

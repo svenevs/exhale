@@ -93,10 +93,11 @@ def _generate_doxygen(doxygen_input):
         #
         # See excellent synopsis:
         # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
-        _, tmp_out_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-        _, tmp_err_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-        tmp_out         = codecs.open(tmp_out_path, "r+", "utf-8")  # read/write (read after communicate)
-        tmp_err         = codecs.open(tmp_err_path, "r+", "utf-8")
+        # _, tmp_out_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
+        # _, tmp_err_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
+        # tmp_out         = codecs.open(tmp_out_path, "r+", "utf-8")  # read/write (read after communicate)
+        # tmp_err         = codecs.open(tmp_err_path, "r+", "utf-8")
+        FNULL = open(os.devnull, 'w')
 
         # Setup the arguments to launch doxygen
         if doxyfile:
@@ -104,10 +105,10 @@ def _generate_doxygen(doxygen_input):
             kwargs = {}
         else:
             args   = ["doxygen", "-"]
-            kwargs = {"stdin": PIPE}
+            kwargs = {"stdin": PIPE, "stdout": FNULL, "stderr": FNULL}
         # Write to the tempfiles over PIPE to avoid buffer overflowing
-        kwargs["stdout"] = tmp_out
-        kwargs["stderr"] = tmp_err
+        # kwargs["stdout"] = tmp_out
+        # kwargs["stderr"] = tmp_err
 
         # Note: overload of args / kwargs, Popen is expecting a list as the first
         #       parameter (aka no *args, just args)!
@@ -126,29 +127,31 @@ def _generate_doxygen(doxygen_input):
         # Waits until doxygen has completed
         doxygen_proc.communicate(**comm_kwargs)
 
+        FNULL.close()
+
         # Print out what was written to the tmpfiles by doxygen
-        if not configs.exhaleSilentDoxygen:
-            # Doxygen output (some useful information, mostly just enumeration of the
-            # configurations you gave it {usefule for debugging...})
-            if os.path.getsize(tmp_out_path) > 0:
-                tmp_out.seek(0)
-                print(tmp_out.read())
-            # Doxygen error (e.g. any warnings, or invalid input)
-            if os.path.getsize(tmp_err_path) > 0:
-                # Making them stick out, ideally users would reduce this output to 0 ;)
-                # This will print a yellow [~] before every line, but not make the
-                # entire line yellow because it's definitively not helpful
-                # Hack: empty string to utils.info will not give us anything, inserting
-                #       a null character will xD
-                prefix = utils.info("\0", utils.AnsiColors.BOLD_YELLOW, sys.stderr)
-                tmp_err.seek(0)
-                sys.stderr.write(utils.prefix(prefix, tmp_err.read()))
+        # if not configs.exhaleSilentDoxygen:
+        #     # Doxygen output (some useful information, mostly just enumeration of the
+        #     # configurations you gave it {usefule for debugging...})
+        #     if os.path.getsize(tmp_out_path) > 0:
+        #         tmp_out.seek(0)
+        #         print(tmp_out.read())
+        #     # Doxygen error (e.g. any warnings, or invalid input)
+        #     if os.path.getsize(tmp_err_path) > 0:
+        #         # Making them stick out, ideally users would reduce this output to 0 ;)
+        #         # This will print a yellow [~] before every line, but not make the
+        #         # entire line yellow because it's definitively not helpful
+        #         # Hack: empty string to utils.info will not give us anything, inserting
+        #         #       a null character will xD
+        #         prefix = utils.info("\0", utils.AnsiColors.BOLD_YELLOW, sys.stderr)
+        #         tmp_err.seek(0)
+        #         sys.stderr.write(utils.prefix(prefix, tmp_err.read()))
 
         # Delete the tmpfiles
-        tmp_out.close()
-        tmp_err.close()
-        os.remove(tmp_out_path)
-        os.remove(tmp_err_path)
+        # tmp_out.close()
+        # tmp_err.close()
+        # os.remove(tmp_out_path)
+        # os.remove(tmp_err_path)
 
         # Make sure we had a valid execution of doxygen
         exit_code = doxygen_proc.returncode
@@ -372,33 +375,33 @@ def explode():
         utils.fancyError("Unable to create an `ExhaleRoot` object:")
 
     try:
-        sys.stdout.write("{0}\n".format(utils.info("Exhale: parsing Doxygen XML.")))
+        # sys.stdout.write("{0}\n".format(utils.info("Exhale: parsing Doxygen XML.")))
         start = utils.get_time()
 
         textRoot.parse()
 
         end = utils.get_time()
-        sys.stdout.write("{0}\n".format(
-            utils.progress("Exhale: finished parsing Doxygen XML in {0}.".format(
-                utils.time_string(start, end)
-            ))
-        ))
+        # sys.stdout.write("{0}\n".format(
+        #     utils.progress("Exhale: finished parsing Doxygen XML in {0}.".format(
+        #         utils.time_string(start, end)
+        #     ))
+        # ))
     except:
         utils.fancyError("Exception caught while parsing:")
     try:
-        sys.stdout.write("{0}\n".format(
-            utils.info("Exhale: generating reStructuredText documents.")
-        ))
+        # sys.stdout.write("{0}\n".format(
+        #     utils.info("Exhale: generating reStructuredText documents.")
+        # ))
         start = utils.get_time()
 
         textRoot.generateFullAPI()
 
         end = utils.get_time()
-        sys.stdout.write("{0}\n".format(
-            utils.progress("Exhale: generated reStructuredText documents in {0}.".format(
-                utils.time_string(start, end)
-            ))
-        ))
+        # sys.stdout.write("{0}\n".format(
+        #     utils.progress("Exhale: generated reStructuredText documents in {0}.".format(
+        #         utils.time_string(start, end)
+        #     ))
+        # ))
     except:
         utils.fancyError("Exception caught while generating:")
 
