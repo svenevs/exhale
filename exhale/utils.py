@@ -601,7 +601,7 @@ def _use_color(msg, ansi_fmt, output_stream):
             :data:`~exhale.configs.alwaysColorize` and whether or not the
             ``output_stream`` is a TTY.
     '''
-    if not configs.alwaysColorize and not output_stream.isatty():
+    if configs._on_rtd or (not configs.alwaysColorize and not output_stream.isatty()):
         log = msg
     else:
         log = colorize(msg, ansi_fmt)
@@ -630,7 +630,7 @@ def verbose_log(msg, ansi_fmt=None):
 
 
 def __fancy(text, language, fmt):
-    if __USE_PYGMENTS:
+    if not configs._on_rtd and __USE_PYGMENTS:
         try:
             lang_lex = lexers.find_lexer_class_by_name(language)
             fmt      = formatters.get_formatter_by_name(fmt)

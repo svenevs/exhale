@@ -959,6 +959,13 @@ build process has begun to execute.  Saved to be able to run a few different san
 checks in different places.
 '''
 
+_on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+'''
+**Do not modify**.  Signals whether or not the build is taking place on ReadTheDocs.  If
+it is, then colorization of output is disabled, as well as the Doxygen output (where
+applicable) is directed to ``/dev/null`` as capturing it can cause the ``subprocess``
+buffers to overflow.
+'''
 
 ########################################################################################
 ##                                                                                     #
