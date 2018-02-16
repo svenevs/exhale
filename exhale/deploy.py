@@ -26,7 +26,7 @@ import re
 import codecs
 import tempfile
 import textwrap
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, STDOUT
 
 __name__      = "deploy"
 __docformat__ = "reStructuredText"
@@ -88,16 +88,6 @@ def _generate_doxygen(doxygen_input):
 
     doxyfile = doxygen_input == "Doxyfile"
     try:
-        # TL;DR: strictly enforce that (verbose) doxygen output doesn't cause the
-        # `communicate` to hang due to buffer overflows.
-        #
-        # See excellent synopsis:
-        # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
-        _, tmp_out_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-        _, tmp_err_path = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-        tmp_out         = codecs.open(tmp_out_path, "r+", "utf-8")  # read/write (read after communicate)
-        tmp_err         = codecs.open(tmp_err_path, "r+", "utf-8")
-
         # Setup the arguments to launch doxygen
         if doxyfile:
             args   = ["doxygen"]
@@ -105,9 +95,27 @@ def _generate_doxygen(doxygen_input):
         else:
             args   = ["doxygen", "-"]
             kwargs = {"stdin": PIPE}
-        # Write to the tempfiles over PIPE to avoid buffer overflowing
-        kwargs["stdout"] = tmp_out
-        kwargs["stderr"] = tmp_err
+
+        if configs._on_rtd:
+            # On RTD, any capturing of Doxygen output can cause buffer overflows for
+            # even medium sized projects.  So it is disregarded entirely to ensure the
+            # build will complete (otherwise, it silently fails after `cat conf.py`)
+            devnull_file     = open(os.devnull, "w")
+            kwargs["stdout"] = devnull_file
+            kwargs["stderr"] = STDOUT
+        else:
+            # TL;DR: strictly enforce that (verbose) doxygen output doesn't cause the
+            # `communicate` to hang due to buffer overflows.
+            #
+            # See excellent synopsis:
+            # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
+            _, tmp_out_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
+            _, tmp_err_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
+            tmp_out_file     = codecs.open(tmp_out_path, "r+", "utf-8")  # read/write (read after communicate)
+            tmp_err_file     = codecs.open(tmp_err_path, "r+", "utf-8")
+            # Write to the tempfiles over PIPE to avoid buffer overflowing
+            kwargs["stdout"] = tmp_out_file
+            kwargs["stderr"] = tmp_err_file
 
         # Note: overload of args / kwargs, Popen is expecting a list as the first
         #       parameter (aka no *args, just args)!
@@ -127,12 +135,12 @@ def _generate_doxygen(doxygen_input):
         doxygen_proc.communicate(**comm_kwargs)
 
         # Print out what was written to the tmpfiles by doxygen
-        if not configs.exhaleSilentDoxygen:
+        if not configs._on_rtd and not configs.exhaleSilentDoxygen:
             # Doxygen output (some useful information, mostly just enumeration of the
-            # configurations you gave it {usefule for debugging...})
+            # configurations you gave it {useful for debugging...})
             if os.path.getsize(tmp_out_path) > 0:
-                tmp_out.seek(0)
-                print(tmp_out.read())
+                tmp_out_file.seek(0)
+                print(tmp_out_file.read())
             # Doxygen error (e.g. any warnings, or invalid input)
             if os.path.getsize(tmp_err_path) > 0:
                 # Making them stick out, ideally users would reduce this output to 0 ;)
@@ -141,14 +149,18 @@ def _generate_doxygen(doxygen_input):
                 # Hack: empty string to utils.info will not give us anything, inserting
                 #       a null character will xD
                 prefix = utils.info("\0", utils.AnsiColors.BOLD_YELLOW, sys.stderr)
-                tmp_err.seek(0)
-                sys.stderr.write(utils.prefix(prefix, tmp_err.read()))
+                tmp_err_file.seek(0)
+                sys.stderr.write(utils.prefix(prefix, tmp_err_file.read()))
 
-        # Delete the tmpfiles
-        tmp_out.close()
-        tmp_err.close()
-        os.remove(tmp_out_path)
-        os.remove(tmp_err_path)
+        # Close the file handles opened for communication with subprocess
+        if configs._on_rtd:
+            devnull_file.close()
+        else:
+            # Delete the tmpfiles
+            tmp_out_file.close()
+            tmp_err_file.close()
+            os.remove(tmp_out_path)
+            os.remove(tmp_err_path)
 
         # Make sure we had a valid execution of doxygen
         exit_code = doxygen_proc.returncode

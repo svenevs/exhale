@@ -714,6 +714,8 @@ Utility Variables
 
 .. autodata:: exhale.configs._app_src_dir
 
+.. autodata:: exhale.configs._on_rtd
+
 Secondary Sphinx Entry Point
 ----------------------------------------------------------------------------------------
 
