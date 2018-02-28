@@ -1,11 +1,17 @@
 Exhale
 ========================================================================================
-|docs| |license|
+|docs| |pypi| |license|
 
 .. |docs| image:: https://readthedocs.org/projects/exhale/badge/?version=latest
    :alt: Documentation Status
    :scale: 100%
    :target: https://exhale.readthedocs.io/en/latest/?badge=latest
+
+.. |pypi| image:: https://badge.fury.io/py/exhale.svg
+   :alt: Latest Version
+   :scale: 100%
+   :target: https://badge.fury.io/py/exhale
+
 
 .. |license| image:: https://img.shields.io/github/license/svenevs/exhale.svg
    :alt: License BSD-3 Clause
