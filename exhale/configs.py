@@ -1295,16 +1295,21 @@ def apply_sphinx_configurations(app):
         # If there are keys left over after taking the differences of keys_processed
         # (which is all keys Exhale expects to see), inform the user of keys they might
         # have been trying to provide.
+        #
+        # Convert everything to lower case for better matching success
+        potential_keys = keys_available - keys_processed
+        potential_keys_lower = {key.lower(): key for key in potential_keys}
         extras = all_keys - keys_processed
         extra_error = StringIO()
         extra_error.write("Exhale found unexpected keys in `exhale_args`:\n")
         for key in extras:
             extra_error.write("  - Extra key: {0}\n".format(key))
             potentials = []
-            for mate in keys_processed:
+            for mate in potential_keys_lower:
                 similarity = similar(key, mate)
-                if similarity > 40.0:
-                    potentials.append((similarity, mate))
+                if similarity > 50.0:
+                    # Output results with the non-lower version they should put in exhale_args
+                    potentials.append((similarity, potential_keys_lower[mate]))
             if potentials:
                 potentials = reversed(sorted(potentials))
                 for rank, mate in potentials:
@@ -1347,7 +1352,7 @@ def apply_sphinx_configurations(app):
         # Sanity check #3: make sure the return values are all strings
         for key in customSpecificationsMapping:
             val_t = type(customSpecificationsMapping[key])
-            if not isinstance(val_t, six.string_types):
+            if not isinstance(key, six.string_types):
                 raise ConfigError(
                     "`customSpecificationsMapping` key `{key}` gave value type `{val_t}` (need `str`).".format(
                         key=key, val_t=val_t
