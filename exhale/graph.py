@@ -187,6 +187,7 @@ class ExhaleNode(object):
             self.namespaces_used   = []  # ExhaleNodes
             self.includes          = []  # strings
             self.included_by       = []  # (refid, name) tuples
+            self.language          = ""
             self.location          = ""
             self.program_listing   = []  # strings
             self.program_file      = ""
@@ -1064,6 +1065,10 @@ class ExhaleRoot(object):
 
                 try:
                     cdef = f.soup.doxygen.compounddef
+
+                    if "language" in cdef.attrs:
+                        f.language = cdef.attrs["language"]
+
                     err_non = "[CRITICAL] did not find refid [{0}] in `self.node_by_refid`."
                     err_dup = "Conflicting file definition: [{0}] appears to be defined in both [{1}] and [{2}]."  # noqa
                     # process classes
@@ -2513,7 +2518,8 @@ class ExhaleRoot(object):
             # if the programlisting was included, length will be at least 1 line
             if len(f.program_listing) > 0:
                 include_program_listing = True
-                full_program_listing = '.. code-block:: cpp\n\n'
+                lexer = utils.doxygenLanguageToPygmentsLexer(f.location, f.language)
+                full_program_listing = '.. code-block:: {0}\n\n'.format(lexer)
 
                 # need to reformat each line to remove xml tags / put <>& back in
                 for pgf_line in f.program_listing:
