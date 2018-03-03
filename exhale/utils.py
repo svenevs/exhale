@@ -251,6 +251,67 @@ def nodeCompoundXMLContents(node):
             return None
     return None
 
+LANG_TO_LEX = {
+    "IDL":          "idl",
+    "Java":         "java",
+    "Javascript":   "js",
+    "C#":           "csharp",
+    "C":            "c",
+    "C++":          "cpp",
+    "D":            "d",
+    "PHP":          "php",
+    "Objecive-C":   "objective-c",
+    "Python":       "py",
+    "Fortran":      "fortran",
+    "FortranFree":  "fortran",
+    "FortranFixed": "fortranfixed",
+    "VHDL":         "vhdl"
+}
+'''
+.. include:: LANG_TO_LEX_value.rst
+
+Mapping of ``language="xxx"`` from the Doxygen programlisting to Pygments Lexers.  This
+mapping is used in :func:`doxygenLanguageToSphinxLexer`.
+
+From the Doxygen documentation on `EXTENSION_MAPPING <ext_map>`_:
+
+..
+
+    IDL, Java, Javascript, C#, C, C++, D, PHP, Objective-C, Python,Fortran (fixed format
+    Fortran: FortranFixed, free formatted Fortran: FortranFree, unknown formatted
+    Fortran: Fortran. In the later case the parser tries to guess whether the code is
+    fixed or free formatted code, this is the default for Fortran type files), VHDL.
+
+We need to take each one of those, and map them to their corresponding
+`Pygments Lexer <http://pygments.org/docs/lexers/>`_.
+
+.. _ext_map: https://www.stack.nl/%7Edimitri/doxygen/manual/config.html#cfg_extension_mapping
+'''
+
+
+def doxygenLanguageToPygmentsLexer(location, language):
+    '''
+    Given an input location and language specification, acquire the Pygments lexer to
+    use for this file.
+
+    1. If :data:`configs.lexerMapping <exhale.configs.lexerMapping>` has been specified,
+       then :data:`configs._compiled_lexer_mapping <exhale.configs._compiled_lexer_mapping>`
+       will be queried first using the ``location`` parameter.
+    2. If no matching was found, then the appropriate lexer defined in
+       :data:`LANG_TO_LEX <exhale.utils.LANG_TO_LEX>` is used.
+    3. If no matching language is found, ``"none"`` is returned (indicating to Pygments
+       that no syntax highlighting should occur).
+    '''
+    if configs._compiled_lexer_mapping:
+        for regex in configs._compiled_lexer_mapping:
+            if regex.match(location):
+                return configs._compiled_lexer_mapping[regex]
+
+    if language in LANG_TO_LEX:
+        return LANG_TO_LEX[language]
+
+    return "none"
+
 
 ########################################################################################
 #

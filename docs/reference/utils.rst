@@ -54,3 +54,8 @@ Unsorted Misc
 .. autofunction:: exhale.utils.fancyErrorString
 
 .. autofunction:: exhale.utils.fancyError
+
+.. autodata:: exhale.utils.LANG_TO_LEX
+
+.. autofunction:: exhale.utils.doxygenLanguageToPygmentsLexer
+

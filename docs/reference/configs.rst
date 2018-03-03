@@ -701,6 +701,13 @@ get confused by.
 
 .. autodata:: exhale.configs.exhaleSilentDoxygen
 
+Programlisting Customization
+----------------------------------------------------------------------------------------
+
+.. autodata:: exhale.configs.lexerMapping
+
+.. autodata:: exhale.configs._compiled_lexer_mapping
+
 Utility Variables
 ----------------------------------------------------------------------------------------
 
