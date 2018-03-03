@@ -253,3 +253,31 @@ def setup(app):
                The above value is presented for readability, when using this variable take
                note of any leading or trailing ``\\n`` characters.
         '''))
+
+    from exhale.utils import LANG_TO_LEX
+    longest = 0
+    for key in LANG_TO_LEX:
+        longest = max(longest, len(key))
+    with open("LANG_TO_LEX_value.rst", "w") as ltlv:
+        ltlv.write(textwrap.dedent('''
+            .. code-block:: py
+
+               LANG_TO_LEX = {
+        '''))
+        nkeys = len(LANG_TO_LEX)
+        idx = 0
+        for key in LANG_TO_LEX:
+            nspace = longest - len(key) + 1
+            spacing = " " * nspace
+            ltlv.write('       "{key}":{spacing}"{value}"'.format(
+                key=key,
+                spacing=spacing,
+                value=LANG_TO_LEX[key]
+            ))
+            if idx < nkeys - 1:
+                ltlv.write(",")
+            ltlv.write("\n")
+
+            idx += 1
+
+        ltlv.write("   }\n\n")
