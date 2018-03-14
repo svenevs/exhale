@@ -252,6 +252,7 @@ def nodeCompoundXMLContents(node):
     return None
 
 LANG_TO_LEX = {
+    # Default Doxygen languages
     "IDL":          "idl",
     "Java":         "java",
     "Javascript":   "js",
@@ -265,7 +266,10 @@ LANG_TO_LEX = {
     "Fortran":      "fortran",
     "FortranFree":  "fortran",
     "FortranFixed": "fortranfixed",
-    "VHDL":         "vhdl"
+    "VHDL":         "vhdl",
+    # Custom Doxygen languages
+    "Verilog":      "verilog",
+    "Markdown":     "markdown"
 }
 '''
 .. include:: LANG_TO_LEX_value.rst
@@ -286,6 +290,12 @@ We need to take each one of those, and map them to their corresponding
 `Pygments Lexer <http://pygments.org/docs/lexers/>`_.
 
 .. _ext_map: https://www.stack.nl/%7Edimitri/doxygen/manual/config.html#cfg_extension_mapping
+
+.. note::
+
+   Feel free to make a pull request adding more lanugages here.  For example, the
+   ``Verilog`` support comes from
+   `doxygen-verilog <https://github.com/avelure/doxygen-verilog>`_.
 '''
 
 
