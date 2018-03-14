@@ -212,6 +212,14 @@ I do not support ``groups`` with Doxygen, as I assume if you have gone through t
 effort to group everything then you have a desire to manually control the output.
 Breathe already has an excellent ``doxygengroup`` directive, and you should use that.
 
+How do I modify the pygments highlighter for a program listing?
+----------------------------------------------------------------------------------------
+
+By default Exhale will use :data:`utils.LANG_TO_LEX <exhale.utils.LANG_TO_LEX>` to
+choose the pygments syntax highlighter for ``.. code-block:: <lexer>``.  For most
+projects the defaults here should work as expected.  If you need to change it, set
+:data:`~exhale.configs.lexerMapping` in your ``conf.py``.
+
 Ok seriously, why is there SO MUCH documentation on a documentation system?
 ----------------------------------------------------------------------------------------
 
