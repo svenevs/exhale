@@ -109,8 +109,8 @@ def _generate_doxygen(doxygen_input):
             #
             # See excellent synopsis:
             # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
-            _, tmp_out_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-            _, tmp_err_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
+            tmp_out_path_fd, tmp_out_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
+            tmp_err_path_fd, tmp_err_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
             tmp_out_file     = codecs.open(tmp_out_path, "r+", "utf-8")  # read/write (read after communicate)
             tmp_err_file     = codecs.open(tmp_err_path, "r+", "utf-8")
             # Write to the tempfiles over PIPE to avoid buffer overflowing
@@ -159,7 +159,9 @@ def _generate_doxygen(doxygen_input):
             # Delete the tmpfiles
             tmp_out_file.close()
             tmp_err_file.close()
+            os.close(tmp_out_path_fd)
             os.remove(tmp_out_path)
+            os.close(tmp_err_path_fd)
             os.remove(tmp_err_path)
 
         # Make sure we had a valid execution of doxygen
