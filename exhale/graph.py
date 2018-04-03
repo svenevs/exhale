@@ -1679,34 +1679,6 @@ class ExhaleRoot:
         # IMPORTANT: do not set the parent field of anything being added as a child to the file
         #
 
-        # hack to make things work right on RTD
-        if configs.doxygenStripFromPath is not None:
-            for node in itertools.chain(self.files, self.dirs):
-                if node.kind == "file":
-                    manip = f.location
-                else:  # node.kind == "dir"
-                    manip = f.name
-
-                manip = manip.replace(configs.doxygenStripFromPath, "")
-                # Remove leading path separator; the above line typically turns
-                # something like:
-                #
-                #     /some/long/absolute/path/include/dir/file.hpp
-                #
-                # into
-                #
-                #    /dir/file.hpp
-                #
-                # so we want to make sure to remove the leading / in this case.
-                if manip.startswith(os.sep):
-                    manip = manip.replace(os.sep, "", 1)
-                # Now remove any trailing path separators
-                if manip.endswith(os.sep):
-                    # reverse, replace once, reverse
-                    # see this for explanation of how ::-1 works:
-                    # https://stackoverflow.com/a/27843760/3814202
-                    manip = manip[::-1].replace(os.sep, "", 1)[::-1]
-
         # now that we have parsed all the listed refid's in the doxygen xml, reparent
         # the nodes that we care about
         for f in self.files:
