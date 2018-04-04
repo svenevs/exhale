@@ -155,7 +155,7 @@ class ExhaleNode:
             :func:`~exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`.
     '''
     def __init__(self, name, kind, refid):
-        self.name        = name
+        self.name        = os.path.normpath(name) if kind == 'dir' else name
         self.kind        = kind
         self.refid       = refid
 
@@ -1133,7 +1133,7 @@ class ExhaleRoot:
                     # the location of the file as determined by doxygen
                     location = cdef.find("location")
                     if location and "file" in location.attrs:
-                        f.location = location.attrs["file"]
+                        f.location = os.path.normpath(location.attrs["file"])
                 except:
                     utils.fancyError(
                         "Could not process Doxygen xml for file [{0}]".format(f.name)
@@ -1520,7 +1520,7 @@ class ExhaleRoot:
             # otherwise, this is nested
             for p_rank, p_directory in reversed(traversal):
                 if p_rank == rank - 1:
-                    if p_directory.name == os.sep.join(directory.name.split(os.sep)[:-1]):
+                    if p_directory.name == os.path.dirname(directory.name):
                         p_directory.children.append(directory)
                         directory.parent = p_directory
                         if directory not in removals:
@@ -1639,7 +1639,7 @@ class ExhaleRoot:
                         # see if this line represents the location tag
                         match = loc_regex.match(line)
                         if match is not None:
-                            f.location = match.groups()[0]
+                            f.location = os.path.normpath(match.groups()[0])
                             continue
 
                         if not processing_code_listing:
@@ -1678,34 +1678,6 @@ class ExhaleRoot:
         #
         # IMPORTANT: do not set the parent field of anything being added as a child to the file
         #
-
-        # hack to make things work right on RTD
-        if configs.doxygenStripFromPath is not None:
-            for node in itertools.chain(self.files, self.dirs):
-                if node.kind == "file":
-                    manip = f.location
-                else:  # node.kind == "dir"
-                    manip = f.name
-
-                manip = manip.replace(configs.doxygenStripFromPath, "")
-                # Remove leading path separator; the above line typically turns
-                # something like:
-                #
-                #     /some/long/absolute/path/include/dir/file.hpp
-                #
-                # into
-                #
-                #    /dir/file.hpp
-                #
-                # so we want to make sure to remove the leading / in this case.
-                if manip.startswith(os.sep):
-                    manip = manip.replace(os.sep, "", 1)
-                # Now remove any trailing path separators
-                if manip.endswith(os.sep):
-                    # reverse, replace once, reverse
-                    # see this for explanation of how ::-1 works:
-                    # https://stackoverflow.com/a/27843760/3814202
-                    manip = manip[::-1].replace(os.sep, "", 1)[::-1]
 
         # now that we have parsed all the listed refid's in the doxygen xml, reparent
         # the nodes that we care about
@@ -2021,7 +1993,7 @@ class ExhaleRoot:
             else:
                 path = node.name
 
-            html_safe_name = path.replace(os.sep, "_")
+            html_safe_name = path.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
             title = os.path.basename(path)
         else:
             # begin html_safe_name, templates will do more work
@@ -2067,10 +2039,9 @@ class ExhaleRoot:
             html_safe_name = html_safe_name[:-1]
 
         # create the file and link names
-        node.file_name = "{dir}/{kind}_{name}.rst".format(
-            dir=self.root_directory,
-            kind=node.kind,
-            name=html_safe_name
+        node.file_name = os.path.join(
+            self.root_directory,
+            "{kind}_{name}.rst".format(kind=node.kind, name=html_safe_name)
         )
         node.link_name = "{kind}_{name}".format(
             kind=utils.qualifyKind(node.kind).lower(),
@@ -2080,9 +2051,12 @@ class ExhaleRoot:
             node.link_name = "template_{link}".format(link=node.link_name)
 
         if node.kind == "file":
-            node.program_file = "{dir}/program_listing_file_{name}.rst".format(
-                dir=self.root_directory,
-                name=html_safe_name
+            node.program_file = os.path.join(
+                self.root_directory,
+                "program_listing_file_{name}.rst".format(
+                    dir=self.root_directory,
+                    name=html_safe_name
+                )
             )
             node.program_link_name = "program_listing_file_{name}".format(
                 name=html_safe_name
