@@ -52,6 +52,10 @@ coverage.xml
 *.cover
 .hypothesis/
 
+# temp testing files
+testing/test_projects/*/doc/api/*.rst
+testing/test_projects/*/doc/_doxml
+
 # Translations
 *.mo
 *.pot
