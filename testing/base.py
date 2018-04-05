@@ -31,7 +31,7 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
 
         config = {
             'breathe_projects': {
-                self.test_project: './_doxml'
+                self.test_project: './_doxy/xml'
             },
             'breathe_default_project': self.test_project,
             'exhale_args': {
