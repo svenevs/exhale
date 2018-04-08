@@ -1032,6 +1032,10 @@ def apply_sphinx_configurations(app):
             "The type of `breathe_projects[breathe_default_project]` from `conf.py` was not a string."
         )
 
+    # Make doxy_xml_dir relative to confdir (where conf.py is)
+    if not os.path.isabs(doxy_xml_dir):
+        doxy_xml_dir = os.path.abspath(os.path.join(app.confdir, doxy_xml_dir))
+
     ####################################################################################
     # Initial sanity-check that we have the arguments needed.                          #
     ####################################################################################
@@ -1081,7 +1085,9 @@ def apply_sphinx_configurations(app):
             raise ConfigError("Non-empty value for key [{0}] required.".format(key))
         # If the string represents a path, make it absolute
         if make_absolute:
-            val = os.path.abspath(val)
+            # Directories are made absolute relative to app.confdir (where conf.py is)
+            if not os.path.isabs(val):
+                val = os.path.abspath(os.path.join(os.path.abspath(app.confdir), val))
         # Set the config for use later
         try:
             configs_globals[key] = val
@@ -1119,8 +1125,8 @@ def apply_sphinx_configurations(app):
     # relative path (made absolute again) does not have the srcdir
     if _one or _two or _three:
         raise ConfigError(
-            "The given `containmentFolder` must be a *SUBDIRECTORY* of [{0}].".format(
-                app.srcdir
+            "The given `containmentFolder` [{0}] must be a *SUBDIRECTORY* of [{1}].".format(
+                containmentFolder, app.srcdir
             )
         )
 
