@@ -6,3 +6,6 @@ include LICENSE
 
 # Include the data files
 recursive-include exhale/data *
+
+# Exclude testing package
+prune testing
