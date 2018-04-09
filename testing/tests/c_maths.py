@@ -16,4 +16,4 @@ class CMathsTests(ExhaleTestCase):
         api_dir = os.path.join(TEST_DOC_DIR, exh_args['containmentFolder'])
         self.assertTrue(os.path.isfile(os.path.join(api_dir, exh_args['rootFileName'])))
         self.assertTrue(os.path.isfile(os.path.join(api_dir, 'function_add.rst')))
-        self.assertTrue(os.path.isfile(os.path.join(api_dir, 'file_project_c_maths_include_main.h.rst')))
+        self.assertTrue(os.path.isfile(os.path.join(api_dir, 'file_projects_c_maths_include_main.h.rst')))
