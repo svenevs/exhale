@@ -1,6 +1,7 @@
 import os
 import shutil
 import unittest
+from copy import deepcopy
 
 from six import with_metaclass
 
@@ -48,10 +49,33 @@ class ExhaleTestCaseMetaclass(type):
 
         for name, attr in attrs.items():
             if callable(attr) and name.startswith('test_'):
-                attrs[name] = pytest.mark.sphinx(
+                kwargs = dict(
                     testroot=TEST_DOC_DIR,
-                    confoverrides=config
-                )(attr)
+                    confoverrides=deepcopy(config)
+                )
+
+                try:
+                    # if the method is already marked, we insert the default kwargs
+                    # without overriding the specified ones (stored in attr.sphinx.kwargs
+                    deep_update(kwargs, attr.sphinx.kwargs)
+                    # we need to 'unmark' the method and then mark it again as the kwargs are not
+                    # 'deep_update'ed within pytest's marking machinery
+
+                    # first remove the sphinx marker info
+                    delattr(attr, 'sphinx')
+
+                    # then remove any marker with name 'sphinx'
+                    # we need to pop in reverse otherwise it shifts the indexes
+                    for i, m in zip(reversed(range(len(attr.pytestmark))), reversed(attr.pytestmark)):
+                        if m.name == 'sphinx':
+                            attr.pytestmark.pop(i)
+                    if not attr.pytestmark:
+                        delattr(attr, 'pytestmark')
+                except AttributeError:
+                    pass
+
+                attrs[name] = pytest.mark.sphinx(**kwargs)(attr)
+
                 has_tests = True
 
         if has_tests:
