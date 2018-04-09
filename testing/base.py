@@ -1,11 +1,33 @@
+import os
+import shutil
 import unittest
-from importlib import reload
-import subprocess
 
 from six import with_metaclass
 
-from .mocks import SphinxAppMock
-from .utils import cd, deep_update
+import pytest
+
+
+TEST_DOC_DIR = os.path.join(os.path.dirname(__file__), 'doc')
+
+
+def make_default_config(project):
+    """
+    Creates a default configuration for exhale
+    """
+    return {
+        'breathe_projects': {
+            project: './_doxy/xml'
+        },
+        'breathe_default_project': project,
+        'exhale_args': {
+            'containmentFolder': './api',
+            'rootFileName': 'index.rst',
+            'rootFileTitle': 'API Documentation',
+            'doxygenStripFromPath': '..',
+            'exhaleExecutesDoxygen': True,
+            'exhaleDoxygenStdin': 'INPUT = ../projects/%s/include' % project
+        }
+    }
 
 
 class ExhaleTestCaseMetaclass(type):
@@ -13,62 +35,39 @@ class ExhaleTestCaseMetaclass(type):
     Metaclass to enforce mandatory attributes on ExhaleTestCase
     """
 
-    def __new__(cls, name, bases, attrs):
-        if attrs['__module__'] != 'testing.base' and attrs.get('test_project', None) is None:
+    def __new__(mcs, name, bases, attrs):
+        if attrs['__module__'] != __name__ and attrs.get('test_project', None) is None:
             raise RuntimeError('ExhaleTestCase subclasses must define a "test_project" attribute')
-        return super(ExhaleTestCaseMetaclass, cls).__new__(cls, name, bases, attrs)
+
+        has_tests = False
+
+        for name, attr in attrs.items():
+            if callable(attr) and name.startswith('test_'):
+                attrs[name] = pytest.mark.sphinx(
+                    testroot=TEST_DOC_DIR,
+                    confoverrides=attrs.get('config', None) or make_default_config(attrs['test_project'])
+                )(attr)
+                has_tests = True
+
+        if has_tests:
+            def _set_app(self, app):
+                self.app = app
+                yield
+                # cleanup
+                dirs = [app.config.exhale_args['containmentFolder'], os.path.dirname(app.outdir)]
+                for d in app.config.breathe_projects.values():
+                    # get only first directory of breathe project directory relative to srcdir
+                    dirs.append(os.path.relpath(os.path.join(app.srcdir, d), app.srcdir).split(os.sep)[0])
+                for d in dirs:
+                    if not os.path.isabs(d):
+                        d = os.path.join(app.srcdir, d)
+                    shutil.rmtree(d)
+            attrs['_set_app'] = pytest.fixture(autouse=True)(_set_app)
+
+        return super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
 
 
 class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase)):
 
     test_project = None
     config = None
-
-    def configure(self):
-        if getattr(self, 'app', False):
-            pass
-        from exhale import configs
-
-        config = {
-            'breathe_projects': {
-                self.test_project: './_doxy/xml'
-            },
-            'breathe_default_project': self.test_project,
-            'exhale_args': {
-                'containmentFolder': './api',
-                'rootFileName': 'index.rst',
-                'rootFileTitle': 'API Documentation',
-                'doxygenStripFromPath': '..',
-                'exhaleExecutesDoxygen': True,
-                'exhaleDoxygenStdin': 'INPUT = ../include'
-            }
-        }
-
-        app = SphinxAppMock(self.test_project, config=deep_update(config, self.config or {}))
-
-        with cd(app.srcdir):
-            reload(configs).apply_sphinx_configurations(app)
-        self.app = app
-
-    def run_exhale(self):
-        self.configure()
-
-        from exhale import configs, deploy
-
-        if configs.exhaleExecutesDoxygen:
-            # test that doxygen is installed
-            try:
-                out = subprocess.check_output(['doxygen', '--version'])
-            except OSError:
-                raise RuntimeError(
-                    'doxygen must be installed to run exhale with exhaleExecutesDoxygen = True'
-                )
-
-        with cd(self.app.srcdir):
-            deploy.explode()
-
-    def teardown_method(self, method):
-        try:
-            del self.app
-        except AttributeError:
-            pass
