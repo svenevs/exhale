@@ -4,9 +4,8 @@ Tests on the c_maths project
 
 import os
 
-import pytest
-
 from testing.base import ExhaleTestCase, TEST_DOC_DIR
+from testing.decorators import with_config
 
 
 class CMathsTests(ExhaleTestCase):
@@ -30,11 +29,7 @@ class CMathsTests(ExhaleTestCase):
         self.assertTrue(os.path.isfile(os.path.join(api_dir, 'function_add.rst')))
         self.assertTrue(os.path.isfile(os.path.join(api_dir, 'file_projects_c_maths_include_main.h.rst')))
 
-    @pytest.mark.sphinx(confoverrides={
-        'exhale_args': {
-            'containmentFolder': './doxygen'
-        }
-    })
+    @with_config(exhale_args={'containmentFolder': './doxygen'})
     def test_app_change_config(self):
         exh_args = self.app.config.exhale_args
         cont_fold = exh_args['containmentFolder']
