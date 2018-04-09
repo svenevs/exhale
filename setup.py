@@ -100,10 +100,10 @@ import exhale  # noqa E402
 version = exhale.__version__
 
 ########################################################################################
-# Gather the requirements from docs/requirements.txt.                                  #
+# Gather the requirements from requirements.txt.                                       #
 ########################################################################################
 try:
-    requirements_path = os.path.join(here, "docs", "requirements.txt")
+    requirements_path = os.path.join(here, "requirements.txt")
     requirements      = []
     with open(requirements_path) as req:
         for line in req:
@@ -116,7 +116,7 @@ try:
             else:
                 requirements.append(line.strip())
 except Exception as e:
-    raise RuntimeError("Could not acquire the requirements from docs/requirements.txt:\n{0}".format(e))
+    raise RuntimeError("Could not acquire the requirements from requirements.txt:\n{0}".format(e))
 
 ########################################################################################
 # Setup the extension!!!                                                               #
