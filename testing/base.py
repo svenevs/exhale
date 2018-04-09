@@ -6,6 +6,8 @@ from six import with_metaclass
 
 import pytest
 
+from .utils import deep_update
+
 
 TEST_DOC_DIR = os.path.join(os.path.dirname(__file__), 'doc')
 
@@ -41,11 +43,14 @@ class ExhaleTestCaseMetaclass(type):
 
         has_tests = False
 
+        config = make_default_config(attrs['test_project'])
+        deep_update(config, attrs.get('config', None))
+
         for name, attr in attrs.items():
             if callable(attr) and name.startswith('test_'):
                 attrs[name] = pytest.mark.sphinx(
                     testroot=TEST_DOC_DIR,
-                    confoverrides=attrs.get('config', None) or make_default_config(attrs['test_project'])
+                    confoverrides=config
                 )(attr)
                 has_tests = True
 
@@ -69,5 +74,12 @@ class ExhaleTestCaseMetaclass(type):
 
 class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase)):
 
+    # the project that should be used to run doxygen/exhale on
+    # must be set in subclasses
     test_project = None
+
+    # configuration overrides for the whole class
     config = None
+
+    # app will be populated by the metaclass with a Sphinx app before each test
+    app = None
