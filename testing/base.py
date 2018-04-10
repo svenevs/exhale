@@ -94,7 +94,7 @@ class ExhaleTestCaseMetaclass(type):
                 for d in dirs:
                     if not os.path.isabs(d):
                         d = os.path.join(app.srcdir, d)
-                    shutil.rmtree(d)
+                    shutil.rmtree(d, ignore_errors=True)
             attrs['_set_app'] = pytest.fixture(autouse=True)(_set_app)
 
         return super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
