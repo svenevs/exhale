@@ -57,7 +57,11 @@ class ExhaleTestCaseMetaclass(type):
                 try:
                     # if the method is already marked, we insert the default kwargs
                     # without overriding the specified ones (stored in attr.sphinx.kwargs
-                    deep_update(kwargs, attr.sphinx.kwargs)
+
+                    marker = attr.sphinx  # raises AttributeError if no existing marker
+
+                    args = marker.args
+                    deep_update(kwargs, marker.kwargs)
                     # we need to 'unmark' the method and then mark it again as the kwargs are not
                     # 'deep_update'ed within pytest's marking machinery
 
@@ -72,9 +76,9 @@ class ExhaleTestCaseMetaclass(type):
                     if not attr.pytestmark:
                         delattr(attr, 'pytestmark')
                 except AttributeError:
-                    pass
+                    args = ()
 
-                attrs[name] = pytest.mark.sphinx(**kwargs)(attr)
+                attrs[name] = pytest.mark.sphinx(*args, **kwargs)(attr)
 
                 has_tests = True
 
