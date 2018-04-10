@@ -49,3 +49,19 @@ class CMathsTests(ExhaleTestCase):
         # check that nothing has been generated
         api_dir = os.path.join(TEST_DOC_DIR, cont_fold)
         self.assertFalse(os.path.exists(api_dir))
+
+
+@no_run
+class CMathsTestsNoRun(ExhaleTestCase):
+
+    test_project = 'c_maths'
+
+    def test_classwide_no_run(self):
+        exh_args = self.app.config.exhale_args
+        cont_fold = exh_args['containmentFolder']
+
+        self.assertEqual(cont_fold, './api')
+
+        # check that nothing has been generated
+        api_dir = os.path.join(TEST_DOC_DIR, cont_fold)
+        self.assertFalse(os.path.exists(api_dir))
