@@ -9,3 +9,7 @@ def with_config(**config):
         return method
 
     return actual_decorator
+
+
+def no_run(obj):
+    return pytest.mark.usefixtures('no_run')(obj)

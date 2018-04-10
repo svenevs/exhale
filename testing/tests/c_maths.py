@@ -5,7 +5,7 @@ Tests on the c_maths project
 import os
 
 from testing.base import ExhaleTestCase, TEST_DOC_DIR
-from testing.decorators import with_config
+from testing.decorators import with_config, no_run
 
 
 class CMathsTests(ExhaleTestCase):
@@ -38,3 +38,14 @@ class CMathsTests(ExhaleTestCase):
 
         api_dir = os.path.join(TEST_DOC_DIR, cont_fold)
         self.assertTrue(os.path.isfile(os.path.join(api_dir, exh_args['rootFileName'])))
+
+    @no_run
+    def test_app_config_only(self):
+        exh_args = self.app.config.exhale_args
+        cont_fold = exh_args['containmentFolder']
+
+        self.assertEqual(cont_fold, './exhale')
+
+        # check that nothing has been generated
+        api_dir = os.path.join(TEST_DOC_DIR, cont_fold)
+        self.assertFalse(os.path.exists(api_dir))
