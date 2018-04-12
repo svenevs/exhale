@@ -13,7 +13,6 @@ All project based test cases should inherit from :class:`testing.base.ExhaleTest
 
 import os
 import shutil
-import sys
 import unittest
 from copy import deepcopy
 
@@ -93,11 +92,8 @@ class ExhaleTestCaseMetaclass(type):
         config = make_default_config(attrs['test_project'])
         deep_update(config, attrs.get('config', None))
 
-        cls = super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
-
-        for name in attrs.keys():
-            attr = getattr(cls, name)
-            if callable(attr) and name.startswith('test_'):
+        for n, attr in attrs.items():
+            if callable(attr) and n.startswith('test_'):
                 kwargs = dict(
                     testroot=TEST_DOC_DIR,
                     confoverrides=deepcopy(config)
@@ -127,7 +123,7 @@ class ExhaleTestCaseMetaclass(type):
                 except AttributeError:
                     args = ()
 
-                setattr(cls, name, pytest.mark.sphinx(*args, **kwargs)(attr))
+                attrs[n], pytest.mark.sphinx(*args, **kwargs)(attr)
 
                 has_tests = True
 
@@ -144,9 +140,9 @@ class ExhaleTestCaseMetaclass(type):
                     if not os.path.isabs(d):
                         d = os.path.join(app.srcdir, d)
                     shutil.rmtree(d, ignore_errors=True)
-            setattr(cls, '_set_app', pytest.fixture(autouse=True)(_set_app))
+            attrs['_set_app'] = pytest.fixture(autouse=True)(_set_app)
 
-        return cls
+        return super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
 
 
 class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase)):
