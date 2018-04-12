@@ -176,8 +176,8 @@ Full Reference Documentation
 .. toctree::
    :maxdepth: 5
 
-   reference_exhale_configs
-   reference_exhale_deploy
-   reference_exhale_graph
-   reference_exhale_parse
-   reference_exhale_utils
+   reference/configs
+   reference/deploy
+   reference/graph
+   reference/parse
+   reference/utils

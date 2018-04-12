@@ -48,6 +48,7 @@ Doxygen, Sphinx, or Breathe.
    reference
    mastering_doxygen
    faq
+   testing
    todo
 
 .. _index_credit:

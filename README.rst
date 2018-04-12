@@ -1,22 +1,34 @@
 Exhale
 ========================================================================================
-|docs| |pypi| |license|
+|docs| |pypi| |travis| |appveyor| |coverage| |license|
+
+.. begin_badges
 
 .. |docs| image:: https://readthedocs.org/projects/exhale/badge/?version=latest
    :alt: Documentation Status
-   :scale: 100%
    :target: https://exhale.readthedocs.io/en/latest/?badge=latest
 
 .. |pypi| image:: https://badge.fury.io/py/exhale.svg
    :alt: Latest Version
-   :scale: 100%
    :target: https://badge.fury.io/py/exhale
 
+.. |travis| image:: https://travis-ci.org/svenevs/exhale-testing-ci.svg?branch=master
+   :alt: Travis CI Build Status (Unix and Flake8 Tests)
+   :target: https://travis-ci.org/svenevs/exhale-testing-ci
+
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/m7u8vkbelui57b1j?svg=true
+   :alt: AppVeyor CI Build Satus (Windows)
+   :target: https://ci.appveyor.com/project/svenevs/exhale-testing-ci
+
+.. |coverage| image:: https://codecov.io/gh/svenevs/exhale-testing-ci/branch/master/graph/badge.svg
+   :alt: Code Coverage Report
+   :target: https://codecov.io/gh/svenevs/exhale-testing-ci
 
 .. |license| image:: https://img.shields.io/github/license/svenevs/exhale.svg
    :alt: License BSD-3 Clause
-   :scale: 100%
    :target: https://github.com/svenevs/exhale/blob/master/LICENSE
+
+.. end_badges
 
 .. begin_tmp_danger_warning
 
@@ -80,7 +92,7 @@ HTML Theme choices:
 
 .. _companion:  https://github.com/svenevs/exhale-companion
 
-.. _rtd:       https://docs.readthedocs.io/en/latest/theme.html
+.. _rtd:       http://sphinx-rtd-theme.readthedocs.io/en/latest/
 .. _bstrap:    https://ryan-roemer.github.io/sphinx-bootstrap-theme/
 .. _alabaster: https://alabaster.readthedocs.io/en/latest/
 

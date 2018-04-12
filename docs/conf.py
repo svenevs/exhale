@@ -36,6 +36,7 @@ extensions = [
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
     'sphinx': ('http://sphinx.pocoo.org', None),
+    'pytest': ('https://docs.pytest.org/en/latest/', None),
     # See _intersphinx/README.md
     'bs4':    ('https://www.crummy.com/software/BeautifulSoup/bs4/doc', "_intersphinx/bs4_objects.inv")
 }

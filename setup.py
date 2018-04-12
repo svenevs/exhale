@@ -1,3 +1,4 @@
+# noqa D100
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -7,8 +8,9 @@
 
 import os
 import sys
+
 # NOTE: full `setuptools` is required for this project
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # TIP: hello!  It was challenging to get the right long description to show up on pypi,
 #      I eventually discovered this tool, which you should also use!

@@ -911,7 +911,7 @@ defaults shown here.
    :data:`~exhale.configs.exhaleUseDoxyfile`.  Only **one** may be provided to the
    ``exhale_args`` in your ``conf.py``.
 
-.. include:: DEFAULT_DOXYGEN_STDIN_BASE_value.rst
+.. include:: ../DEFAULT_DOXYGEN_STDIN_BASE_value.rst
 '''
 
 exhaleSilentDoxygen = False
