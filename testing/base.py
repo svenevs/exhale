@@ -14,19 +14,13 @@ All project based test cases should inherit from :class:`testing.base.ExhaleTest
 import os
 import shutil
 import unittest
-from copy import deepcopy
 
 import pytest
 
 from six import with_metaclass
 
-from .utils import deep_update
-
-
-TEST_DOC_DIR = os.path.join(os.path.dirname(__file__), 'doc')
-"""
-The global testing directory.
-"""
+from .decorators import confoverrides, default_confoverrides
+from . import TEST_DOC_DIR
 
 
 def make_default_config(project):
@@ -84,65 +78,45 @@ class ExhaleTestCaseMetaclass(type):
                 needed to produce a final class definition that can use sphinx test
                 applications where desired.
         """
-        if attrs['__module__'] != __name__ and attrs.get('test_project', None) is None:
+
+        if attrs['__module__'] == __name__:
+            # we skip everything if we're creating ExhaleTestCase below
+            return super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
+        elif attrs.get('test_project', None) is None:
+            # otherwise we need a ``test_project`` attribute
             raise RuntimeError('ExhaleTestCase subclasses must define a "test_project" attribute')
 
+        # looking for test methods ("test_*")
         has_tests = False
-
-        config = make_default_config(attrs['test_project'])
-        deep_update(config, attrs.get('config', None))
-
         for n, attr in attrs.items():
             if callable(attr) and n.startswith('test_'):
-                kwargs = dict(
-                    testroot=TEST_DOC_DIR,
-                    confoverrides=deepcopy(config)
-                )
-
-                try:
-                    # if the method is already marked, we insert the default kwargs
-                    # without overriding the specified ones (stored in attr.sphinx.kwargs
-
-                    marker = attr.sphinx  # raises AttributeError if no existing marker
-
-                    args = marker.args
-                    deep_update(kwargs, marker.kwargs)
-                    # we need to 'unmark' the method and then mark it again as the kwargs are not
-                    # 'deep_update'ed within pytest's marking machinery
-
-                    # first remove the sphinx marker info
-                    delattr(attr, 'sphinx')
-
-                    # then remove any marker with name 'sphinx'
-                    # we need to pop in reverse otherwise it shifts the indexes
-                    for i, m in zip(reversed(range(len(attr.pytestmark))), reversed(attr.pytestmark)):
-                        if m.name == 'sphinx':
-                            attr.pytestmark.pop(i)
-                    if not attr.pytestmark:
-                        delattr(attr, 'pytestmark')
-                except AttributeError:
-                    args = ()
-
-                attrs[n], pytest.mark.sphinx(*args, **kwargs)(attr)
-
                 has_tests = True
+                break
 
+        # if there are tests, we set the app attribute using the ``sphinx.testing.fixtures.app`` fixture
         if has_tests:
             def _set_app(self, app):
+                # before the test
                 self.app = app
-                yield
-                # cleanup
+                yield  # the test runs
+                # cleanup after the test: exhale and sphinx output dirs and breathe project dirs
                 dirs = [app.config.exhale_args['containmentFolder'], os.path.dirname(app.outdir)]
                 for d in app.config.breathe_projects.values():
                     # get only first directory of breathe project directory relative to srcdir
                     dirs.append(os.path.relpath(os.path.join(app.srcdir, d), app.srcdir).split(os.sep)[0])
                 for d in dirs:
                     if not os.path.isabs(d):
+                        # d is a relative dir, make it absolute
                         d = os.path.join(app.srcdir, d)
                     shutil.rmtree(d, ignore_errors=True)
             attrs['_set_app'] = pytest.fixture(autouse=True)(_set_app)
 
-        return super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
+        # applying the default configuration override, which is overridden using the @confoverride decorator
+        # at class or method level
+        return default_confoverrides(
+            super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs),
+            make_default_config(attrs['test_project'])
+        )
 
 
 class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase)):
@@ -153,26 +127,13 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
     Inherits from :class:`python:unittest.TestCase`.
     """
 
+    #: The string representing the project to run Doxygen / exhale on.
+    #:
+    #: This value **must** be set in subclasses.
     test_project = None
-    """
-    The string representing the project to run Doxygen / exhale on.
 
-    This value **must** be set in subclasses.
-    """
-
-    config = None
-    """
-    The dictionary of overrides to use for the whole class.
-
-    This will be used to set and / or override configurations that would
-    traditionally be included in a user's ``conf.py``.  Will override the defaults
-    provided to the meta-class from :func:`testing.base.make_default_config`.
-    """
-
+    #: The Sphinx testing application.
+    #:
+    #: Will be automatically populated by the meta-class, in test-cases users may
+    #: simply access the Sphinx application with ``self.app``.
     app = None
-    """
-    The Sphinx testing application.
-
-    Will be automatically populated by the meta-class, in test-cases users may
-    simply access the Sphinx application with ``self.app``.
-    """
