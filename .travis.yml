@@ -1,0 +1,76 @@
+sudo: false
+matrix:
+  allow_failures:
+    - env: ALLOW_ME_TO=FAIL
+  include:
+    ####################################################################################
+    # Linux :: Python :: 2.7                                                           #
+    ####################################################################################
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - doxygen
+      language: python
+      python: "2.7"
+      install:
+        - pip install tox
+      script:
+        - tox -e py
+    ####################################################################################
+    # Linux :: Python :: 3.6 && Coverage                                               #
+    ####################################################################################
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - doxygen
+      language: python
+      python: "3.6"
+      install:
+        - pip install tox
+        - pip install codecov
+      script:
+        - tox -e py -- --cov=exhale
+      after_success: codecov
+    ####################################################################################
+    # OSX :: Python :: 2.7                                                             #
+    ####################################################################################
+    - os: osx
+      language: generic
+      env: PYTHON=2.7
+      before_install:
+        # Something strange about final step of install gives exit code != 1 but the
+        # installation appears to work?
+        - brew install python@2 || true
+      install:
+        - brew install doxygen
+        - /usr/local/bin/pip install -U tox
+      script:
+        - /usr/local/bin/python2 --version
+        - /usr/local/bin/python2 -m tox -e py
+    ####################################################################################
+    # OSX :: Python :: 3.6                                                             #
+    ####################################################################################
+    - os: osx
+      language: generic
+      env: PYTHON=3.6
+      before_install:
+        - brew upgrade python
+      install:
+        - brew install doxygen
+        - /usr/local/bin/pip3 install -U tox
+      script:
+        - /usr/local/bin/python3 --version
+        - /usr/local/bin/python3 -m tox -e py
+    ####################################################################################
+    # Flake8                                                                           #
+    ####################################################################################
+    - os: linux
+      language: python
+      env: ALLOW_ME_TO=FAIL
+      python: "3.6"
+      install:
+        - pip install tox
+      script:
+        - tox -e flake8

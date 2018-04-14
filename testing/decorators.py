@@ -4,7 +4,6 @@ from copy import deepcopy
 import pytest
 
 from .utils import deep_update
-from . import TEST_DOC_DIR
 
 __all__ = ['default_confoverrides', 'confoverrides', 'no_run']
 
@@ -41,7 +40,8 @@ def _apply_confoverride_to_class(cls, config, priority):
 
         # now we can generate the sphinx fixture kwargs by combining the above list of kwargs depending
         # on priority
-        sphinx_kwargs = {'testroot': TEST_DOC_DIR}
+        print("TEST ROT: ", cls.test_root)
+        sphinx_kwargs = {'testroot': cls.test_root}
         for __, kw in markers_kwargs:
             deep_update(sphinx_kwargs, kw)
 
