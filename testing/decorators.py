@@ -10,12 +10,12 @@ __all__ = ['default_confoverrides', 'confoverrides', 'no_run']
 
 def _apply_confoverride_to_class(cls, config, priority):
     """
-    Applies a configuration override config to the class cls with a given priority
+    Apply a configuration override ``config`` to class ``cls`` with a given priority.
 
-    We need the priority trick as the default configuration is applied before a possible class-wide
-    decorator, which should superseed the default configuration. We use pytest.mark.exhale as a store
-    of kwargs to apply to pytest.mark.sphinx, and we use the priority to combine these kwargs with respect
-    to priorities
+    We need the priority trick as the default configuration is applied before a possible
+    class-wide decorator, which should supersede the default configuration.  We use
+    ``pytest.mark.exhale`` as a store of ``kwargs`` to apply to ``pytest.mark.sphinx``,
+    and we use the priority to combine these kwargs with respect to priorities.
     """
 
     # look for test methods in the class
@@ -38,14 +38,14 @@ def _apply_confoverride_to_class(cls, config, priority):
         # sort that list according to priority
         markers_kwargs.sort(key=lambda m: m[0])
 
-        # now we can generate the sphinx fixture kwargs by combining the above list of kwargs depending
-        # on priority
-        print("TEST ROT: ", cls.test_root)
-        sphinx_kwargs = {'testroot': cls.test_root}
+        # now we can generate the sphinx fixture kwargs by combining the above list of
+        # kwargs depending on priority
+        sphinx_kwargs = {'testroot': cls.testroot}
         for __, kw in markers_kwargs:
             deep_update(sphinx_kwargs, kw)
 
-        # and finally we set the sphinx markers with the combined kwargs, that override the previous ones
+        # and finally we set the sphinx markers with the combined kwargs, that override
+        # the previous ones
         setattr(cls, name, pytest.mark.sphinx(**sphinx_kwargs)(meth))
 
     return cls
