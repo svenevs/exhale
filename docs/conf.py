@@ -20,6 +20,11 @@ import exhale
 # If your documentation needs a minimal Sphinx version, state it here.
 needs_sphinx = '1.0'
 
+# General information about the project.
+project = u'Exhale'
+copyright = u'2018, Stephen McDowell'
+author = u'Stephen McDowell'
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
@@ -41,6 +46,19 @@ intersphinx_mapping = {
     'bs4':    ('https://www.crummy.com/software/BeautifulSoup/bs4/doc', "_intersphinx/bs4_objects.inv")
 }
 
+# make linkcheck does not support GitHub README.md anchors (they are synthetic anchors)
+linkcheck_ignore = []
+for anchor in ['onhovercolor', 'tags', 'showtags', 'expandicon', 'collapseicon', 'levels']:
+    linkcheck_ignore.append('{0}#{1}'.format(
+        'https://github.com/jonmiles/bootstrap-treeview',
+        anchor
+    ))
+
+# TODO: figure out how to use this...and remove linkcheck_ignore above
+linkcheck_anchors_ignore = [
+    r'https://github.com/jonmiles/bootstrap-treeview'
+]
+
 # show :autoclass: member definitions as defined in exhale.py
 autodoc_member_order = 'bysource'
 
@@ -53,11 +71,6 @@ source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
-
-# General information about the project.
-project = u'Exhale'
-copyright = u'2017, Stephen McDowell'
-author = u'Stephen McDowell'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -101,7 +114,7 @@ exclude_patterns = ['_build']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+# pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []

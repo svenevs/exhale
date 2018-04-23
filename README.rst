@@ -94,7 +94,7 @@ HTML Theme choices:
 
 .. _rtd:       http://sphinx-rtd-theme.readthedocs.io/en/latest/
 .. _bstrap:    https://ryan-roemer.github.io/sphinx-bootstrap-theme/
-.. _alabaster: https://alabaster.readthedocs.io/en/latest/
+.. _alabaster: http://alabaster.readthedocs.io/en/latest/
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=latest
    :target: http://my-favorite-documentation-test.readthedocs.io/en/latest/
@@ -383,10 +383,10 @@ to be successful, I vendor copies of two excellent libraries that I make no clai
 They are vendored with your installation of Exhale, in accordance with each project's
 license:
 
-1. For non-bootstrap, I used Stephen Morley's excellent and lightweight
-   collapsibleLists_ including the sample CSS / images on that post.  He includes a
-   generous `CC0 license <http://code.stephenmorley.org/about-this-site/copyright/>`_
-   for these files, as well as the rest of his website.
+1. For non-bootstrap, I used Kate Morley's excellent and lightweight collapsibleLists_
+   including the sample CSS / images on that post.  She includes a generous
+   `CC0 1.0 license <http://code.iamkate.com/>`_ for these files, as well as the rest of
+   her website.
 
    For every HTML Theme I have tried, except for ones using bootstrap, this library
    works reliably and consistently.  It matches the Sphinx RTD theme quite well, too!
@@ -403,7 +403,7 @@ license:
 Both of these libraries and copies of their licenses can be found in the
 `data folder of the source code <https://github.com/svenevs/exhale/tree/master/exhale/data>`_.
 
-.. _collapsibleLists: http://code.stephenmorley.org/javascript/collapsible-lists/
+.. _collapsibleLists: http://code.iamkate.com/javascript/collapsible-lists/
 
 __ https://github.com/jonmiles/bootstrap-treeview
 

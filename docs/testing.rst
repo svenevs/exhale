@@ -132,8 +132,15 @@ For more examples, just have a look at the existing tests in the ``testing/tests
 Full Testing Suite Documentation
 ----------------------------------------------------------------------------------------
 
+.. automodule:: testing
+   :members:
+
 .. toctree::
    :maxdepth: 2
 
    testing/base
+   testing/conftest
    testing/decorators
+   testing/fixtures
+   testing/utils
+   testing/tests

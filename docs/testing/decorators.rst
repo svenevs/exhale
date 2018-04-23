@@ -1,8 +1,18 @@
-Decorators Module
-=================
+Testing Decorators Module
+========================================================================================
 
 .. automodule:: testing.decorators
 
-   .. autofunction:: testing.decorators.confoverrides
+Available Decorators
+----------------------------------------------------------------------------------------
 
-   .. autofunction:: testing.decorators.no_run
+.. autofunction:: testing.decorators.confoverrides
+
+.. autofunction:: testing.decorators.no_run
+
+Decorator Helper Functions
+----------------------------------------------------------------------------------------
+
+.. autofunction:: testing.decorators._apply_confoverride_to_class
+
+.. autofunction:: testing.decorators.default_confoverrides

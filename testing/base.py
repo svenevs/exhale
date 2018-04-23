@@ -16,7 +16,7 @@ import unittest
 
 import exhale
 import pytest
-from six import with_metaclass
+from six import add_metaclass
 
 from . import TEST_PROJECTS_ROOT
 from .decorators import default_confoverrides
@@ -119,7 +119,8 @@ class ExhaleTestCaseMetaclass(type):
         )
 
 
-class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase)):
+@add_metaclass(ExhaleTestCaseMetaclass)
+class ExhaleTestCase(unittest.TestCase):
     """
     The primary project based test class to inherit from.
 

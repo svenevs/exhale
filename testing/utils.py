@@ -1,14 +1,35 @@
+########################################################################################
+# This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
+# Full BSD 3-Clause license available here:                                            #
+#                                                                                      #
+#                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
+########################################################################################
+
+"""
+Utility functionality for the testing suite.
+"""
+
 from collections import Mapping
 
 
 def deep_update(orig, override):
     """
-    Updates leaf values of a data structure (nested dicts and lists)
+    Update leaf values of a data structure (nested dictionaries and lists).
 
-    :param orig: the original dictionary
-    :param override: the overriding dictionary
+    **Parameters**
+        Both ``orig`` and ``override`` should be of the same type.  E.g. both ``orig``
+        and ``override`` are a :class:`python:dict`, or both are a :class:`python:list`.
+
+        ``orig`` (:class:`python:dict` or :class:`python:list`)
+            The original data structure.
+
+        ``override`` (:class:`python:dict` or :class:`python:list`)
+            The overriding data structure.
+
+    **Return**
+        :class:`python:dict` or :class:`python:list`
+            The ``orig`` object, updated with the ``override`` values.
     """
-
     if not override:
         return orig
 

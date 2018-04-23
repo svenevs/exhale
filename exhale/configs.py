@@ -498,10 +498,10 @@ treeViewBootstrapOnhoverColor = "#F5F5F5"
     The hover color for elements in the hierarchy trees.  Default color is a light-grey,
     as specified by default value of ``bootstrap-treeview``'s `onhoverColor`_.
 
-    .. _onhoverColor: https://github.com/jonmiles/bootstrap-treeview#onhovercolor
-
 *Value in** ``exhale_args`` (str)
-    Any valid color.  See `onhovercolor`_ for information.
+    Any valid color.  See `onhoverColor`_ for information.
+
+.. _onhoverColor: https://github.com/jonmiles/bootstrap-treeview#onhovercolor
 '''
 
 treeViewBootstrapUseBadgeTags = True

@@ -29,6 +29,33 @@ def _apply_confoverride_to_class(cls, config, priority):
     class-wide decorator, which should supersede the default configuration.  We use
     ``pytest.mark.exhale`` as a store of ``kwargs`` to apply to ``pytest.mark.sphinx``,
     and we use the priority to combine these kwargs with respect to priorities.
+
+    This method performs the ultimate ``pytest.mark.sphinx``, saving the ``kwargs`` for
+    this in the ``cls``'s :data:`testing.base.ExhaleTestCase.func_to_sphinx_map`.
+
+    **Parameters**
+        ``cls`` (Subclass of :class:`testing.base.ExhaleTestCase`)
+            The class to apply the ``confoverride`` to.
+
+        ``config`` (:class:`python:dict`)
+            The dictionary of ``confoverrides`` as would be supplied to
+            ``pytest.mark.sphinx``.  These are the overrides to ``conf.py``.
+
+        ``priority`` (:class:`python:int`)
+            The positive integer indicating the priority of the new ``config`` updates,
+            higher values take precedence over lower values.
+
+            For example, when :func:`testing.decorators.default_confoverrides` calls
+            this function, the priority is ``1``.  When the decorator
+            :func:`testing.decorators.confoverrides` is applied to a class, the priority
+            is ``2``.  Finally, when :func:`testing.decorators.confoverrides` is applied
+            to a test function, its priority is ``3``.  Thus the function-level override
+            has the highest priority, meaning any conflicting values with lower level
+            priorities will lose out to the function-level override.
+
+    **Return**
+        Subclass of :class:`testing.base.ExhaleTestCase`
+            The input ``cls`` is returned.
     """
     # If not explicitly overriden here, somehow the `func_to_sphinx_map` is getting
     # populated with previous cls entries.
@@ -81,31 +108,70 @@ def default_confoverrides(cls, config):
     """
     Apply the default configuration config to test class ``cls``.
 
-    This configuration is set with a priority of 1 so that it is overridden by the @confoverrides decorator
-    applied to test classes and methods
+    This configuration is set with a priority of ``1`` so that it may be overridden by
+    the :func:`testing.decorators.confoverrides` decorator applied to test classes and
+    functions.
+
+    **Parameters**
+        ``cls`` (Subclass of :class:`testing.base.ExhaleTestCase`)
+            The class to apply the ``config`` dictionary as ``confoverrides`` to.
+
+        ``config`` (:class:`python:dict`)
+            The dictionary of ``confoverrides`` as would be supplied to
+            ``pytest.mark.sphinx``.  These are the overrides to ``conf.py``.
+
+    **Return**
+        Subclass of :class:`testing.base.ExhaleTestCase`
+            The input ``cls`` is returned.
     """
     return _apply_confoverride_to_class(cls, config, 1)
 
 
 def confoverrides(**config):
     """
-    Decorator that overrides the default sphinx configuration
-    generated from :func:`testing.base.make_default_config`. It can
-    be applied to a test method or a test class, which is equivalent
-    to decorating every method in that class
+    Override the defaults of |make_default_config| to supply to ``pytest.mark.sphinx``.
 
-    Usage::
+    .. |make_default_config| replace:: :func:`testing.base.make_default_config`
+
+    It can be applied to a test method or a test class, which is equivalent to
+    decorating every method in that class.
+
+    Usage:
+
+    .. code-block:: py
 
        @confoverrides(var1=value1, var2=value2)
        def test_something(self):
            ...
 
-    or::
+    or:
+
+    .. code-block:: py
 
        @confoverrides(var1=value1, var2=value2)
        class MyTestCase(ExhaleTestCase):
            test_project = 'my_project'
            ...
+
+    Typical usage of this decorator is to modify a value in ``exhale_args``, such as
+
+    .. code-block:: py
+
+       @confoverrides(exhale_args={"containmentFolder": "./alt_api"})
+       def test_alt_out(self):
+          ...
+
+    However, this decorator can be used to change or set any value you would typically
+    find in a ``conf.py`` file.
+
+    **Parameters**
+        ``**config`` (:class:`python:dict`)
+            The dictionary of ``confoverrides`` as would be supplied to
+            ``pytest.mark.sphinx``.  These are the overrides to ``conf.py``.
+
+    **Return**
+        (``class`` or function)
+            The decorated class or function.
     """
     def actual_decorator(meth_or_cls):
         if not config:
@@ -121,22 +187,37 @@ def confoverrides(**config):
 
 def no_run(obj):
     """
-    Decorator that disables the generation of ``*.rst`` files in a
-    specific test method. It can be applied to a test class, which
-    will be equivalent to decorating every method in that class
+    Disable the generation of ``*.rst`` files in a specific test method.
 
-    Usage::
+    It can be applied to a test class, which will be equivalent to decorating every
+    method in that class.
+
+    Usage:
+
+    .. code-block:: py
 
        @no_run
        def test_something(self):
            ...
 
-    or::
+    or:
+
+    .. code-block:: py
 
        @no_run
        class MyTestCase(ExhaleTestCase):
            test_project = 'my_project'
            ...
 
+    Internally this will use the :func:`testing.fixtures.no_run` fixture.
+
+    **Parameters**
+        ``obj`` (``class`` or function)
+            The class or function to disable exhale from generating reStructuredText
+            documents for.
+
+    **Return**
+        ``class`` or function
+            The decorated ``obj``.
     """
     return pytest.mark.usefixtures('no_run')(obj)
