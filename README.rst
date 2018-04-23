@@ -12,17 +12,17 @@ Exhale
    :alt: Latest Version
    :target: https://badge.fury.io/py/exhale
 
-.. |travis| image:: https://travis-ci.org/svenevs/exhale-testing-ci.svg?branch=master
+.. |travis| image:: https://travis-ci.org/svenevs/exhale.svg?branch=master
    :alt: Travis CI Build Status (Unix and Flake8 Tests)
-   :target: https://travis-ci.org/svenevs/exhale-testing-ci
+   :target: https://travis-ci.org/svenevs/exhale
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/m7u8vkbelui57b1j?svg=true
    :alt: AppVeyor CI Build Satus (Windows)
-   :target: https://ci.appveyor.com/project/svenevs/exhale-testing-ci
+   :target: https://ci.appveyor.com/project/svenevs/exhale
 
-.. |coverage| image:: https://codecov.io/gh/svenevs/exhale-testing-ci/branch/master/graph/badge.svg
+.. |coverage| image:: https://codecov.io/gh/svenevs/exhale/branch/master/graph/badge.svg
    :alt: Code Coverage Report
-   :target: https://codecov.io/gh/svenevs/exhale-testing-ci
+   :target: https://codecov.io/gh/svenevs/exhale
 
 .. |license| image:: https://img.shields.io/github/license/svenevs/exhale.svg
    :alt: License BSD-3 Clause
