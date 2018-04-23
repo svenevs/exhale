@@ -1,12 +1,22 @@
+########################################################################################
+# This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
+# Full BSD 3-Clause license available here:                                            #
+#                                                                                      #
+#                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
+########################################################################################
+
+"""
+The decorators module defines useful class / function decorators for test cases.
+"""
+
 import os
-from inspect import isclass
 from copy import deepcopy
+from inspect import isclass
 
 import pytest
-import shutil
-import textwrap
 
 from .utils import deep_update
+
 
 __all__ = ['default_confoverrides', 'confoverrides', 'no_run']
 
@@ -20,6 +30,9 @@ def _apply_confoverride_to_class(cls, config, priority):
     ``pytest.mark.exhale`` as a store of ``kwargs`` to apply to ``pytest.mark.sphinx``,
     and we use the priority to combine these kwargs with respect to priorities.
     """
+    # If not explicitly overriden here, somehow the `func_to_sphinx_map` is getting
+    # populated with previous cls entries.
+    cls.func_to_sphinx_map = {}
 
     # look for test methods in the class
     for name, meth in cls.__dict__.items():
@@ -43,63 +56,31 @@ def _apply_confoverride_to_class(cls, config, priority):
 
         # now we can generate the sphinx fixture kwargs by combining the above list of
         # kwargs depending on priority
-        sphinx_kwargs = {'testroot': cls.testroot}
+        #
+        # each function in a subclass of ExhaleTestCase gets its own "docs" directory
+        testroot = os.path.join(
+            cls.test_project_root,
+            "docs_{0}_{1}".format(cls.__name__, meth.__name__)
+        )
+        sphinx_kwargs = {'testroot': testroot}
         for __, kw in markers_kwargs:
             deep_update(sphinx_kwargs, kw)
 
-        ################################################################################
-        # Automatically create docs/{conf.py,index.rst} for the test project.          #
-        ################################################################################
-        def _with_docs_dir(self):
-            # Create the test project's 'docs' dir with a conf.py and index.rst.
-            if os.path.isdir(self.testroot):
-                shutil.rmtree(self.testroot)
-            os.makedirs(self.testroot)
-            # Sphinx demands a `conf.py` is present
-            with open(os.path.join(self.testroot, "conf.py"), "w") as conf_py:
-                conf_py.write(textwrap.dedent('''\
-                    # -*- coding: utf-8 -*-
-                    extensions = ["breathe", "exhale"]
-                    master_doc = "index.rst"
-                '''))
-
-            # If a given test case needs to run app.build(), make sure index.rst
-            # is available as well
-            cls_exhale_args = sphinx_kwargs["confoverrides"]["exhale_args"]
-            with open(os.path.join(self.testroot, "index.rst"), "w") as index_rst:
-                index_rst.write(textwrap.dedent('''
-                    Exhale Test Case
-                    ================
-
-                    .. toctree::
-                       :maxdepth: 2
-
-                       {containmentFolder}/{rootFileName}
-                '''.format(
-                    containmentFolder=cls_exhale_args["containmentFolder"],
-                    rootFileName=cls_exhale_args["rootFileName"]
-                )))
-
-            # Let all of the tests run for this project
-            yield
-
-            # Delete the docs dir
-            if os.path.isdir(self.testroot):
-                shutil.rmtree(self.testroot)
-
-        # Create the class-level fixture for creating / deleting the docs/ dir
-        with_docs_dir_meth = pytest.fixture(scope="class", autouse=True)(_with_docs_dir)
+        # now that the final function-level sphinx arguments are ready, stash them
+        # for the setup / teardown methods in `conftest.py`
+        cls.func_to_sphinx_map[name] = deepcopy(sphinx_kwargs)
 
         # and finally we set the sphinx markers with the combined kwargs, that override
         # the previous ones
-        setattr(cls, name, pytest.mark.sphinx(**sphinx_kwargs)(with_docs_dir_meth))
+        setattr(cls, name, pytest.mark.sphinx(**sphinx_kwargs)(meth))
 
     return cls
 
 
 def default_confoverrides(cls, config):
     """
-    Applies the default configuration config to test class cls
+    Apply the default configuration config to test class ``cls``.
+
     This configuration is set with a priority of 1 so that it is overridden by the @confoverrides decorator
     applied to test classes and methods
     """
@@ -126,7 +107,6 @@ def confoverrides(**config):
            test_project = 'my_project'
            ...
     """
-
     def actual_decorator(meth_or_cls):
         if not config:
             return meth_or_cls

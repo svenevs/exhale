@@ -12,9 +12,9 @@ from testing.decorators import confoverrides, no_run
 class CMathsTests(ExhaleTestCase):
     test_project = 'c_maths'
 
+    @confoverrides(exhale_args={"containmentFolder": "./lalala"})
     def test_app(self):
         self.checkRequiredConfigs()
-        self.copyThisProject()
 
     @confoverrides(exhale_args={"containmentFolder": "./alt_api"})
     def test_alt_out(self):
@@ -33,5 +33,5 @@ class CMathsTestsNoRun(ExhaleTestCase):
         self.assertEqual(containmentFolder, './api')
 
         # check that nothing has been generated
-        api_dir = os.path.join(self.testroot, containmentFolder)
+        api_dir = self.getAbsAgainstSrcdir("containmentFolder")
         self.assertFalse(os.path.exists(api_dir))

@@ -12,18 +12,14 @@ All project based test cases should inherit from :class:`testing.base.ExhaleTest
 """
 
 import os
-import shutil
-import textwrap
 import unittest
 
+import exhale
 import pytest
-
 from six import with_metaclass
 
-import exhale
-
-from .decorators import confoverrides, default_confoverrides
-from . import TEST_PROJECTS_ROOT, TEST_RESULTS_COPY_DIR
+from . import TEST_PROJECTS_ROOT
+from .decorators import default_confoverrides
 
 
 def make_default_config(project):
@@ -64,7 +60,7 @@ class ExhaleTestCaseMetaclass(type):
     Metaclass to enforce mandatory attributes on :class:`testing.base.ExhaleTestCase`.
     """
 
-    def __new__(mcs, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):  # noqa N804
         """
         Return a new instance with the specified attributes.
 
@@ -83,7 +79,6 @@ class ExhaleTestCaseMetaclass(type):
                 needed to produce a final class definition that can use sphinx test
                 applications where desired.
         """
-
         if attrs['__module__'] == __name__:
             # we skip everything if we're creating ExhaleTestCase below
             return super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
@@ -95,8 +90,8 @@ class ExhaleTestCaseMetaclass(type):
             raise RuntimeError('ExhaleTestCase subclasses must define a "test_project" attribute')
 
         # Run all test projects local to the project folder
-        testroot = os.path.join(TEST_PROJECTS_ROOT, test_project, "docs")
-        attrs["testroot"] = testroot
+        test_project_root = os.path.join(TEST_PROJECTS_ROOT, test_project)
+        attrs["test_project_root"] = test_project_root
 
         # looking for test methods ("test_*")
         has_tests = False
@@ -107,30 +102,12 @@ class ExhaleTestCaseMetaclass(type):
 
         # if there are tests, we set the app attribute using the ``sphinx.testing.fixtures.app`` fixture
         if has_tests:
-            ############################################################################
-            # Make the sphinx test application available as `self.app`.                #
-            ############################################################################
+            # Make the sphinx test application available as `self.app`.  Because this
+            # has an `app` parameter, pytest and sphinx automatically call this.
             def _set_app(self, app):
                 # before the test
                 self.app = app
-                yield  # the test runs
-                # This cleanup happens between each test case, do not delete docs/
-                # until all tests for this class are done!
-                containmentFolder = self.getAbsAgainstSrcdir("containmentFolder")
-                if os.path.isdir(containmentFolder):
-                    shutil.rmtree(containmentFolder)
-                # Delete the doctrees as well as e.g. _build/html, app.outdir is going
-                # to be docs/_build/{builder_name}
-                _build = os.path.abspath(os.path.dirname(app.outdir))
-                if os.path.isdir(_build):
-                    shutil.rmtree(_build)
-                # Make sure doxygen output is deleted between runs
-                doxy_xml_dir = os.path.abspath(os.path.join(
-                    self.app.srcdir, app.config.breathe_projects[test_project]
-                ))
-                doxy_dir = os.path.dirname(doxy_xml_dir)
-                if os.path.isdir(doxy_dir):
-                    shutil.rmtree(doxy_dir)
+                yield
 
             attrs['_set_app'] = pytest.fixture(autouse=True)(_set_app)
 
@@ -157,6 +134,18 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
     This value **must** be set in subclasses.
     """
 
+    test_project_root = None
+    """
+    The root of this test project, populated by the meta-class.
+
+    .. code-block:: py
+
+       os.path.join(TEST_PROJECTS_ROOT, test_project)
+
+    So if ``test_project`` were ``"c_maths"``, then this variable will be equivalent to
+    ``{repo_root}/testing/projects/c_maths``.
+    """
+
     app = None
     """
     The Sphinx testing application.
@@ -165,20 +154,100 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
     simply access the Sphinx application with ``self.app``.
     """
 
-    testroot = None
+    func_to_sphinx_map = {}
     """
-    The ``testroot`` specified to the sphinx test application.  This is populated by
-    :class:`testing.base.ExhaleTestCaseMetaclass`, and uses
-    :data:`testing.base.ExhaleTestCase.test_project` to form:
+    Map function names to ``pytest.sphinx.mark`` decorator arguments.
+
+    **Keys** (:class:`python:str`)
+        The name of a function (e.g., ``"test_app"`` or ``"test_alt_out"``).
+
+    **Values** (:class:`python:dict`)
+        The dictionary being supplied to ``pytest.mark.sphinx`` for the given function.
+        These dictionaries are a ``**kwargs`` style dictionary with string keys mapping
+        to function call input.  Each dictionary must have:
+
+        - ``"testroot" -> str``: maps to
+          :data:`testing.base.ExhaleTestCase.test_project_root`.
+        - ``"confoverrides" -> dict``: the overrides to ``conf.py``, including
+          ``exhale_args``.
+
+    Consider the test class:
 
     .. code-block:: py
 
-       os.path.join(TEST_PROJECTS_ROOT, test_project, "docs")
+       class CMathsTests(ExhaleTestCase):
+           test_project = 'c_maths'
 
-    So if ``test_project`` were ``"c_maths"``, then this variable will be equivalent to
-    ``{repo_root}/testing/projects/c_maths/docs``.
+           def test_app(self):
+               self.checkRequiredConfigs()
+
+           @confoverrides(exhale_args={"containmentFolder": "./alt_api"})
+           def test_alt_out(self):
+               self.checkRequiredConfigs()
+
+    Then the final value of ``func_to_sphinx_map`` might look like:
+
+    .. code-block:: py
+
+       {
+         "test_app": {
+           "testroot": "/path/to/exhale/testing/projects/c_maths/docs_CMathsTests_test_app",
+           "confoverrides": {
+             "breathe_projects": {
+               "c_maths": "./_doxygen/xml"
+             },
+             "breathe_default_project": "c_maths",
+             "exhale_args": {
+               "containmentFolder": "./api"
+               # ... other arguments ...
+             }
+           }
+         },
+         "test_alt_out": {
+           "testroot": "/path/to/exhale/testing/projects/c_maths/docs_CMathsTests_test_alt_out",
+           "confoverrides": {
+             "breathe_projects": {
+               "c_maths": "./_doxygen/xml"
+             },
+             "breathe_default_project": "c_maths",
+             "exhale_args": {
+               "containmentFolder": "./alt_api"
+               # ... other arguments ...
+             }
+           }
+         }
+       }
+
+    That is, these are the **final** arguments to ``pytest.mark.sphinx``, after all
+    hierarchical ``confoverrides`` have been computed for a given test function.  The
+    primary reason for saving this information is to enable
+    :func:`testing.conftest.pytest_runtest_setup` and
+    :func:`testing.conftest.pytest_runtest_teardown` to be able to automatically create
+    the "docs" directory (defined by ``testroot``) for a given test.
+
+    .. tip::
+
+       All information is saved, but when writing test code you can access the sphinx
+       config values (``confoverrides`` included) more directly.  For example, getting
+       access to ``exhale_args`` would be done with ``self.app.config.exhale_args``.
     """
+
     def getAbsAgainstSrcdir(self, key):
+        """
+        Return an absolute path joined with ``app.srcdir`` for the specified key.
+
+        **Parameters**
+            ``key`` (str)
+                The key to lookup in ``self.app.config.exhale_args``, e.g.
+                ``"containmentFolder"``.
+
+        **Return**
+            ``str``
+                When the specified ``key`` is not an absolute path, it is assumed to be
+                a path relative to ``conf.py``.  So the result is simply
+                ``os.path.join(self.app.srcdir, val)`` where
+                ``val = self.app.config.exhale_args[key]``.
+        """
         val = self.app.config.exhale_args[key]
         if not os.path.isabs(val):
             val = os.path.abspath(os.path.join(self.app.srcdir, val))
@@ -187,7 +256,7 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
 
     def checkRequiredConfigs(self):
         """
-        Validates the four required configuration arguments in ``exhale_args``.
+        Validate the four required configuration arguments in ``exhale_args``.
 
         1. Checks that ``{containmentFolder}`` was created.
         2. Checks that ``{containmentFolder}/{rootFileName}`` was created.
@@ -196,8 +265,8 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
 
         .. todo::
 
-           4: identify via a ``file_*`` method that ``{doxygenStripFromPath}``
-           was correctly removed / wielded.
+           4. identify via a ``file_*`` method that ``{doxygenStripFromPath}``
+              was correctly removed / wielded.
         """
         containmentFolder    = self.getAbsAgainstSrcdir("containmentFolder")
         rootFileName         = self.app.config.exhale_args["rootFileName"]
@@ -216,36 +285,6 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
             exhale.utils.heading_mark(rootFileTitle, exhale.configs.SECTION_HEADING_CHAR)
         )
         assert root_heading in root_contents
-
         # TODO: validate doxygenStripFromPath
-
-    def copyThisProject(self):
-        """
-        Copies the generated results from ``{containmentFolder}`` to
-        :data:`testing.TEST_RESULTS_COPY_DIR`.
-
-        .. warning::
-
-           The following are assumed:
-
-           1. Every derived class of :class:`testing.base.ExhaleTestCase` calls this
-              method **exactly once**.
-           2. The test method this is called from is un-decorated.  That is, no class
-              or function level ``@no_run`` or ``@confoverrides`` is used.
-
-           For (2), it is really just important that the path to
-           ``{containmentFolder}/{rootFileName}`` is the same as what is specified
-           by :func:`testing.base.make_default_config`.
-        """
-        abs_containmentFolder = self.getAbsAgainstSrcdir("containmentFolder")
-
-        # If this is the first test run, launching the test suite deleted the folder
-        # so make sure to create it again
-        if not os.path.isdir(TEST_RESULTS_COPY_DIR):
-            os.makedirs(TEST_RESULTS_COPY_DIR)
-
-        # Copy the generated reStructuredText from exhale.
-        shutil.copytree(
-            abs_containmentFolder,
-            os.path.join(TEST_RESULTS_COPY_DIR, self.test_project)
-        )
+        if doxygenStripFromPath:  # this is only here to avoid a flake8 fail on a todo
+            pass
