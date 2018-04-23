@@ -20,6 +20,8 @@ import pytest
 
 from six import with_metaclass
 
+import exhale
+
 from .decorators import confoverrides, default_confoverrides
 from . import TEST_PROJECTS_ROOT, TEST_RESULTS_COPY_DIR
 
@@ -134,54 +136,10 @@ class ExhaleTestCaseMetaclass(type):
 
         # applying the default configuration override, which is overridden using the @confoverride decorator
         # at class or method level
-        cls = default_confoverrides(
+        return default_confoverrides(
             super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs),
             make_default_config(attrs['test_project'])
         )
-
-        if has_tests:
-            ############################################################################
-            # Automatically create docs/{conf.py,index.rst} for the test project.      #
-            ############################################################################
-            def _with_docs_dir(self):
-                # Create the test project's 'docs' dir with a conf.py and index.rst.
-                if os.path.isdir(testroot):
-                    shutil.rmtree(testroot)
-                os.makedirs(testroot)
-                # Sphinx demands a `conf.py` is present
-                with open(os.path.join(testroot, "conf.py"), "w") as conf_py:
-                    conf_py.write(textwrap.dedent('''\
-                        # -*- coding: utf-8 -*-
-                        extensions = ["breathe", "exhale"]
-                        master_doc = "index.rst"
-                    '''))
-                # If a given test case needs to run app.build(), make sure index.rst
-                # is available as well
-                with open(os.path.join(self.testroot, "index.rst"), "w") as index_rst:
-                    index_rst.write(textwrap.dedent('''
-                        Exhale Test Case
-                        ================
-
-                        .. toctree::
-                           :maxdepth: 2
-
-                           {containmentFolder}/{rootFileName}
-                    '''.format(
-                        containmentFolder=self.app.config["exhale_args"]["containmentFolder"],
-                        rootFileName=self.app.config["exhale_args"]["rootFileName"]
-                    )))
-
-                # Let all of the tests run for this project
-                yield
-
-                # Delete the docs dir
-                if os.path.isdir(self.testroot):
-                    shutil.rmtree(self.testroot)
-
-            # Create the class-level fixture for creating / deleting the docs/ dir
-            attrs["_with_docs_dir"] = pytest.fixture(scope="class", autouse=True)(_with_docs_dir)
-
-        return cls
 
 
 class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase)):
@@ -253,7 +211,11 @@ class ExhaleTestCase(with_metaclass(ExhaleTestCaseMetaclass, unittest.TestCase))
         # validate that the title was included
         with open(os.path.join(containmentFolder, rootFileName), "r") as root:
             root_contents = root.read()
-        assert rootFileTitle in root_contents
+        root_heading = "{0}\n{1}".format(
+            rootFileTitle,
+            exhale.utils.heading_mark(rootFileTitle, exhale.configs.SECTION_HEADING_CHAR)
+        )
+        assert root_heading in root_contents
 
         # TODO: validate doxygenStripFromPath
 

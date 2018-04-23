@@ -1,7 +1,10 @@
+import os
 from inspect import isclass
 from copy import deepcopy
 
 import pytest
+import shutil
+import textwrap
 
 from .utils import deep_update
 
@@ -44,9 +47,52 @@ def _apply_confoverride_to_class(cls, config, priority):
         for __, kw in markers_kwargs:
             deep_update(sphinx_kwargs, kw)
 
+        ################################################################################
+        # Automatically create docs/{conf.py,index.rst} for the test project.          #
+        ################################################################################
+        def _with_docs_dir(self):
+            # Create the test project's 'docs' dir with a conf.py and index.rst.
+            if os.path.isdir(self.testroot):
+                shutil.rmtree(self.testroot)
+            os.makedirs(self.testroot)
+            # Sphinx demands a `conf.py` is present
+            with open(os.path.join(self.testroot, "conf.py"), "w") as conf_py:
+                conf_py.write(textwrap.dedent('''\
+                    # -*- coding: utf-8 -*-
+                    extensions = ["breathe", "exhale"]
+                    master_doc = "index.rst"
+                '''))
+
+            # If a given test case needs to run app.build(), make sure index.rst
+            # is available as well
+            cls_exhale_args = sphinx_kwargs["confoverrides"]["exhale_args"]
+            with open(os.path.join(self.testroot, "index.rst"), "w") as index_rst:
+                index_rst.write(textwrap.dedent('''
+                    Exhale Test Case
+                    ================
+
+                    .. toctree::
+                       :maxdepth: 2
+
+                       {containmentFolder}/{rootFileName}
+                '''.format(
+                    containmentFolder=cls_exhale_args["containmentFolder"],
+                    rootFileName=cls_exhale_args["rootFileName"]
+                )))
+
+            # Let all of the tests run for this project
+            yield
+
+            # Delete the docs dir
+            if os.path.isdir(self.testroot):
+                shutil.rmtree(self.testroot)
+
+        # Create the class-level fixture for creating / deleting the docs/ dir
+        with_docs_dir_meth = pytest.fixture(scope="class", autouse=True)(_with_docs_dir)
+
         # and finally we set the sphinx markers with the combined kwargs, that override
         # the previous ones
-        setattr(cls, name, pytest.mark.sphinx(**sphinx_kwargs)(meth))
+        setattr(cls, name, pytest.mark.sphinx(**sphinx_kwargs)(with_docs_dir_meth))
 
     return cls
 

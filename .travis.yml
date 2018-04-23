@@ -16,7 +16,7 @@ matrix:
       install:
         - pip install tox
       script:
-        - tox -e py -- -s
+        - tox -e py
     ####################################################################################
     # Linux :: Python :: 3.6 && Coverage                                               #
     ####################################################################################
@@ -31,7 +31,7 @@ matrix:
         - pip install tox
         - pip install codecov
       script:
-        - tox -e py -- --cov=exhale -s
+        - tox -e py -- --cov=exhale
       after_success: codecov
     ####################################################################################
     # OSX :: Python :: 2.7                                                             #
@@ -48,7 +48,7 @@ matrix:
         - /usr/local/bin/pip install -U tox
       script:
         - /usr/local/bin/python2 --version
-        - /usr/local/bin/python2 -m tox -e py -- -s
+        - /usr/local/bin/python2 -m tox -e py
     ####################################################################################
     # OSX :: Python :: 3.6                                                             #
     ####################################################################################
@@ -62,7 +62,7 @@ matrix:
         - /usr/local/bin/pip3 install -U tox
       script:
         - /usr/local/bin/python3 --version
-        - /usr/local/bin/python3 -m tox -e py -- -s
+        - /usr/local/bin/python3 -m tox -e py
     ####################################################################################
     # Flake8                                                                           #
     ####################################################################################
