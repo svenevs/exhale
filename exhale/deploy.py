@@ -417,3 +417,6 @@ def explode():
     # << verboseBuild
     #   toConsole only prints if verbose mode is enabled
     textRoot.toConsole()
+
+    # allow access to the result after-the-fact
+    configs._the_app.exhale_root = textRoot

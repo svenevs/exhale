@@ -13,6 +13,7 @@ import os
 
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides, no_run
+from testing.hierarchies import *
 
 
 class CMathsTests(ExhaleTestCase):
@@ -37,6 +38,18 @@ class CMathsTests(ExhaleTestCase):
         Test ``"./alt_api"`` rather than default ``"./api"`` as ``"containmentFolder"``.
         """
         self.checkRequiredConfigs()
+
+    def test_file_hierarchy(self):
+        file_hierarchy = root({
+            directory("include"): {
+                file("main.h"): {
+                    function("void", "add"): signature("int a", "int b"),
+                    function("void", "sub"): signature("int a", "int b")
+                }
+            }
+        })
+        exhale_root = self.app.exhale_root
+        compare_file_hierarchy(self, file_hierarchy, exhale_root)
 
 
 @no_run
