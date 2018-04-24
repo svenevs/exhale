@@ -118,7 +118,7 @@ class ExhaleTestCaseMetaclass(type):
                 yield  # the test runs
                 # This cleanup happens between each test case, do not delete docs/
                 # until all tests for this class are done!
-                containmentFolder = self.getAbsAgainstSrcdir("containmentFolder")
+                containmentFolder = self.getAbsContainmentFolder()
                 if os.path.isdir(containmentFolder):
                     shutil.rmtree(containmentFolder)
                 # Delete the doctrees as well as e.g. _build/html, app.outdir is going
@@ -259,27 +259,25 @@ class ExhaleTestCase(unittest.TestCase):
     **This class-level string variable must be set in subclasses**.
     """
 
-    def getAbsAgainstSrcdir(self, key):
+    def getAbsContainmentFolder(self):
         """
-        Return an absolute path joined with ``app.srcdir`` for the specified key.
+        Return the absolute path to ``"containmentFolder"``.
 
-        **Parameters**
-            ``key`` (str)
-                The key to lookup in ``self.app.config.exhale_args``, e.g.
-                ``"containmentFolder"``.
+        If ``exhale_args["containmentFolder"]`` is an absolute path, it will be returned
+        unchanged.  Otherwise, it will be resolved against ``app.srcdir``.
 
         **Return**
             ``str``
-                When the specified ``key`` is not an absolute path, it is assumed to be
-                a path relative to ``conf.py``.  So the result is simply
-                ``os.path.join(self.app.srcdir, val)`` where
-                ``val = self.app.config.exhale_args[key]``.
+                An absolute path to the ``"containmentFolder"`` where Exhale will be
+                generating its reStructuredText documents.
         """
-        val = self.app.config.exhale_args[key]
-        if not os.path.isabs(val):
-            val = os.path.abspath(os.path.join(self.app.srcdir, val))
+        containmentFolder = self.app.config.exhale_args["containmentFolder"]
+        if not os.path.isabs(containmentFolder):
+            containmentFolder = os.path.abspath(os.path.join(
+                self.app.srcdir, containmentFolder
+            ))
 
-        return val
+        return containmentFolder
 
     def checkRequiredConfigs(self):
         """
@@ -295,7 +293,7 @@ class ExhaleTestCase(unittest.TestCase):
            4. identify via a ``file_*`` method that ``{doxygenStripFromPath}``
               was correctly removed / wielded.
         """
-        containmentFolder    = self.getAbsAgainstSrcdir("containmentFolder")
+        containmentFolder    = self.getAbsContainmentFolder()
         rootFileName         = self.app.config.exhale_args["rootFileName"]
         rootFileTitle        = self.app.config.exhale_args["rootFileTitle"]
         doxygenStripFromPath = self.app.config.exhale_args["doxygenStripFromPath"]

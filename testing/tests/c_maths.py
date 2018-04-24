@@ -6,7 +6,7 @@
 ########################################################################################
 
 """
-Tests on the ``c_maths`` project.
+Tests for the ``c_maths`` project.
 """
 
 import os
@@ -20,7 +20,7 @@ class CMathsTests(ExhaleTestCase):
     Primary test class for project ``c_maths``.
     """
 
-    test_project = 'c_maths'
+    test_project = "c_maths"
     """
     Index into ``testing/projects``.
 
@@ -47,7 +47,7 @@ class CMathsTestsNoRun(ExhaleTestCase):
     A :func:`testing.decorators.no_run` decorated test class.
     """
 
-    test_project = 'c_maths'
+    test_project = "c_maths"
     """
     Index into ``testing/projects``.
 
@@ -59,10 +59,9 @@ class CMathsTestsNoRun(ExhaleTestCase):
         Verify that the default ``"./api"`` folder is indeed **not** generated.
         """
         exhale_args = self.app.config.exhale_args
-        containmentFolder = exhale_args['containmentFolder']
-
-        self.assertEqual(containmentFolder, './api')
+        containmentFolder = exhale_args["containmentFolder"]
+        self.assertEqual(containmentFolder, "./api")
 
         # check that nothing has been generated
-        api_dir = self.getAbsAgainstSrcdir("containmentFolder")
-        self.assertFalse(os.path.exists(api_dir))
+        containmentFolder = self.getAbsContainmentFolder()
+        self.assertFalse(os.path.exists(containmentFolder))
