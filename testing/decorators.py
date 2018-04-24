@@ -9,7 +9,6 @@
 The decorators module defines useful class / function decorators for test cases.
 """
 
-import os
 from copy import deepcopy
 from inspect import isclass
 
@@ -18,7 +17,7 @@ import pytest
 from .utils import deep_update
 
 
-__all__ = ['default_confoverrides', 'confoverrides', 'no_run']
+__all__ = ["default_confoverrides", "confoverrides", "no_run"]
 
 
 def _apply_confoverride_to_class(cls, config, priority):
@@ -30,8 +29,7 @@ def _apply_confoverride_to_class(cls, config, priority):
     ``pytest.mark.exhale`` as a store of ``kwargs`` to apply to ``pytest.mark.sphinx``,
     and we use the priority to combine these kwargs with respect to priorities.
 
-    This method performs the ultimate ``pytest.mark.sphinx``, saving the ``kwargs`` for
-    this in the ``cls``'s :data:`testing.base.ExhaleTestCase.func_to_sphinx_map`.
+    This method performs the ultimate ``pytest.mark.sphinx``.
 
     **Parameters**
         ``cls`` (Subclass of :class:`testing.base.ExhaleTestCase`)
@@ -57,13 +55,9 @@ def _apply_confoverride_to_class(cls, config, priority):
         Subclass of :class:`testing.base.ExhaleTestCase`
             The input ``cls`` is returned.
     """
-    # If not explicitly overriden here, somehow the `func_to_sphinx_map` is getting
-    # populated with previous cls entries.
-    cls.func_to_sphinx_map = {}
-
     # look for test methods in the class
     for name, meth in cls.__dict__.items():
-        if not callable(meth) or not name.startswith('test_'):
+        if not callable(meth) or not name.startswith("test_"):
             continue
 
         # meth is a test method, let's go and mark it!
@@ -83,19 +77,9 @@ def _apply_confoverride_to_class(cls, config, priority):
 
         # now we can generate the sphinx fixture kwargs by combining the above list of
         # kwargs depending on priority
-        #
-        # each function in a subclass of ExhaleTestCase gets its own "docs" directory
-        testroot = os.path.join(
-            cls.test_project_root,
-            "docs_{0}_{1}".format(cls.__name__, meth.__name__)
-        )
-        sphinx_kwargs = {'testroot': testroot}
+        sphinx_kwargs = {}
         for __, kw in markers_kwargs:
             deep_update(sphinx_kwargs, kw)
-
-        # now that the final function-level sphinx arguments are ready, stash them
-        # for the setup / teardown methods in `conftest.py`
-        cls.func_to_sphinx_map[name] = deepcopy(sphinx_kwargs)
 
         # and finally we set the sphinx markers with the combined kwargs, that override
         # the previous ones
@@ -220,4 +204,4 @@ def no_run(obj):
         ``class`` or function
             The decorated ``obj``.
     """
-    return pytest.mark.usefixtures('no_run')(obj)
+    return pytest.mark.usefixtures("no_run")(obj)
