@@ -1413,57 +1413,26 @@ class ExhaleRoot:
         removals = []
         for u in self.unions:
             parts = u.name.split("::")
-            num_parts = len(parts)
-            if num_parts > 1:
-                # it can either be a child of a namespace or a class_like
-                if num_parts > 2:
-                    namespace_name  = "::".join(p for p in parts[:-2])
-                    potential_class = parts[-2]
-
-                    # see if it belongs to a class like object first. if so, remove this
-                    # union from the list of unions
-                    reparented = False
-                    for cl in self.class_like:
-                        if cl.name == potential_class:
-                            cl.children.append(u)
-                            u.parent = cl
-                            reparented = True
-                            break
-
-                    if reparented:
-                        removals.append(u)
-                        continue
-
-                    # otherwise, see if it belongs to a namespace
-                    alt_namespace_name = "{}::{}".format(namespace_name, potential_class)
-                    for n in self.namespaces:
-                        if namespace_name == n.name or alt_namespace_name == n.name:
-                            n.children.append(u)
-                            u.parent = n
-                            break
+            if len(parts) >= 2:
+                # TODO: nested unions are not supported right now...
+                parent_name = "::".join(p for p in parts[:-1])
+                reparented  = False
+                # see if the name matches any potential parents
+                for node in itertools.chain(self.class_like, self.namespaces):
+                    if node.name == parent_name:
+                        node.children.append(u)
+                        u.parent = node
+                        reparented = True
+                        break
+                # if not reparented, try the namespaces
+                if reparented:
+                    removals.append(u)
                 else:
-                    name_or_class_name = "::".join(p for p in parts[:-1])
-
-                    # see if it belongs to a class like object first. if so, remove this
-                    # union from the list of unions
-                    reparented = False
-                    for cl in self.class_like:
-                        if cl.name == name_or_class_name:
-                            cl.children.append(u)
-                            u.parent = cl
-                            reparented = True
-                            break
-
-                    if reparented:
-                        removals.append(u)
-                        continue
-
-                    # next see if it belongs to a namespace
-                    for n in self.namespaces:
-                        if n.name == name_or_class_name:
-                            n.children.append(u)
-                            u.parent = n
-                            break
+                    # << verboseBuild
+                    utils.verbose_log(
+                        "The union {0} has '::' in its name, but no parent was found!".format(u.name),
+                        utils.AnsiColors.BOLD_RED
+                    )
 
         # remove the unions from self.unions that were declared in class_like objects
         for rm in removals:
@@ -1709,33 +1678,15 @@ class ExhaleRoot:
 
         # now that we have parsed all the listed refid's in the doxygen xml, reparent
         # the nodes that we care about
+        allowable_child_kinds = ["struct", "class", "function", "typedef", "define", "enum", "union"]
         for f in self.files:
             for match_refid in doxygen_xml_file_ownerships[f]:
                 child = self.node_by_refid[match_refid]
-                if child.kind == "struct" or child.kind == "class" or child.kind == "function" or \
-                   child.kind == "typedef" or child.kind == "define" or child.kind == "enum"   or \
-                   child.kind == "union":
-                    already_there = False
-                    for fc in f.children:
-                        if child.name == fc.name:
-                            already_there = True
-                            break
-                    if not already_there:
-                        # special treatment for unions: ignore if it is a class union
-                        if child.kind == "union":
-                            for u in self.unions:
-                                if child.name == u.name:
-                                    f.children.append(child)
-                                    break
-                        else:
-                            f.children.append(child)
+                if child.kind in allowable_child_kinds:
+                    if child not in f.children:
+                        f.children.append(child)
                 elif child.kind == "namespace":
-                    already_there = False
-                    for fc in f.namespaces_used:
-                        if child.name == fc.name:
-                            already_there = True
-                            break
-                    if not already_there:
+                    if child not in f.namespaces_used:
                         f.namespaces_used.append(child)
 
         # last but not least, some different kinds declared in the file that are scoped
