@@ -13,7 +13,7 @@ from exhale import deploy
 import pytest
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 def no_run():
     """
     Disable :func:`exhale.deploy.explode` using a class-level ``pytest`` `fixture`__.

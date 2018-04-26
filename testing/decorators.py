@@ -70,8 +70,10 @@ def _apply_confoverride_to_class(cls, config, priority):
 
         # create a list of exhale markers kwargs
         markers_kwargs = []
-        for m in meth.exhale._marks:
-            markers_kwargs.append((m.args[0], m.kwargs))
+        # NOTE: this check is needed for the documentation to build
+        if "_marks" in meth.exhale.__dict__.keys():
+            for m in meth.exhale._marks:
+                markers_kwargs.append((m.args[0], m.kwargs))
         # sort that list according to priority
         markers_kwargs.sort(key=lambda m: m[0])
 
@@ -154,7 +156,7 @@ def confoverrides(**config):
             ``pytest.mark.sphinx``.  These are the overrides to ``conf.py``.
 
     **Return**
-        (``class`` or function)
+        (``class`` or :data:`python:types.FunctionType`)
             The decorated class or function.
     """
     def actual_decorator(meth_or_cls):
@@ -167,6 +169,50 @@ def confoverrides(**config):
             return pytest.mark.exhale(3, confoverrides=config)(meth_or_cls)
 
     return actual_decorator
+
+
+def no_cleanup(method):
+    """
+    Prevent the "docs" directory and generated Doxygen / API from being deleted.
+
+    Usage:
+
+    .. code-block:: py
+
+       class CMathsTests(ExhaleTestCase):
+           # docs dir, generated API, and Doxygen will not be deleted so that you can
+           # inspect what may be causing your test to fail
+           @no_cleanup
+           def test_being_developed(self):
+               pass
+
+    .. danger::
+
+       This decorator performs ``self.testroot = [self.testroot]`` as an internal bypass
+       to the fixtures created in ``__new__`` for the metaclass.  Specifically, the
+       fixtures generated check ``if isinstance(self.testroot, six.string_types)``.
+
+       As such, since ``self.testroot`` may be desired in the given ``@no_cleanup``
+       function, you must acquire it with ``testroot = self.testroot[0]``.  This is a
+       hacky solution, but should be sufficient.  You have been warned.
+
+    **Parameters**
+        ``method`` (:data:`python:types.FunctionType`)
+            **Must** be an instance-level testing function of a derived type of
+            :class:`testing.base.ExhaleTestCase`.  The function should have only a
+            single parameter ``self``.
+
+    **Return**
+        (:data:`python:types.FunctionType`)
+            The decorated function, which simply calls the provided function and sets
+            ``self.testroot = None``.  Click on ``[source]`` link for
+            :func:`ExhaleTestCaseMetaclass.__new__ <testing.base.ExhaleTestCaseMetaclass.__new__>`
+            and search for ``@no_cleanup`` to see how this prevents cleanup.
+    """
+    def actual_no_cleanup(self):
+        self.testroot = [self.testroot]
+        method(self)
+    return actual_no_cleanup
 
 
 def no_run(obj):
@@ -196,12 +242,12 @@ def no_run(obj):
     Internally this will use the :func:`testing.fixtures.no_run` fixture.
 
     **Parameters**
-        ``obj`` (``class`` or function)
+        ``obj`` (``class`` or :data:`python:types.FunctionType`)
             The class or function to disable exhale from generating reStructuredText
             documents for.
 
     **Return**
-        ``class`` or function
+        ``class`` or :data:`python:types.FunctionType`
             The decorated ``obj``.
     """
     return pytest.mark.usefixtures("no_run")(obj)

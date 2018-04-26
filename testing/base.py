@@ -116,25 +116,28 @@ class ExhaleTestCaseMetaclass(type):
                 # before the test
                 self.app = app
                 yield  # the test runs
-                # This cleanup happens between each test case, do not delete docs/
-                # until all tests for this class are done!
-                containmentFolder = self.getAbsContainmentFolder()
-                if os.path.isdir(containmentFolder):
-                    shutil.rmtree(containmentFolder)
-                # Delete the doctrees as well as e.g. _build/html, app.outdir is going
-                # to be docs/_build/{builder_name}
-                _build = os.path.abspath(os.path.dirname(app.outdir))
-                if os.path.isdir(_build):
-                    shutil.rmtree(_build)
-                # Make sure doxygen output is deleted between runs
-                doxy_xml_dir = app.config.breathe_projects[test_project]
-                if not os.path.isabs(doxy_xml_dir):
-                    doxy_xml_dir = os.path.abspath(os.path.join(
-                        self.app.srcdir, doxy_xml_dir
-                    ))
-                doxy_dir = os.path.dirname(doxy_xml_dir)
-                if os.path.isdir(doxy_dir):
-                    shutil.rmtree(doxy_dir)
+                # @no_cleanup sets self.testroot to [self.testroot] as a flag that
+                # cleanup should not transpire
+                if isinstance(self.testroot, six.string_types):
+                    # This cleanup happens between each test case, do not delete docs/
+                    # until all tests for this class are done!
+                    containmentFolder = self.getAbsContainmentFolder()
+                    if os.path.isdir(containmentFolder):
+                        shutil.rmtree(containmentFolder)
+                    # Delete the doctrees as well as e.g. _build/html, app.outdir is going
+                    # to be docs/_build/{builder_name}
+                    _build = os.path.abspath(os.path.dirname(app.outdir))
+                    if os.path.isdir(_build):
+                        shutil.rmtree(_build)
+                    # Make sure doxygen output is deleted between runs
+                    doxy_xml_dir = app.config.breathe_projects[test_project]
+                    if not os.path.isabs(doxy_xml_dir):
+                        doxy_xml_dir = os.path.abspath(os.path.join(
+                            self.app.srcdir, doxy_xml_dir
+                        ))
+                    doxy_dir = os.path.dirname(doxy_xml_dir)
+                    if os.path.isdir(doxy_dir):
+                        shutil.rmtree(doxy_dir)
                 self.app = None
 
             ############################################################################
@@ -166,7 +169,8 @@ class ExhaleTestCaseMetaclass(type):
                     conf_py.write(textwrap.dedent('''\
                         # -*- coding: utf-8 -*-
                         extensions = ["breathe", "exhale"]
-                        master_doc = "index.rst"
+                        master_doc = "index"
+                        source_suffix = [".rst"]
                     '''))
 
                 # If a given test case needs to run app.build(), make sure index.rst
@@ -188,8 +192,10 @@ class ExhaleTestCaseMetaclass(type):
                 yield testroot
 
                 # perform cleanup by deleting the docs dir
-                if os.path.isdir(testroot):
-                    shutil.rmtree(testroot)
+                # @no_cleanup sets self.testroot to [self.testroot] as a flag that
+                # cleanup should not transpire
+                if isinstance(self.testroot, six.string_types) and os.path.isdir(self.testroot):
+                    shutil.rmtree(self.testroot)
 
                 self.testroot = None
 
