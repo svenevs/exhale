@@ -1773,7 +1773,7 @@ class ExhaleRoot:
 
             if not found:
                 sys.stderr.write(utils.critical(
-                    "Could not find directory parent of file [{0}] with location [{1}].".format(
+                    "Could not find directory parent of file [{0}] with location [{1}].\n".format(
                         f.name, f.location
                     )
                 ))
