@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -9,6 +10,7 @@
 Tests for the ``c_maths`` project.
 """
 
+from __future__ import unicode_literals
 import os
 
 from testing.base import ExhaleTestCase
@@ -39,8 +41,11 @@ class CMathsTests(ExhaleTestCase):
         """
         self.checkRequiredConfigs()
 
-    def test_file_hierarchy(self):
-        file_hierarchy = root({
+    def test_hierarchies(self):
+        # the final exhale.graph.ExhaleRoot object
+        exhale_root = self.app.exhale_root
+        # verify the file hierarchy and file declaration relationships
+        f_hierarchy = file_hierarchy({
             directory("include"): {
                 file("main.h"): {
                     function("void", "add"): signature("int a", "int b"),
@@ -48,8 +53,10 @@ class CMathsTests(ExhaleTestCase):
                 }
             }
         })
-        exhale_root = self.app.exhale_root
-        compare_file_hierarchy(self, file_hierarchy, exhale_root)
+        compare_file_hierarchy(self, f_hierarchy, exhale_root)
+        # # verify the class hierarchy and parental relationships
+        # compare_class_hierarchy(self, {}, exhale_root)
+        # verify_all_nodes_in_hierarchies()
 
 
 @no_run
