@@ -9,11 +9,11 @@
 Tests for the ``cpp_nesting`` project.
 """
 
-import os
-
 from testing.base import ExhaleTestCase
-from testing.decorators import confoverrides, no_cleanup, no_run
-from testing.hierarchies import *
+from testing.decorators import confoverrides
+from testing.hierarchies import                                              \
+    class_hierarchy, clike, compare_class_hierarchy, compare_file_hierarchy, \
+    directory, file, file_hierarchy, namespace, union
 
 
 class CPPNesting(ExhaleTestCase):
@@ -28,83 +28,82 @@ class CPPNesting(ExhaleTestCase):
     See also: :data:`testing.base.ExhaleTestCase.test_project`.
     """
 
-    def test_app(self):
-        """Simply checks :func:`testing.base.ExhaleTestCase.checkRequiredConfigs`."""
-        self.checkRequiredConfigs()
-
-    # @confoverrides(exhale_args={"doxygenStripFromPath": "../include"})
-    @confoverrides(exhale_args={"createTreeView": True})
-    # @no_cleanup
-    def test_hierarchies(self):
-        self.app.build()
-        # the final exhale.graph.ExhaleRoot object
-        exhale_root = self.app.exhale_root
-        # verify the file hierarchy and file declaration relationships
-        f_hierarchy = file_hierarchy({
-            directory("include"): {
-                file("top_level.hpp"): {
-                    clike("struct", "top_level"): {}
+    file_hierarchy_dict = {
+        directory("include"): {
+            file("top_level.hpp"): {
+                clike("struct", "top_level"): {}
+            },
+            directory("nested"): {
+                directory("one"): {
+                    file("one.hpp"): {
+                        namespace("nested"): {
+                            clike("struct", "one"): {
+                                clike("struct", "params"): {
+                                    union("four_bytes"): {}
+                                }
+                            }
+                        }
+                    },
                 },
-                directory("nested"): {
+                directory("two"): {
+                    file("two.hpp"): {
+                        namespace("nested"): {
+                            clike("struct", "two"): {
+                                clike("struct", "params"): {
+                                    union("four_bytes"): {}
+                                }
+                            }
+                        }
+                    }
+                },
+                directory("dual_nested"): {
                     directory("one"): {
                         file("one.hpp"): {
                             namespace("nested"): {
-                                clike("struct", "one"): {
-                                    clike("struct", "params"): {
-                                        union("four_bytes"): {}
-                                    }
-                                }
-                            }
-                        },
-                    },
-                    directory("two"): {
-                        file("two.hpp"): {
-                            namespace("nested"): {
-                                clike("struct", "two"): {
-                                    clike("struct", "params"): {
-                                        union("four_bytes"): {}
+                                namespace("dual_nested"): {
+                                    clike("struct", "one"): {
+                                        clike("struct", "params"): {
+                                            union("four_bytes"): {}
+                                        }
                                     }
                                 }
                             }
                         }
                     },
-                    directory("dual_nested"): {
-                        directory("one"): {
-                            file("one.hpp"): {
-                                namespace("nested"): {
-                                    namespace("dual_nested"): {
-                                        clike("struct", "one"): {
-                                            clike("struct", "params"): {
-                                                union("four_bytes"): {}
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        directory("two"): {
-                            file("two.hpp"): {
-                                namespace("nested"): {
-                                    namespace("dual_nested"): {
-                                        clike("struct", "two"): {
-                                            clike("struct", "params"): {
-                                                union("four_bytes"): {}
-                                            }
+                    directory("two"): {
+                        file("two.hpp"): {
+                            namespace("nested"): {
+                                namespace("dual_nested"): {
+                                    clike("struct", "two"): {
+                                        clike("struct", "params"): {
+                                            union("four_bytes"): {}
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
                 }
-            }
-        })
-        compare_file_hierarchy(self, f_hierarchy, exhale_root)
 
-        c_hierarchy = class_hierarchy({
-            clike("struct", "top_level"): {},
-            namespace("nested"): {
+            }
+        }
+    }
+    """The dictionary representing the file hierarchy for this test case."""
+
+    class_hierarchy_dict = {
+        clike("struct", "top_level"): {},
+        namespace("nested"): {
+            clike("struct", "one"): {
+                clike("struct", "params"): {
+                    union("four_bytes"): {}
+                }
+            },
+            clike("struct", "two"): {
+                clike("struct", "params"): {
+                    union("four_bytes"): {}
+                }
+            },
+            namespace("dual_nested"): {
                 clike("struct", "one"): {
                     clike("struct", "params"): {
                         union("four_bytes"): {}
@@ -114,22 +113,37 @@ class CPPNesting(ExhaleTestCase):
                     clike("struct", "params"): {
                         union("four_bytes"): {}
                     }
-                },
-                namespace("dual_nested"): {
-                    clike("struct", "one"): {
-                        clike("struct", "params"): {
-                            union("four_bytes"): {}
-                        }
-                    },
-                    clike("struct", "two"): {
-                        clike("struct", "params"): {
-                            union("four_bytes"): {}
-                        }
-                    }
                 }
             }
-        })
-        compare_class_hierarchy(self, c_hierarchy, exhale_root)
-        # # verify the class hierarchy and parental relationships
-        # compare_class_hierarchy(self, {}, exhale_root)
-        # verify_all_nodes_in_hierarchies()
+        }
+    }
+    """The dictionary representing the class hierarchy for this test case."""
+
+    def test_app(self):
+        """Simply checks :func:`testing.base.ExhaleTestCase.checkRequiredConfigs`."""
+        self.checkRequiredConfigs()
+
+    def test_hierarchies(self):
+        """Verify the class and file hierarchies."""
+        exhale_root = self.app.exhale_root
+        compare_file_hierarchy(
+            self, file_hierarchy(self.file_hierarchy_dict), exhale_root
+        )
+        compare_class_hierarchy(
+            self, class_hierarchy(self.class_hierarchy_dict), exhale_root
+        )
+
+    @confoverrides(exhale_args={"doxygenStripFromPath": "../include"})
+    def test_hierarchies_stripped(self):
+        """
+        Verify the class and file hierarchies with ``doxygenStripFromPath=../include``.
+        """
+        return  # TODO: Exhale should remove the include/ directory
+        exhale_root = self.app.exhale_root
+        for key in self.file_hierarchy_dict:
+            no_include = self.file_hierarchy_dict[key]
+            break
+        compare_file_hierarchy(self, file_hierarchy(no_include), exhale_root)
+        compare_class_hierarchy(
+            self, class_hierarchy(self.class_hierarchy_dict), exhale_root
+        )

@@ -15,7 +15,9 @@ import os
 
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides, no_run
-from testing.hierarchies import *
+from testing.hierarchies import                                       \
+    class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, \
+    directory, file, file_hierarchy, function, signature
 
 
 class CMathsTests(ExhaleTestCase):
@@ -41,21 +43,23 @@ class CMathsTests(ExhaleTestCase):
         """
         self.checkRequiredConfigs()
 
+    @confoverrides(exhale_args={"verboseBuild": True})  # CI testing is breaking :/
     def test_hierarchies(self):
+        """Verify the class and file hierarchies."""
         # the final exhale.graph.ExhaleRoot object
         exhale_root = self.app.exhale_root
         # verify the file hierarchy and file declaration relationships
-        f_hierarchy = file_hierarchy({
+        file_hierarchy_dict = {
             directory("include"): {
                 file("main.h"): {
                     function("void", "add"): signature("int a", "int b"),
                     function("void", "sub"): signature("int a", "int b")
                 }
             }
-        })
-        compare_file_hierarchy(self, f_hierarchy, exhale_root)
+        }
+        compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict), exhale_root)
         # # verify the class hierarchy and parental relationships
-        # compare_class_hierarchy(self, {}, exhale_root)
+        compare_class_hierarchy(self, class_hierarchy({}), exhale_root)
         # verify_all_nodes_in_hierarchies()
 
 
