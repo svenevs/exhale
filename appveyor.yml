@@ -15,5 +15,6 @@ build: off
 test_script:
   # Prints setuptools version
   - easy_install --version
+  - doxygen --version
   # Installs dependencies and runs the tests.
   - "%PYTHON%\\python.exe -m tox -e py"
