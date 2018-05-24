@@ -1,125 +1,434 @@
-import itertools
+# -*- coding: utf8 -*-
+########################################################################################
+# This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
+# Full BSD 3-Clause license available here:                                            #
+#                                                                                      #
+#                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
+########################################################################################
+"""
+Various helper classes and functions for validating the class and file hierarchies.
+
+Every derived class of :class:`testing.base.ExhaleTestCase` should have at least one
+test case validating the class and file hierarchies.  The class and file hierarchies
+do not need to be validated in the same method.  In both cases, the recipe is:
+
+1. Create a hierarchy that enumerates **all** of the documented code in the test
+   project. This will either be an instance of
+   :class:`hierarchies.class_hierarchy <testing.hierarchies.class_hierarchy>`, or of
+   :class:`hierarchies.file_hierarchy <testing.hierarchies.file_hierarchy>`.
+
+2. Call the comparison function for the created hierarchy:
+   :func:`~testing.hierarchies.compare_class_hierarchy` or
+   :func:`~testing.hierarchies.compare_file_hierarchy`.
+"""
+
+from __future__ import unicode_literals
+
 import os
 
+from exhale.graph import ExhaleNode
+from testing.base import ExhaleTestCase
+
 __all__ = [
-    "root", "node", "file_hierarchy", "class_hierarchy",
-    "directory", "file", "function", "signature", "namespace", "enum", "clike", "union",
+    "root", "file_hierarchy", "class_hierarchy",
+    "node",
+    # TODO: this stays like this until they're all implemented ;)
+    # AVAILABLE_KINDS = [
+    #     "class",      --> clike
+    #     "struct",     --> clike
+    "clike",
+    #     "function",   --> function
+    "function", "signature",
+    #     "enum",       --> enum
+    "enum",
+    #     "enumvalue",  # unused
+    #     "namespace",  --> namespace
+    "namespace",
+    #     "define",     --> XXXXX
+    #     "typedef",    --> XXXXX
+    #     "variable",   --> XXXXX
+    #     "file",       --> file
+    "file",
+    #     "dir",        --> directory
+    "directory",
+    #     "group",      # unused
+    #     "union"       --> union
+    "union",
+    # ]
     "compare_file_hierarchy", "compare_class_hierarchy"
 ]
 
-# from exhale.graph import ExhaleNode
-# inherit from exhalenode
-class node(object):
-    def __init__(self, kind, name):
-        self.kind = kind
-        self.name = name
-        self.def_in_file = None
-        self.children = []
-        self.parent = None
+
+########################################################################################
+# Doxygen compound test classes (proxies to exhale.graph.ExhaleNode).                  #
+########################################################################################
+class node(ExhaleNode):
+    """
+    Testing hierarchy parent class for pass-through construction of |ExhaleNode|.
+
+    Upon construction, the parent class's ``refid`` parameter is set as the empty string
+    in the testing framework.  This item is the Doxygen hash value, which is not
+    available until after Doxygen has been executed.
+
+    .. |ExhaleNode| replace:: :class:`exhale.graph.ExhaleNode`
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the documented compound.
+
+        ``kind`` (:class:`python:str`)
+            Assumed to be one of the types in :data:`exhale.utils.AVAILABLE_KINDS`.
+    """
+
+    def __init__(self, name, kind):
+        super(node, self).__init__(name, kind, "")  # no Doxygen refid available
+
+    def __str__(self):
+        """
+        Return ``"{self.kind}: {self.name}"``.
+        """
+        return "{0}: {1}".format(self.kind, self.name)
 
     def toConsole(self, level):
+        """
+        Print this node to the console, and call ``toConsole`` for all children.
+
+        Logging is done to ``sys.stdout``.
+
+        **Parameters**
+            ``level`` (:class:`python:int`)
+                The recursion level, used as ``"  " * level`` to indent children.
+        """
         print("{0}{1}".format("  " * level, self))
         for child in self.children:
             child.toConsole(level + 1)
 
-    def __lt__(self, other):
-        return self.name < other.name
 
-    def __str__(self):
-        return "{0}: {1}".format(self.kind, self.name)
+class clike(node):
+    """
+    Represent a ``class`` or ``struct``.
+
+    **Parameters**
+        ``kind`` (:class:`python:str`)
+            Assumed to be either ``"class"`` or ``"struct"``.
+
+        ``name`` (:class:`python:str`)
+            The un-qualified name of the class or struct being represented.
+
+        ``template`` (???)
+            .. todo:: template specification / creation TBD for classes / structs.
+    """
+
+    def __init__(self, kind, name, template=None):
+        super(clike, self).__init__(name, kind)
+        self.template = template
+
 
 class directory(node):
+    """
+    Represent a ``directory`` in a file hierarchy.
+
+    .. note::
+
+       This class may only appear in a file hierarchy, not a class hierarchy.
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the directory being represented.
+    """
+
     def __init__(self, name):
-        super(directory, self).__init__("dir", name)
+        super(directory, self).__init__(name, "dir")
+
+
+class enum(node):
+    """
+    Represent an ``enum``.
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the enum being represented.
+
+        ``values`` (???)
+            .. todo:: enumvalues are not currently handled in Exhale proper.
+
+    """
+
+    def __init__(self, name, values=None):
+        super(enum, self).__init__(name, "enum")
+        self.values = values
 
 
 class file(node):
+    """
+    Represent a ``file``.
+
+    .. note::
+
+       This class may only appear in a file hierarchy, not a class hierarchy.
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the file being represented.
+    """
+
     def __init__(self, name):
-        super(file, self).__init__("file", name)
-        self.location = None
+        super(file, self).__init__(name, "file")
+        self.location = None  # TODO: these should not be needed anymore
         self.namespaces_used = []
 
     def __str__(self):
+        """
+        Return ``"{self.kind}: {self.location}"``.
+        """
         return "{0}: {1}".format(self.kind, self.location)
 
 
 class function(node):
+    """
+    Represent a (partial) ``function``.
+
+    .. note::
+
+       This key must always map to a value of
+       :class:`hierarchies.signature <testing.hierarchies.signature>`.
+
+       .. code-block:: py
+
+          function("int", "add"): signature("int a", "int b")
+
+       represents the function declaration
+
+       .. code-block:: cpp
+
+          int add(int a, int b);
+
+    **Parameters**
+        ``returnType`` (:class:`python:str`)
+            The return type of the function, e.g. ``"void"`` or ``"int"``.
+
+        ``name`` (:class:`python:str`)
+            The name of the function.
+
+        ``template`` (???)
+            .. todo:: template specification / creation TBD for functions.
+    """
+
     def __init__(self, returnType, name, template=None):
-        super(function, self).__init__("function", name)
+        super(function, self).__init__(name, "function")
         self.return_type = returnType
-        self.signature = None # set later, required to let functions be keys in dict
+        self.signature = None  # set later, required to let functions be keys in dict
         self.template = None
 
-    def setSignature(self, signature):
-        self.signature = signature
-
     def __str__(self):
+        """
+        Return the full declaration and signature of this function.
+
+        **Raises**
+            :class:`python:RuntimeError`
+                If ``self.signature`` is ``None``, meaning the hierarchy was not
+                correctly parsed from the json-like dictionary.
+        """
         if not self.signature:
-            raise RuntimeError("{0}: no function signature!")
+            raise RuntimeError("{0}: no function signature!".format(self.name))
         return "{0} {1}({2})".format(
             self.return_type, self.name, self.signature
         )
 
+    def setSignature(self, signature):
+        """
+        Set the signature of this function.
+
+        Since this class is to map to a value of type
+        :class:`hierarchies.signature <testing.hierarchies.signature>`, when the
+        dictionary is being parsed this method will be called.
+        """
+        self.signature = signature
+
+
 class signature(object):
+    """
+    Represent a |function| signature.
+
+    .. |function| replace:: :class:`hierarchies.function <testing.hierarchies.function>`
+
+    **Parameters**
+        ``*args`` (Parameter Pack)
+            Arbitrary list, **assumed** to be all strings.  Must also include types.
+            For example,
+
+            .. code-block:: cpp
+
+               int add(int a, int b);
+
+            is represented by creating
+
+            .. code-block:: py
+
+               function("int", "add"): signature("int a", "int b")
+
+            whereas
+
+            .. code-block:: cpp
+
+               void serialize(Serializer &s, const std::string &name, int id);
+
+            is represented by creating
+
+            .. code-block:: py
+
+               function("void", "serialize"): signature(
+                   "Serializer &s",
+                   "const std::string &name",
+                   "int id"
+               )
+
+    **Attributes**
+        ``self.args`` (:class:`python:list` of :class:`python:str`)
+            The in-order list of function arguments including types.
+
+    """
+
     def __init__(self, *args):
         self.args = args
 
     def __str__(self):
+        """
+        Return ``", ".join(a for a in self.args)``.
+        """
         return ", ".join(a for a in self.args)
 
 
 class namespace(node):
+    """
+    Represent a ``namespace``.
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the namespace being represented.
+    """
+
     def __init__(self, name):
-        super(namespace, self).__init__("namespace", name)
+        super(namespace, self).__init__(name, "namespace")
 
-
-class enum(node):
-    def __init__(self, name, values=None):
-        super(enum, self).__init__("enum", name)
-        self.values = values
-
-# class-like entities (class and struct)
-class clike(node):
-    def __init__(self, kind, name, template=None):
-        super(clike, self).__init__(kind, name)
-        self.template = template
 
 class union(node):
+    """
+    Represent a ``union``.
+
+    .. todo:: union members are not actually tested at this point.
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the union being represented.
+    """
+
     def __init__(self, name):
-        super(union, self).__init__("union", name)
+        super(union, self).__init__(name, "union")
 
 
+########################################################################################
+# Doxygen index test classes (proxies to exhale.graph.ExhaleRoot).                     #
+########################################################################################
 class root(object):
-    # def __init__(self, classHierarchy, fileHierarchy):
+    """
+    Represent a class or file hierarchy to simulate an :class:`exhale.graph.ExhaleRoot`.
+
+    **Parameters**
+        ``hierarchyType`` (:class:`python:str`)
+            May be either ``"class"`` or ``"file"``, indicating which type of hierarchy
+            is being represented.
+
+        ``hierarchy`` (:class:`python:dict`)
+            The hierarchy dictionary, see reference documentation for
+            :class:`class_hierarchy <testing.hierarchies.class_hierarchy>` and / or
+            :class:`file_hierarchy <testing.hierarchies.file_hierarchy>` for examples.
+
+    **Raises**
+        :class:`python:ValueError`
+            If ``hierarchyType`` is neither ``"class"`` nor ``"file"``, or the specified
+            ``hierarchy`` not a dictionary or malformed.
+    """
+
     def __init__(self, hierarchyType, hierarchy):
         if hierarchyType != "file" and hierarchyType != "class":
             raise ValueError("Hierarchy type must be either 'file' or 'class'.")
         self.hierarchy_type = hierarchyType
+
+        # Mimic exhale.graph.ExhaleRoot fields.
         self.class_like = []
-        self.defines = []
-        self.enums = []
-        self.functions = []
-        self.dirs = []
-        self.files = []
-        # self.groups = []
+        self.defines    = []
+        self.enums      = []
+        self.functions  = []
+        self.dirs       = []
+        self.files      = []
+        self.groups     = []
         self.namespaces = []
-        self.typedefs = []
-        self.unions = []
-        self.variables = []
+        self.typedefs   = []
+        self.unions     = []
+        self.variables  = []
 
-        self.top_level = []
+        # The listing of top-level constructs.
+        self.top_level  = []
 
+        # Initialize from the specified hierarchy and construct the graph.
         self._init_from(hierarchy)
         self._reparent_all()
 
+    def _init_from(self, hierarchy):
+        if not isinstance(hierarchy, dict):
+            raise ValueError("'hierarchy' must be a dictionary.")
 
-        # self._init_class_hierarchy(classHierarchy)
-        # self._init_file_hierarchy(fileHierarchy)
+        for node in hierarchy:
+            # Make sure top-level entities have their locations set before recursion.
+            if node.kind in ["dir", "file"]:
+                node.location = node.name
+            self._visit_children(node, hierarchy[node])
+            self.top_level.append(node)
 
-    def toConsole(self):
-        for node in self.top_level:
-            node.toConsole(0)
+    def _reparent_all(self):
+        # Make sure directories are nested
+        dir_removals = []
+        for d in self.dirs:
+            if d.parent:
+                if d not in d.parent.children:
+                    d.parent.children.append(d)
+                dir_removals.append(d)
 
+        for d in dir_removals:
+            self.dirs.remove(d)
+
+        # For the remainder, we basically do the opposite of what exhale is doing:
+        #
+        # Exhale:
+        # Nodes are taken from the top-level listing and re-parented as the graph is
+        # traversed.
+        #
+        # Testing:
+        # Parents are specified directly, remove them from the top-level lists.
+        cl_removals = []
+        for cl in self.class_like:
+            if cl.parent and cl.parent.kind in ["struct", "class"]:
+                cl_removals.append(cl)
+
+        for cl in cl_removals:
+            self.class_like.remove(cl)
+
+        nspace_removals = []
+        for nspace in self.namespaces:
+            if nspace.parent and nspace.parent.kind == "namespace":
+                nspace_removals.append(nspace)
+
+        for nspace in nspace_removals:
+            self.namespaces.remove(nspace)
+
+        union_removals = []
+        for u in self.unions:
+            if u.parent and u.parent.kind in ["class", "struct", "union"]:
+                union_removals.append(u)
+
+        for u in union_removals:
+            self.unions.remove(u)
 
     def _track_node(self, node):
         lst_name = "Mapping from node.kind={0} to internal list not found.".format(node.kind)
@@ -213,91 +522,155 @@ class root(object):
 
             self._visit_children(child, childSpec[child])
 
-    def _init_from(self, hierarchy):
-        if not isinstance(hierarchy, dict):
-            raise ValueError("'hierarchy' must be a dictionary.")
+    def toConsole(self):
+        """
+        Dump the hierarchy to the console.
 
-        for node in hierarchy:
-            # Make sure the top-level entities have their locations set before recursion
-            if node.kind in ["dir", "file"]:
-                node.location = node.name
-            self._visit_children(node, hierarchy[node])
-            self.top_level.append(node)
+        Calls |toConsole| for each |node| in ``self.top_level``.
 
-    def _reparent_all(self):
-        # make sure directories are nested
-        dir_removals = []
-        for d in self.dirs:
-            if d.parent:
-                if d not in d.parent.children:
-                    d.parent.children.append(d)
-                dir_removals.append(d)
-
-        for d in dir_removals:
-            self.dirs.remove(d)
-
-        # for the remainder, we basically do the opposite of what exhale is doing
-        # exhale: inspect names and reparent
-        # testing: parents specified directly, remove them from the top-level lists
-        cl_removals = []
-        for cl in self.class_like:
-            if cl.parent and cl.parent.kind in ["struct", "class"]:
-                cl_removals.append(cl)
-
-        for cl in cl_removals:
-            self.class_like.remove(cl)
-
-        nspace_removals = []
-        for nspace in self.namespaces:
-            if nspace.parent and nspace.parent.kind == "namespace":
-                nspace_removals.append(nspace)
-
-        for nspace in nspace_removals:
-            self.namespaces.remove(nspace)
-
-        union_removals = []
-        for u in self.unions:
-            if u.parent and u.parent.kind in ["class", "struct", "union"]:
-                union_removals.append(u)
-
-        for u in union_removals:
-            self.unions.remove(u)
-
-        # chain = itertools.chain(
-        #     self.class_like,
-        #     self.defines,
-        #     self.enums,
-        #     self.functions,
-        #     self.typedefs,
-        #     self.unions,
-        #     self.variables
-        # )
-        # for node in chain:
-        #     if node.def_in_file and node not in node.def_in_file.children:
-        #         node.def_in_file.children.append(node)
-
-    def _init_class_hierarchy(self, classHierarchy):
-        for node in classHierarchy:
-            self._visit_children(node, classHierarchy[node])
-
-    def _init_file_hierarchy(self, fileHierarchy):
-        pass
-
-
-class file_hierarchy(root):
-    def __init__(self, hierarchy):
-        super(file_hierarchy, self).__init__("file", hierarchy)
+        .. |toConsole| replace:: :func:`node.toConsole <testing.hierarchies.node.toConsole>`
+        .. |node| replace:: :class:`hierarchies.node <testing.hierarchies.node>`
+        """
+        for node in self.top_level:
+            node.toConsole(0)
 
 
 class class_hierarchy(root):
+    r"""
+    Represent a name scope hierarchy.
+
+    The class hierarchy represents things that in C++ would equate to using a ``::`` to
+    gain access to.  This includes:
+
+    - Classes and structs (:class:`hierarchies.clike <testing.hierarchies.clike>`).
+    - Enums (:class:`hierarchies.enum <testing.hierarchies.enum>`).
+    - Namespaces (:class:`hierarchies.namespace <testing.hierarchies.namespace>`).
+    - Unions (:class:`hierarchies.union <testing.hierarchies.union>`).
+
+    Consider the following C++ code:
+
+    .. code-block:: cpp
+
+       // in file: include/main.h
+       #pragma once
+
+       namespace detail {
+           struct SomeStruct { /* ... */ };
+       }
+
+       struct SomeStruct {
+           struct View { /* ... */ };
+       };
+
+    Then the testing code may look like:
+
+    .. code-block:: py
+
+       from testing.base import ExhaleTestCase
+       from testing.hierarchies import class_hierarchy,         \
+                                       clike,                   \
+                                       compare_class_hierarchy, \
+                                       namespace
+
+       class SomeTest(ExhaleTestCase):
+           test_project = "..." # specify the correct name...
+
+           def test_class_hierarchy(self):
+               class_hierarchy_dict = {
+                   clike("struct", "SomeStruct"): {
+                       clike("struct", "View"): {}
+                   },
+                   namespace("detail"): {
+                       clike("struct", "SomeStruct"): {}
+                   }
+               }
+               compare_class_hierarchy(self, class_hierarchy(class_hierarchy_dict))
+
+    **Parameters**
+        ``hierarchy`` (:class:`python:dict`)
+            The hierarchy associated with the name scopes for the test project.
+    """
+
     def __init__(self, hierarchy):
         super(class_hierarchy, self).__init__("class", hierarchy)
 
 
+class file_hierarchy(root):
+    r"""
+    Represent a parsed directory structure, including which file defines which compound.
+
+    .. note::
+
+       The test case file hierarchies encompass **more** than just what should show up
+       in the generated Exhale file hierarchy (which only includes directories and
+       files).
+
+       Specifically, the test file hierarchy is expected to encode **every documented
+       object** in the project.  This means there will be duplicated constructs between
+       the class and file hierarchy tests.
+
+       This is done in order to help check that the file a construct was defined in is
+       correctly parsed / generated by Exhale.
+
+    Working with the same example code as above:
+
+    .. code-block:: cpp
+
+       // in file: include/main.h
+       #pragma once
+
+       namespace detail {
+           struct SomeStruct { /* ... */ };
+       }
+
+       struct SomeStruct {
+           struct View { /* ... */ };
+       };
+
+    The testing code is essentially the same dictionary, only we need to include directory
+    and file information:
+
+    .. code-block:: py
+
+       from testing.base import ExhaleTestCase
+       from testing.hierarchies import clike,                  \
+                                       compare_file_hierarchy, \
+                                       directory,              \
+                                       file                    \
+                                       file_hierarchy          \
+                                       namespace
+
+       class SomeTest(ExhaleTestCase):
+           test_project = "..." # specify the correct name...
+
+           def test_file_hierarchy(self):
+               file_hierarchy_dict = {
+                   directory("include"): {
+                       file("main.h"): {
+                           clike("struct", "SomeStruct"): {
+                               clike("struct", "View"): {}
+                           },
+                           namespace("detail"): {
+                               clike("struct", "SomeStruct"): {}
+                           }
+                       }
+                   }
+               }
+               compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict))
+
+    **Parameters**
+        ``hierarchy`` (:class:`python:dict`)
+            The hierarchy associated with the name scopes for the test project.
+    """
+
+    def __init__(self, hierarchy):
+        super(file_hierarchy, self).__init__("file", hierarchy)
+
+
+########################################################################################
+# Test comparison functions.                                                           #
+########################################################################################
 def _compare_children(hierarchyType, test, testChild, exhaleChild):
-    print("*" * 44)
-    print("Comparing: {0} -- {1}".format(testChild.kind, testChild.name))
-    print("*" * 44)
     if testChild.parent:
         test.assertTrue(exhaleChild.parent is not None)
         test.assertEqual(testChild.parent.name, exhaleChild.parent.name)
@@ -326,10 +699,6 @@ def _compare_children(hierarchyType, test, testChild, exhaleChild):
     for test_grand_child in testChild.children:
         exhale_grand_child = None
         for grand_child in exhaleChild.children:
-            print("test: [{}] {} -- exhale: [{}] {}".format(
-                test_grand_child.kind, test_grand_child.location if test_grand_child.kind == "file" else test_grand_child.name,
-                grand_child.kind, grand_child.location if grand_child.kind == "file" else grand_child.name
-            ))
             if grand_child.name == test_grand_child.name and \
                     grand_child.kind == test_grand_child.kind:
                 exhale_grand_child = grand_child
@@ -341,21 +710,132 @@ def _compare_children(hierarchyType, test, testChild, exhaleChild):
         _compare_children(hierarchyType, test, test_grand_child, exhale_grand_child)
 
 
-def compare_file_hierarchy(test, testRoot, exhaleRoot):
+def _get_exhale_root(test):
+    # Get the finalized exhale.graph.ExhaleRoot object
+    # TODO: in future this app.exhale_root will *NOT* be set, but instead it will be
+    # something else depending on how the multi-project setup works, AKA if you are
+    # reading this `app.exhale_root` is *NOT* a feature you can rely on!!!
+    app = getattr(test, "app", None)
+    if app is None:
+        raise RuntimeError("Critical failure: the testRoot.app was 'None'.")
+    return app.exhale_root
+
+
+def compare_class_hierarchy(test, testRoot):
+    """
+    Compare the parsed and expected class hierarchy for the specified test.
+
+    This method should only be called in a ``test_*`` method implemented in a
+    |ExhaleTestCase| member function.
+
+    **Parameters**
+        ``test`` (|ExhaleTestCase|)
+            The test instance.  This test will have its ``assert*`` methods called
+            in this method.  The :class:`exhale.graph.ExhaleRoot` instance for the test
+            project is acquired through this parameter.
+
+        ``testRoot`` (|class_hierarchy|)
+            The class hierarchy to compare the parsed root with.
+
+    **Raises**
+        :class:`python:ValueError`
+            When ``test`` is not an |ExhaleTestCase|, or ``testRoot`` is not a
+            |class_hierarchy|.
+
+    .. |ExhaleTestCase| replace:: :class:`ExhaleTestCase <testing.base.ExhaleTestCase>`
+    .. |class_hierarchy| replace:: :class:`class_hierarchy <testing.hierarchies.class_hierarchy>`
+    """
+    # Some simple sanity checks
+    if not isinstance(test, ExhaleTestCase):
+        raise ValueError(
+            "'test' parameter was not an instance of 'testing.base.ExhaleTestCase'."
+        )
+    if not isinstance(testRoot, class_hierarchy):
+        raise ValueError("testRoot parameter must be an instance of `class_hierarchy`.")
+
+    # Run some preliminary tests
+    exhale_root = _get_exhale_root(test)
+    test.assertEqual(len(testRoot.class_like), len(exhale_root.class_like))
+    test.assertEqual(len(testRoot.enums), len(exhale_root.enums))
+    test.assertEqual(len(testRoot.namespaces), len(exhale_root.namespaces))
+    test.assertEqual(len(testRoot.unions), len(exhale_root.unions))
+
+    for test_obj in testRoot.top_level:
+        exhale_obj = None
+        if test_obj.kind in ["class", "struct"]:
+            for cl in exhale_root.class_like:
+                if cl.name == test_obj.name and cl.kind == test_obj.kind:
+                    exhale_obj = cl
+                    break
+        elif test_obj.kind == "enum":
+            for e in exhale_root.enums:
+                if e.name == test_obj.name:
+                    exhale_obj = e
+                    break
+        elif test_obj.kind == "namespace":
+            for n in exhale_root.namespaces:
+                if n.name == test_obj.name:
+                    exhale_obj = n
+                    break
+        elif test_obj.kind == "union":
+            for u in exhale_root.unions:
+                if u.name == test_obj.name:
+                    exhale_obj = u
+                    break
+
+        if exhale_obj is None:
+            test.assertTrue(
+                False,
+                msg="Did not find match for [{0}] {1}".format(test_obj.kind, test_obj.name)
+            )
+
+        _compare_children("class", test, test_obj, exhale_obj)
+
+
+def compare_file_hierarchy(test, testRoot):
+    """
+    Compare the parsed and expected file hierarchy for the specified test.
+
+    This method should only be called in a ``test_*`` method implemented in a
+    |ExhaleTestCase| member function.
+
+    **Parameters**
+        ``test`` (|ExhaleTestCase|)
+            The test instance.  This test will have its ``assert*`` methods called
+            in this method.  The :class:`exhale.graph.ExhaleRoot` instance for the test
+            project is acquired through this parameter.
+
+        ``testRoot`` (|file_hierarchy|)
+            The class hierarchy to compare the parsed root with.
+
+    **Raises**
+        :class:`python:ValueError`
+            When ``test`` is not an |ExhaleTestCase|, or ``testRoot`` is not a
+            |file_hierarchy|.
+
+    .. |file_hierarchy| replace:: :class:`file_hierarchy <testing.hierarchies.file_hierarchy>`
+    """
+    # Some simple sanity checks
+    if not isinstance(test, ExhaleTestCase):
+        raise ValueError(
+            "'test' parameter was not an instance of 'testing.base.ExhaleTestCase'."
+        )
     if not isinstance(testRoot, file_hierarchy):
         raise ValueError("testRoot parameter must be an instance of `file_hierarchy`.")
 
-    test.assertEqual(len(testRoot.dirs ), len(exhaleRoot.dirs ))
-    test.assertEqual(len(testRoot.files), len(exhaleRoot.files))
+    # Run some preliminary tests
+    exhale_root = _get_exhale_root(test)
+    test.assertEqual(len(testRoot.dirs), len(exhale_root.dirs))
+    test.assertEqual(len(testRoot.files), len(exhale_root.files))
     for test_obj in testRoot.top_level:
         exhale_obj = None
         if test_obj.kind == "dir":
-            for d in exhaleRoot.dirs:
+            for d in exhale_root.dirs:
                 if d.name == test_obj.name:  # TODO: duplicate directory names (nested)?
                     exhale_obj = d
                     break
         elif test_obj.kind == "file":
-            for f in exhaleRoot.files:
+            for f in exhale_root.files:
                 if f.name == test_obj.name:  # TODO: duplicate file names (nested)?
                     exhale_obj = f
                     break
@@ -365,84 +845,3 @@ def compare_file_hierarchy(test, testRoot, exhaleRoot):
                 test_obj.kind, test_obj.name
             ))
         _compare_children("file", test, test_obj, exhale_obj)
-
-
-def compare_class_hierarchy(test, testRoot, exhaleRoot):
-    if not isinstance(testRoot, class_hierarchy):
-        raise ValueError("testRoot parameter must be an instance of `class_hierarchy`.")
-
-    test.assertEqual(len(testRoot.class_like), len(exhaleRoot.class_like))
-    test.assertEqual(len(testRoot.enums     ), len(exhaleRoot.enums     ))
-    test.assertEqual(len(testRoot.namespaces), len(exhaleRoot.namespaces))
-    test.assertEqual(len(testRoot.unions    ), len(exhaleRoot.unions    ))
-
-    for test_obj in testRoot.top_level:
-        exhale_obj = None
-        if test_obj.kind in ["class", "struct"]:
-            for cl in exhaleRoot.class_like:
-                if cl.name == test_obj.name and cl.kind == test_obj.kind:
-                    exhale_obj = cl
-                    break
-        elif test_obj.kind == "enum":
-            for e in exhaleRoot.enums:
-                if e.name == test_obj.name:
-                    exhale_obj = e
-                    break
-        elif test_obj.kind == "namespace":
-            for n in exhaleRoot.namespaces:
-                if n.name == test_obj.name:
-                    exhale_obj = n
-                    break
-        elif test_obj.kind == "union":
-            for u in exhaleRoot.unions:
-                if u.name == test_obj.name:
-                    exhale_obj = u
-                    break
-
-        if exhale_obj is None:
-            raise RuntimeError("Did not find match for [{0}] {1}".format(
-                test_obj.kind, test_obj.name
-            ))
-
-        _compare_children("class", test, test_obj, exhale_obj)
-
-
-
-if __name__ == "__main__":
-    files = file_hierarchy({
-        directory("include"): {
-            file("top_level.hpp"): {
-                clike("struct", "top_level"): {}
-            },
-            directory("nested"): {
-                directory("one"): {
-                    file("one.hpp"): {},
-                },
-                directory("two"): {
-                    file("two.hpp"): {}
-                },
-                directory("dual_nested"): {
-                    directory("one"): {
-                        file("one.hpp"): {}
-                    },
-                    directory("two"): {
-                        file("two.hpp"): {}
-                    }
-                }
-
-            }
-        }
-    })
-    files.toConsole()
-    classes = class_hierarchy({
-        clike("struct", "top_level"): {},
-        namespace("nested"): {
-            clike("struct", "one"): {},
-            clike("struct", "two"): {},
-            namespace("dual_nested"): {
-                clike("struct", "one"): {},
-                clike("struct", "two"): {}
-            }
-        },
-    })
-    classes.toConsole()

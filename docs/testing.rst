@@ -142,5 +142,6 @@ Full Testing Suite Documentation
    testing/conftest
    testing/decorators
    testing/fixtures
+   testing/hierarchies
    testing/utils
    testing/tests

@@ -88,7 +88,6 @@ class CPPNesting(ExhaleTestCase):
             }
         }
     }
-    """The dictionary representing the file hierarchy for this test case."""
 
     class_hierarchy_dict = {
         clike("struct", "top_level"): {},
@@ -117,7 +116,6 @@ class CPPNesting(ExhaleTestCase):
             }
         }
     }
-    """The dictionary representing the class hierarchy for this test case."""
 
     def test_app(self):
         """Simply checks :func:`testing.base.ExhaleTestCase.checkRequiredConfigs`."""
@@ -125,25 +123,21 @@ class CPPNesting(ExhaleTestCase):
 
     def test_hierarchies(self):
         """Verify the class and file hierarchies."""
-        exhale_root = self.app.exhale_root
-        compare_file_hierarchy(
-            self, file_hierarchy(self.file_hierarchy_dict), exhale_root
-        )
-        compare_class_hierarchy(
-            self, class_hierarchy(self.class_hierarchy_dict), exhale_root
-        )
+        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict))
+        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict))
 
     @confoverrides(exhale_args={"doxygenStripFromPath": "../include"})
     def test_hierarchies_stripped(self):
         """
         Verify the class and file hierarchies with ``doxygenStripFromPath=../include``.
+
+        .. todo:: this test is not supported yet
         """
         return  # TODO: Exhale should remove the include/ directory
-        exhale_root = self.app.exhale_root
+        # dirty hack to pop off the first include/ directory without needing to know
+        # the actual object that is the first and only key
         for key in self.file_hierarchy_dict:
             no_include = self.file_hierarchy_dict[key]
             break
-        compare_file_hierarchy(self, file_hierarchy(no_include), exhale_root)
-        compare_class_hierarchy(
-            self, class_hierarchy(self.class_hierarchy_dict), exhale_root
-        )
+        compare_file_hierarchy(self, file_hierarchy(no_include))
+        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict))

@@ -8,3 +8,9 @@ All Tests
 
 .. automodule:: testing.tests.c_maths
    :members:
+
+``cpp_nesting``
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.tests.cpp_nesting
+   :members:
