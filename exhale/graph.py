@@ -43,7 +43,7 @@ __docformat__ = "reStructuredText"
 ##
 #
 ########################################################################################
-class ExhaleNode:
+class ExhaleNode(object):
     '''
     A wrapper class to track parental relationships, filenames, etc.
 
@@ -797,7 +797,7 @@ class ExhaleNode:
                     ))
 
 
-class ExhaleRoot:
+class ExhaleRoot(object):
     '''
     The full representation of the hierarchy graphs.  In addition to containing specific
     lists of ExhaleNodes of interest, the ExhaleRoot class is responsible for comparing
