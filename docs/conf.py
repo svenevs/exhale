@@ -47,16 +47,8 @@ intersphinx_mapping = {
 }
 
 # make linkcheck does not support GitHub README.md anchors (they are synthetic anchors)
-linkcheck_ignore = []
-for anchor in ['onhovercolor', 'tags', 'showtags', 'expandicon', 'collapseicon', 'levels']:
-    linkcheck_ignore.append('{0}#{1}'.format(
-        'https://github.com/jonmiles/bootstrap-treeview',
-        anchor
-    ))
-
-# TODO: figure out how to use this...and remove linkcheck_ignore above
-linkcheck_anchors_ignore = [
-    r'https://github.com/jonmiles/bootstrap-treeview'
+linkcheck_ignore = [
+    r'https://github.com/jonmiles/bootstrap-treeview#.*'
 ]
 
 # show :autoclass: member definitions as defined in exhale.py
