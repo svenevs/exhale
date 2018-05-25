@@ -30,21 +30,6 @@ Exhale
 
 .. end_badges
 
-.. begin_tmp_danger_warning
-
-.. warning::
-
-   There is a reason why Exhale is development status 2 as far as ``pip`` is concerned.
-   It is functional enough that it should work for your project, but there are a number
-   of features I still intend to implement when there is more time.
-
-   In particular, Exhale underwent a significant rewrite.  There is a decent amount of
-   redundant, dead, and unused code.  There is also a large portion of documentation
-   that is either outdated or just flat out inaccurate.  The ``graph`` module used to
-   be the entire project (it was a single file library).
-
-.. end_tmp_danger_warning
-
 .. begin_exhale_brief_desc
 
 Automatic C++ library API documentation generator using Doxygen, Sphinx, and Breathe.
@@ -52,6 +37,16 @@ Exhale revives Doxygen's class / file hierarchies using reStructuredText for sup
 markup syntax / websites.
 
 .. end_exhale_brief_desc
+
+.. begin_tmp_danger_warning
+
+.. note::
+
+   There is a reason why Exhale is development status 2 as far as ``pip`` is concerned.
+   It is functional enough that it should work for your project, but there are a number
+   of features I still intend to implement when there is more time.
+
+.. end_tmp_danger_warning
 
 .. contents:: Contents
    :local:
@@ -125,11 +120,6 @@ __ http://www.sphinx-doc.org/en/stable/extensions.html
 
 .. code-block:: bash
 
-   # For python3.
-   # https://wiki.python.org/moin/Python2orPython3#What_are_the_differences.3F
-   $ pip3 install exhale
-
-   # For python2.
    $ pip install exhale
 
 This will install Exhale, as well as all of its dependencies.  You are of course capable
@@ -138,7 +128,7 @@ of installing Exhale through other means, as it contains a ``setup.py``, but sin
 
 .. note::
 
-   If you fail ``pip3 install exhale`` and it is failing on ``lxml``, you will likely
+   If you fail ``pip install exhale`` and it is failing on ``lxml``, you will likely
    need to install the proper development libraries.  See the
    `lxml installation instructions`__ for possible fixes.
 
