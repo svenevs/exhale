@@ -1,16 +1,17 @@
+# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
 #                                                                                      #
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
-
 """
 Defines the core sphinx project based test case utilities.
 
 All project based test cases should inherit from :class:`testing.base.ExhaleTestCase`.
 """
 
+from __future__ import unicode_literals
 import os
 import shutil
 import textwrap

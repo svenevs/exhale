@@ -23,7 +23,6 @@ do not need to be validated in the same method.  In both cases, the recipe is:
 """
 
 from __future__ import unicode_literals
-
 import os
 
 from exhale.graph import ExhaleNode

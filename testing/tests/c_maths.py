@@ -5,7 +5,6 @@
 #                                                                                      #
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
-
 """
 Tests for the ``c_maths`` project.
 """

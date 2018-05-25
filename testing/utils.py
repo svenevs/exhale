@@ -1,14 +1,15 @@
+# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
 #                                                                                      #
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
-
 """
 Utility functionality for the testing suite.
 """
 
+from __future__ import unicode_literals
 from collections import Mapping
 
 
