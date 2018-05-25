@@ -22,11 +22,7 @@ class CPPNesting(ExhaleTestCase):
     """
 
     test_project = "cpp_nesting"
-    """
-    Index into ``testing/projects``.
-
-    See also: :data:`testing.base.ExhaleTestCase.test_project`.
-    """
+    """.. testproject:: cpp_nesting"""
 
     file_hierarchy_dict = {
         directory("include"): {

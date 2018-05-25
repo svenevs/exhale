@@ -26,11 +26,7 @@ class CMathsTests(ExhaleTestCase):
     """
 
     test_project = "c_maths"
-    """
-    Index into ``testing/projects``.
-
-    See also: :data:`testing.base.ExhaleTestCase.test_project`.
-    """
+    """.. testproject:: c_maths"""
 
     def test_app(self):
         """Simply checks :func:`testing.base.ExhaleTestCase.checkRequiredConfigs`."""
@@ -69,11 +65,7 @@ class CMathsTestsNoRun(ExhaleTestCase):
     """
 
     test_project = "c_maths"
-    """
-    Index into ``testing/projects``.
-
-    See also: :data:`testing.base.ExhaleTestCase.test_project`.
-    """
+    """.. testproject:: c_maths"""
 
     def test_classwide_no_run(self):
         """

@@ -11,8 +11,8 @@ run the tests, Exhale uses `tox <https://tox.readthedocs.io/en/latest/>`_.
 
 .. code-block:: console
 
-   $ pip3 install tox
    $ cd /path/to/exhale
+   $ pip install tox
    $ tox
 
 .. note::
@@ -34,19 +34,20 @@ list is defined as:
    envlist = py, flake8
 
 This means that the version of python the tests are run with are the interpretor that
-you installed ``tox`` for.  To run just one or the other, use
+you installed ``tox`` for.  To run a specific test:
 
-.. code-block:: console
+``tox -e py``
+    Run the python unit tests.
 
-   # Run just the python tests
-   $ tox -e py
+``tox -e flake8``
+    Run the lint tests.
 
-   # Run just the flake8 tests
-   $ tox -e flake8
+``tox -e docs``
+    Build the sphinx documentation using the *html* builder (in nitpicky mode).  You can
+    view the generated html website with ``open .tox/docs/tmp/html/index.html``.
 
-There is an additional testing suite available for the documentation, which you can
-launch with ``tox -e docs``.  This will build the Exhale documentation using Sphinx with
-both the ``html`` and ``linkcheck`` builders.
+``tox -e linkcheck``
+    Build the sphinx documentation using the *linkcheck* builder.
 
 .. tip::
 
@@ -126,11 +127,19 @@ files) from actual test projects. To create such tests:
       def test_something_else(self):
           ...
 
-For more examples, just have a look at the existing tests in the ``testing/tests`` folder.
+For more examples, just have a look at the existing tests in the ``testing/tests``
+folder.
 
 
 Full Testing Suite Documentation
 ----------------------------------------------------------------------------------------
+
+..
+
+    A **HUGE** thank you to Thomas Khyn for his thorough help figuring out how to
+    coordinate ``pytest``, ``sphinx``, metaclasses, and more -- this testing framework
+    would never have come to fruition without his
+    `epic pull request <https://github.com/svenevs/exhale/pull/31>`_.
 
 .. automodule:: testing
    :members:

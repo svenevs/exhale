@@ -64,7 +64,7 @@ autodoc_member_order = 'bysource'
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-source_suffix = '.rst'
+source_suffix = ['.rst']
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -229,6 +229,11 @@ htmlhelp_basename = 'ExhaleDoc'
 
 
 def setup(app):
+    # testproject.py defines these classes (they cannot be defined in conf.py)
+    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+    from testproject import testproject, visit_testproject_node, depart_testproject_node, TestProjectDirective
+    app.add_node(testproject, html=(visit_testproject_node, depart_testproject_node))
+    app.add_directive('testproject', TestProjectDirective)
     ####################################################################################
     # Multiline string documentation                                                   #
     ####################################################################################
