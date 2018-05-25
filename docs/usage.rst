@@ -30,7 +30,7 @@ Additional Usage and Customization
 Controlling the Layout of the Generated Root Library Document
 ****************************************************************************************
 
-.. include:: reference_exhale_configs.rst
+.. include:: reference/configs.rst
    :start-after: begin_root_api_document_layout
    :end-before:  end_root_api_document_layout
 
@@ -39,7 +39,7 @@ Controlling the Layout of the Generated Root Library Document
 Clickable Hierarchies
 ****************************************************************************************
 
-.. include:: reference_exhale_configs.rst
+.. include:: reference/configs.rst
    :start-after: begin_clickable_hierarchies
    :end-before:  end_clickable_hierarchies
 
@@ -194,7 +194,7 @@ that the filenames / reStructuredText links need to be "HTML Safe" (no ``<``, ``
 Page Level Customization
 ****************************************************************************************
 
-.. include:: reference_exhale_configs.rst
+.. include:: reference/configs.rst
    :start-after: begin_page_level_customization
    :end-before:  end_page_level_customization
 
@@ -204,7 +204,7 @@ Page Level Customization
 Using Contents Directives
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-.. include:: reference_exhale_configs.rst
+.. include:: reference/configs.rst
    :start-after: begin_page_level_customization_contents_directives
    :end-before:  end_page_level_customization_contents_directives
 
@@ -213,7 +213,7 @@ Using Contents Directives
 Customizing Breathe Output
 ****************************************************************************************
 
-.. include:: reference_exhale_configs.rst
+.. include:: reference/configs.rst
    :start-after: begin_customizing_breathe_output
    :end-before:  end_customizing_breathe_output
 
@@ -231,7 +231,7 @@ provided that you have the associated configuration variables setup.
 Using Exhale to Execute Doxygen
 ****************************************************************************************
 
-.. include:: reference_exhale_configs.rst
+.. include:: reference/configs.rst
    :start-after: begin_doxygen_execution_and_customization
    :end-before:  end_doxygen_execution_and_customization
 
@@ -246,7 +246,7 @@ the note at the bottom of the :ref:`usage_quickstart_guide`.
 Doxygen Documentation Specifics
 ----------------------------------------------------------------------------------------
 
-.. include:: reference_exhale_configs.rst
+.. include:: reference/configs.rst
    :start-after: begin_doxygen_execution_and_customization
    :end-before:  end_doxygen_execution_and_customization
 

@@ -1,3 +1,4 @@
+# noqa D100
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -7,8 +8,9 @@
 
 import os
 import sys
+
 # NOTE: full `setuptools` is required for this project
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # TIP: hello!  It was challenging to get the right long description to show up on pypi,
 #      I eventually discovered this tool, which you should also use!
@@ -20,9 +22,9 @@ from setuptools import setup, find_packages
 ########################################################################################
 b_desc_begin = ".. begin_exhale_brief_desc"
 b_desc_end   = ".. end_exhale_brief_desc"
-l_desc_begin = ".. begin_exhale_long_desc"   # read from here until remainder of file
-b_avoid_raw  = ".. begin_strip_raw_for_pypi" # fancy highlighting with bold not allowed
-e_avoid_raw  = ".. end_strip_raw_for_pypi"   # because of .. raw:: html
+l_desc_begin = ".. begin_exhale_long_desc"    # read from here until remainder of file
+b_avoid_raw  = ".. begin_strip_raw_for_pypi"  # fancy highlighting with bold not allowed
+e_avoid_raw  = ".. end_strip_raw_for_pypi"    # because of .. raw:: html
 here         = os.path.abspath(os.path.dirname(__file__))
 
 # Process the file, reading the markers.  Store brief / long desc in corresponding lists
@@ -100,10 +102,10 @@ import exhale  # noqa E402
 version = exhale.__version__
 
 ########################################################################################
-# Gather the requirements from docs/requirements.txt.                                  #
+# Gather the requirements from requirements.txt.                                       #
 ########################################################################################
 try:
-    requirements_path = os.path.join(here, "docs", "requirements.txt")
+    requirements_path = os.path.join(here, "requirements.txt")
     requirements      = []
     with open(requirements_path) as req:
         for line in req:
@@ -116,7 +118,7 @@ try:
             else:
                 requirements.append(line.strip())
 except Exception as e:
-    raise RuntimeError("Could not acquire the requirements from docs/requirements.txt:\n{0}".format(e))
+    raise RuntimeError("Could not acquire the requirements from requirements.txt:\n{0}".format(e))
 
 ########################################################################################
 # Setup the extension!!!                                                               #

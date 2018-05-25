@@ -43,7 +43,7 @@ __docformat__ = "reStructuredText"
 ##
 #
 ########################################################################################
-class ExhaleNode:
+class ExhaleNode(object):
     '''
     A wrapper class to track parental relationships, filenames, etc.
 
@@ -155,7 +155,7 @@ class ExhaleNode:
             :func:`~exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`.
     '''
     def __init__(self, name, kind, refid):
-        self.name        = name
+        self.name        = os.path.normpath(name) if kind == 'dir' else name
         self.kind        = kind
         self.refid       = refid
 
@@ -797,7 +797,7 @@ class ExhaleNode:
                     ))
 
 
-class ExhaleRoot:
+class ExhaleRoot(object):
     '''
     The full representation of the hierarchy graphs.  In addition to containing specific
     lists of ExhaleNodes of interest, the ExhaleRoot class is responsible for comparing
@@ -1133,7 +1133,16 @@ class ExhaleRoot:
                     # the location of the file as determined by doxygen
                     location = cdef.find("location")
                     if location and "file" in location.attrs:
-                        f.location = location.attrs["file"]
+                        location_str = os.path.normpath(location.attrs["file"])
+                        # some older versions of doxygen don't reliably strip from path
+                        # so make sure to remove it
+                        abs_strip_path = os.path.normpath(os.path.abspath(
+                            configs.doxygenStripFromPath
+                        ))
+                        if location_str.startswith(abs_strip_path):
+                            location_str = os.path.relpath(location_str, abs_strip_path)
+                        f.location = location_str
+
                 except:
                     utils.fancyError(
                         "Could not process Doxygen xml for file [{0}]".format(f.name)
@@ -1413,57 +1422,26 @@ class ExhaleRoot:
         removals = []
         for u in self.unions:
             parts = u.name.split("::")
-            num_parts = len(parts)
-            if num_parts > 1:
-                # it can either be a child of a namespace or a class_like
-                if num_parts > 2:
-                    namespace_name  = "::".join(p for p in parts[:-2])
-                    potential_class = parts[-2]
-
-                    # see if it belongs to a class like object first. if so, remove this
-                    # union from the list of unions
-                    reparented = False
-                    for cl in self.class_like:
-                        if cl.name == potential_class:
-                            cl.children.append(u)
-                            u.parent = cl
-                            reparented = True
-                            break
-
-                    if reparented:
-                        removals.append(u)
-                        continue
-
-                    # otherwise, see if it belongs to a namespace
-                    alt_namespace_name = "{}::{}".format(namespace_name, potential_class)
-                    for n in self.namespaces:
-                        if namespace_name == n.name or alt_namespace_name == n.name:
-                            n.children.append(u)
-                            u.parent = n
-                            break
+            if len(parts) >= 2:
+                # TODO: nested unions are not supported right now...
+                parent_name = "::".join(p for p in parts[:-1])
+                reparented  = False
+                # see if the name matches any potential parents
+                for node in itertools.chain(self.class_like, self.namespaces):
+                    if node.name == parent_name:
+                        node.children.append(u)
+                        u.parent = node
+                        reparented = True
+                        break
+                # if not reparented, try the namespaces
+                if reparented:
+                    removals.append(u)
                 else:
-                    name_or_class_name = "::".join(p for p in parts[:-1])
-
-                    # see if it belongs to a class like object first. if so, remove this
-                    # union from the list of unions
-                    reparented = False
-                    for cl in self.class_like:
-                        if cl.name == name_or_class_name:
-                            cl.children.append(u)
-                            u.parent = cl
-                            reparented = True
-                            break
-
-                    if reparented:
-                        removals.append(u)
-                        continue
-
-                    # next see if it belongs to a namespace
-                    for n in self.namespaces:
-                        if n.name == name_or_class_name:
-                            n.children.append(u)
-                            u.parent = n
-                            break
+                    # << verboseBuild
+                    utils.verbose_log(
+                        "The union {0} has '::' in its name, but no parent was found!".format(u.name),
+                        utils.AnsiColors.BOLD_RED
+                    )
 
         # remove the unions from self.unions that were declared in class_like objects
         for rm in removals:
@@ -1520,7 +1498,7 @@ class ExhaleRoot:
             # otherwise, this is nested
             for p_rank, p_directory in reversed(traversal):
                 if p_rank == rank - 1:
-                    if p_directory.name == os.sep.join(directory.name.split(os.sep)[:-1]):
+                    if p_directory.name == os.path.dirname(directory.name):
                         p_directory.children.append(directory)
                         directory.parent = p_directory
                         if directory not in removals:
@@ -1639,7 +1617,7 @@ class ExhaleRoot:
                         # see if this line represents the location tag
                         match = loc_regex.match(line)
                         if match is not None:
-                            f.location = match.groups()[0]
+                            f.location = os.path.normpath(match.groups()[0])
                             continue
 
                         if not processing_code_listing:
@@ -1680,62 +1658,36 @@ class ExhaleRoot:
         #
 
         # hack to make things work right on RTD
+        # TODO: do this at construction rather than as a post process!
         if configs.doxygenStripFromPath is not None:
             for node in itertools.chain(self.files, self.dirs):
                 if node.kind == "file":
-                    manip = f.location
+                    manip = node.location
                 else:  # node.kind == "dir"
-                    manip = f.name
+                    manip = node.name
 
-                manip = manip.replace(configs.doxygenStripFromPath, "")
-                # Remove leading path separator; the above line typically turns
-                # something like:
-                #
-                #     /some/long/absolute/path/include/dir/file.hpp
-                #
-                # into
-                #
-                #    /dir/file.hpp
-                #
-                # so we want to make sure to remove the leading / in this case.
-                if manip.startswith(os.sep):
-                    manip = manip.replace(os.sep, "", 1)
-                # Now remove any trailing path separators
-                if manip.endswith(os.sep):
-                    # reverse, replace once, reverse
-                    # see this for explanation of how ::-1 works:
-                    # https://stackoverflow.com/a/27843760/3814202
-                    manip = manip[::-1].replace(os.sep, "", 1)[::-1]
+                abs_strip_path = os.path.normpath(os.path.abspath(
+                    configs.doxygenStripFromPath
+                ))
+                if manip.startswith(abs_strip_path):
+                    manip = os.path.relpath(manip, abs_strip_path)
+
+                if node.kind == "file":
+                    node.location = manip
+                else:  # node.kind == "dir"
+                    node.name = manip
 
         # now that we have parsed all the listed refid's in the doxygen xml, reparent
         # the nodes that we care about
+        allowable_child_kinds = ["struct", "class", "function", "typedef", "define", "enum", "union"]
         for f in self.files:
             for match_refid in doxygen_xml_file_ownerships[f]:
                 child = self.node_by_refid[match_refid]
-                if child.kind == "struct" or child.kind == "class" or child.kind == "function" or \
-                   child.kind == "typedef" or child.kind == "define" or child.kind == "enum"   or \
-                   child.kind == "union":
-                    already_there = False
-                    for fc in f.children:
-                        if child.name == fc.name:
-                            already_there = True
-                            break
-                    if not already_there:
-                        # special treatment for unions: ignore if it is a class union
-                        if child.kind == "union":
-                            for u in self.unions:
-                                if child.name == u.name:
-                                    f.children.append(child)
-                                    break
-                        else:
-                            f.children.append(child)
+                if child.kind in allowable_child_kinds:
+                    if child not in f.children:
+                        f.children.append(child)
                 elif child.kind == "namespace":
-                    already_there = False
-                    for fc in f.namespaces_used:
-                        if child.name == fc.name:
-                            already_there = True
-                            break
-                    if not already_there:
+                    if child not in f.namespaces_used:
                         f.namespaces_used.append(child)
 
         # last but not least, some different kinds declared in the file that are scoped
@@ -1822,7 +1774,7 @@ class ExhaleRoot:
 
             if not found:
                 sys.stderr.write(utils.critical(
-                    "Could not find directory parent of file [{0}] with location [{1}].".format(
+                    "Could not find directory parent of file [{0}] with location [{1}].\n".format(
                         f.name, f.location
                     )
                 ))
@@ -2021,7 +1973,7 @@ class ExhaleRoot:
             else:
                 path = node.name
 
-            html_safe_name = path.replace(os.sep, "_")
+            html_safe_name = path.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
             title = os.path.basename(path)
         else:
             # begin html_safe_name, templates will do more work
@@ -2067,10 +2019,9 @@ class ExhaleRoot:
             html_safe_name = html_safe_name[:-1]
 
         # create the file and link names
-        node.file_name = "{dir}/{kind}_{name}.rst".format(
-            dir=self.root_directory,
-            kind=node.kind,
-            name=html_safe_name
+        node.file_name = os.path.join(
+            self.root_directory,
+            "{kind}_{name}.rst".format(kind=node.kind, name=html_safe_name)
         )
         node.link_name = "{kind}_{name}".format(
             kind=utils.qualifyKind(node.kind).lower(),
@@ -2080,9 +2031,9 @@ class ExhaleRoot:
             node.link_name = "template_{link}".format(link=node.link_name)
 
         if node.kind == "file":
-            node.program_file = "{dir}/program_listing_file_{name}.rst".format(
-                dir=self.root_directory,
-                name=html_safe_name
+            node.program_file = os.path.join(
+                self.root_directory,
+                "program_listing_file_{name}.rst".format(name=html_safe_name)
             )
             node.program_link_name = "program_listing_file_{name}".format(
                 name=html_safe_name

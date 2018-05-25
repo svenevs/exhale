@@ -3,11 +3,9 @@
 For when I forget how I did this...
 
 ```console
-# Build the source distribution
-$ python setup.py sdist
-
-# Build the universal wheel
-$ python setup.py bdist_wheel --universal
+# Build the source distribution and universal wheel
+# saved into dist/ folder
+$ tox -e dist
 
 # Upload!
 $ twine upload dist/*

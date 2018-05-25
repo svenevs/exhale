@@ -3,12 +3,7 @@
 formats:
     - none
 
-requirements_file: docs/requirements.txt
+requirements_file: requirements-docs.txt
 python:
     version: 3
     pip_install: true
-# TODO: extra_requirements
-# - bs4
-# - lxml
-# - sphinx
-# - breathe
