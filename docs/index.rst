@@ -2,12 +2,12 @@ Exhale
 ========================================================================================
 
 .. include:: ../README.rst
-   :start-after: begin_tmp_danger_warning
-   :end-before:  end_tmp_danger_warning
-
-.. include:: ../README.rst
    :start-after: begin_exhale_brief_desc
    :end-before:  end_exhale_brief_desc
+
+.. include:: ../README.rst
+   :start-after: begin_tmp_danger_warning
+   :end-before:  end_tmp_danger_warning
 
 .. include:: ../README.rst
    :start-after: begin_exhale_long_desc

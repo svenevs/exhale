@@ -123,8 +123,9 @@ __ http://www.sphinx-doc.org/en/stable/extensions.html
    $ pip install exhale
 
 This will install Exhale, as well as all of its dependencies.  You are of course capable
-of installing Exhale through other means, as it contains a ``setup.py``, but since I
-**strongly discourage this**, I will not provide you with instructions on how to do so.
+of installing Exhale through other means, as it contains a ``setup.py``.  If you choose
+to do this, I assume you know what you are doing (and will provide neither instructions
+nor support for alternative installation strategies).
 
 .. note::
 
