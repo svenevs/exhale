@@ -1,37 +1,34 @@
 Exhale
 ========================================================================================
-|docs| |pypi| |license|
+|docs| |pypi| |travis| |appveyor| |coverage| |license|
+
+.. begin_badges
 
 .. |docs| image:: https://readthedocs.org/projects/exhale/badge/?version=latest
    :alt: Documentation Status
-   :scale: 100%
    :target: https://exhale.readthedocs.io/en/latest/?badge=latest
 
 .. |pypi| image:: https://badge.fury.io/py/exhale.svg
    :alt: Latest Version
-   :scale: 100%
    :target: https://badge.fury.io/py/exhale
 
+.. |travis| image:: https://travis-ci.com/svenevs/exhale.svg?branch=master
+   :alt: Travis CI Build Status (Unix, Flake8 and Docs Tests)
+   :target: https://travis-ci.com/svenevs/exhale
+
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/m7u8vkbelui57b1j?svg=true
+   :alt: AppVeyor CI Build Satus (Windows Tests)
+   :target: https://ci.appveyor.com/project/svenevs/exhale
+
+.. |coverage| image:: https://codecov.io/gh/svenevs/exhale/branch/master/graph/badge.svg
+   :alt: Code Coverage Report
+   :target: https://codecov.io/gh/svenevs/exhale
 
 .. |license| image:: https://img.shields.io/github/license/svenevs/exhale.svg
    :alt: License BSD-3 Clause
-   :scale: 100%
    :target: https://github.com/svenevs/exhale/blob/master/LICENSE
 
-.. begin_tmp_danger_warning
-
-.. warning::
-
-   There is a reason why Exhale is development status 2 as far as ``pip`` is concerned.
-   It is functional enough that it should work for your project, but there are a number
-   of features I still intend to implement when there is more time.
-
-   In particular, Exhale underwent a significant rewrite.  There is a decent amount of
-   redundant, dead, and unused code.  There is also a large portion of documentation
-   that is either outdated or just flat out inaccurate.  The ``graph`` module used to
-   be the entire project (it was a single file library).
-
-.. end_tmp_danger_warning
+.. end_badges
 
 .. begin_exhale_brief_desc
 
@@ -40,6 +37,16 @@ Exhale revives Doxygen's class / file hierarchies using reStructuredText for sup
 markup syntax / websites.
 
 .. end_exhale_brief_desc
+
+.. begin_tmp_danger_warning
+
+.. note::
+
+   There is a reason why Exhale is development status 2 as far as ``pip`` is concerned.
+   It is functional enough that it should work for your project, but there are a number
+   of features I still intend to implement when there is more time.
+
+.. end_tmp_danger_warning
 
 .. contents:: Contents
    :local:
@@ -80,9 +87,9 @@ HTML Theme choices:
 
 .. _companion:  https://github.com/svenevs/exhale-companion
 
-.. _rtd:       https://docs.readthedocs.io/en/latest/theme.html
+.. _rtd:       http://sphinx-rtd-theme.readthedocs.io/en/latest/
 .. _bstrap:    https://ryan-roemer.github.io/sphinx-bootstrap-theme/
-.. _alabaster: https://alabaster.readthedocs.io/en/latest/
+.. _alabaster: http://alabaster.readthedocs.io/en/latest/
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=latest
    :target: http://my-favorite-documentation-test.readthedocs.io/en/latest/
@@ -113,20 +120,16 @@ __ http://www.sphinx-doc.org/en/stable/extensions.html
 
 .. code-block:: bash
 
-   # For python3.
-   # https://wiki.python.org/moin/Python2orPython3#What_are_the_differences.3F
-   $ pip3 install exhale
-
-   # For python2.
    $ pip install exhale
 
 This will install Exhale, as well as all of its dependencies.  You are of course capable
-of installing Exhale through other means, as it contains a ``setup.py``, but since I
-**strongly discourage this**, I will not provide you with instructions on how to do so.
+of installing Exhale through other means, as it contains a ``setup.py``.  If you choose
+to do this, I assume you know what you are doing (and will provide neither instructions
+nor support for alternative installation strategies).
 
 .. note::
 
-   If you fail ``pip3 install exhale`` and it is failing on ``lxml``, you will likely
+   If you fail ``pip install exhale`` and it is failing on ``lxml``, you will likely
    need to install the proper development libraries.  See the
    `lxml installation instructions`__ for possible fixes.
 
@@ -371,10 +374,10 @@ to be successful, I vendor copies of two excellent libraries that I make no clai
 They are vendored with your installation of Exhale, in accordance with each project's
 license:
 
-1. For non-bootstrap, I used Stephen Morley's excellent and lightweight
-   collapsibleLists_ including the sample CSS / images on that post.  He includes a
-   generous `CC0 license <http://code.stephenmorley.org/about-this-site/copyright/>`_
-   for these files, as well as the rest of his website.
+1. For non-bootstrap, I used Kate Morley's excellent and lightweight collapsibleLists_
+   including the sample CSS / images on that post.  She includes a generous
+   `CC0 1.0 license <http://code.iamkate.com/>`_ for these files, as well as the rest of
+   her website.
 
    For every HTML Theme I have tried, except for ones using bootstrap, this library
    works reliably and consistently.  It matches the Sphinx RTD theme quite well, too!
@@ -391,7 +394,7 @@ license:
 Both of these libraries and copies of their licenses can be found in the
 `data folder of the source code <https://github.com/svenevs/exhale/tree/master/exhale/data>`_.
 
-.. _collapsibleLists: http://code.stephenmorley.org/javascript/collapsible-lists/
+.. _collapsibleLists: http://code.iamkate.com/javascript/collapsible-lists/
 
 __ https://github.com/jonmiles/bootstrap-treeview
 

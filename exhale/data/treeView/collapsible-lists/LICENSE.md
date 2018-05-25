@@ -1,7 +1,7 @@
-This code is the fruit of Stephen Morley's labor, taken from here:
+This code is the fruit of Kate Morley's labor, taken from here:
 
-    http://code.stephenmorley.org/javascript/collapsible-lists/
+- http://code.iamkate.com/javascript/collapsible-lists/
 
-He includes a generous CC0 license for all materials on his site:
+She includes a generous CC0 1.0 license for all materials on her site:
 
-    http://code.stephenmorley.org/about-this-site/copyright/
+- http://code.iamkate.com/

@@ -109,10 +109,19 @@ def _generate_doxygen(doxygen_input):
             #
             # See excellent synopsis:
             # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
-            _, tmp_out_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-            _, tmp_err_path  = tempfile.mkstemp(prefix="exhale_launched_doxygen_buff")
-            tmp_out_file     = codecs.open(tmp_out_path, "r+", "utf-8")  # read/write (read after communicate)
-            tmp_err_file     = codecs.open(tmp_err_path, "r+", "utf-8")
+            if six.PY2:
+                tempfile_kwargs = {}
+            else:
+                # encoding argument introduced in python 3
+                tempfile_kwargs = {"encoding": "utf-8"}
+            tempfile_kwargs["mode"] = "r+"
+            tmp_out_file = tempfile.TemporaryFile(
+                prefix="doxygen_stdout_buff", **tempfile_kwargs
+            )
+            tmp_err_file = tempfile.TemporaryFile(
+                prefix="doxygen_stderr_buff", **tempfile_kwargs
+            )
+
             # Write to the tempfiles over PIPE to avoid buffer overflowing
             kwargs["stdout"] = tmp_out_file
             kwargs["stderr"] = tmp_err_file
@@ -138,17 +147,17 @@ def _generate_doxygen(doxygen_input):
         if not configs._on_rtd and not configs.exhaleSilentDoxygen:
             # Doxygen output (some useful information, mostly just enumeration of the
             # configurations you gave it {useful for debugging...})
-            if os.path.getsize(tmp_out_path) > 0:
+            if tmp_out_file.tell() > 0:
                 tmp_out_file.seek(0)
                 print(tmp_out_file.read())
             # Doxygen error (e.g. any warnings, or invalid input)
-            if os.path.getsize(tmp_err_path) > 0:
+            if tmp_err_file.tell() > 0:
                 # Making them stick out, ideally users would reduce this output to 0 ;)
                 # This will print a yellow [~] before every line, but not make the
                 # entire line yellow because it's definitively not helpful
-                # Hack: empty string to utils.info will not give us anything, inserting
-                #       a null character will xD
-                prefix = utils.info("\0", utils.AnsiColors.BOLD_YELLOW, sys.stderr)
+                prefix = utils._use_color(
+                    utils.prefix("[~]", " "), utils.AnsiColors.BOLD_YELLOW, sys.stderr
+                )
                 tmp_err_file.seek(0)
                 sys.stderr.write(utils.prefix(prefix, tmp_err_file.read()))
 
@@ -159,8 +168,6 @@ def _generate_doxygen(doxygen_input):
             # Delete the tmpfiles
             tmp_out_file.close()
             tmp_err_file.close()
-            os.remove(tmp_out_path)
-            os.remove(tmp_err_path)
 
         # Make sure we had a valid execution of doxygen
         exit_code = doxygen_proc.returncode
@@ -417,3 +424,6 @@ def explode():
     # << verboseBuild
     #   toConsole only prints if verbose mode is enabled
     textRoot.toConsole()
+
+    # allow access to the result after-the-fact
+    configs._the_app.exhale_root = textRoot
