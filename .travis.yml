@@ -94,9 +94,8 @@ matrix:
             - graphviz
       language: python
       python: "3.6"
-      env: TEST=docs
+      env: TEST=docs_linkcheck
       install:
         - pip install -U tox
       script:
-        - tox -e docs
-        - tox -e linkcheck
+        - tox -e docs,linkcheck
