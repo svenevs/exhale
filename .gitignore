@@ -49,8 +49,7 @@ coverage.xml
 .hypothesis/
 
 # temp testing files
-testing/test_projects/*/doc/api/*.rst
-testing/test_projects/*/doc/_doxy
+testing/projects/*/docs_*/**
 
 # Translations
 *.mo
