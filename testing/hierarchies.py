@@ -61,7 +61,7 @@ __all__ = [
 ########################################################################################
 # Doxygen compound test classes (proxies to exhale.graph.ExhaleNode).                  #
 ########################################################################################
-class node(ExhaleNode):
+class node(ExhaleNode):  # noqa N801
     """
     Testing hierarchy parent class for pass-through construction of |ExhaleNode|.
 
@@ -103,7 +103,7 @@ class node(ExhaleNode):
             child.toConsole(level + 1)
 
 
-class clike(node):
+class clike(node):  # noqa N801
     """
     Represent a ``class`` or ``struct``.
 
@@ -123,7 +123,7 @@ class clike(node):
         self.template = template
 
 
-class directory(node):
+class directory(node):  # noqa N801
     """
     Represent a ``directory`` in a file hierarchy.
 
@@ -140,7 +140,7 @@ class directory(node):
         super(directory, self).__init__(name, "dir")
 
 
-class enum(node):
+class enum(node):  # noqa N801
     """
     Represent an ``enum``.
 
@@ -158,7 +158,7 @@ class enum(node):
         self.values = values
 
 
-class file(node):
+class file(node):  # noqa N801
     """
     Represent a ``file``.
 
@@ -183,7 +183,7 @@ class file(node):
         return "{0}: {1}".format(self.kind, self.location)
 
 
-class function(node):
+class function(node):  # noqa N801
     """
     Represent a (partial) ``function``.
 
@@ -203,7 +203,7 @@ class function(node):
           int add(int a, int b);
 
     **Parameters**
-        ``returnType`` (:class:`python:str`)
+        ``return_type`` (:class:`python:str`)
             The return type of the function, e.g. ``"void"`` or ``"int"``.
 
         ``name`` (:class:`python:str`)
@@ -213,9 +213,9 @@ class function(node):
             .. todo:: template specification / creation TBD for functions.
     """
 
-    def __init__(self, returnType, name, template=None):
+    def __init__(self, return_type, name, template=None):
         super(function, self).__init__(name, "function")
-        self.return_type = returnType
+        self.return_type = return_type
         self.signature = None  # set later, required to let functions be keys in dict
         self.template = None
 
@@ -245,7 +245,7 @@ class function(node):
         self.signature = signature
 
 
-class signature(object):
+class signature(object):  # noqa N801
     """
     Represent a |function| signature.
 
@@ -298,7 +298,7 @@ class signature(object):
         return ", ".join(a for a in self.args)
 
 
-class namespace(node):
+class namespace(node):  # noqa N801
     """
     Represent a ``namespace``.
 
@@ -311,7 +311,7 @@ class namespace(node):
         super(namespace, self).__init__(name, "namespace")
 
 
-class union(node):
+class union(node):  # noqa N801
     """
     Represent a ``union``.
 
@@ -329,12 +329,12 @@ class union(node):
 ########################################################################################
 # Doxygen index test classes (proxies to exhale.graph.ExhaleRoot).                     #
 ########################################################################################
-class root(object):
+class root(object):  # noqa N801
     """
     Represent a class or file hierarchy to simulate an :class:`exhale.graph.ExhaleRoot`.
 
     **Parameters**
-        ``hierarchyType`` (:class:`python:str`)
+        ``hierarchy_type`` (:class:`python:str`)
             May be either ``"class"`` or ``"file"``, indicating which type of hierarchy
             is being represented.
 
@@ -345,14 +345,14 @@ class root(object):
 
     **Raises**
         :class:`python:ValueError`
-            If ``hierarchyType`` is neither ``"class"`` nor ``"file"``, or the specified
+            If ``hierarchy_type`` is neither ``"class"`` nor ``"file"``, or the specified
             ``hierarchy`` not a dictionary or malformed.
     """
 
-    def __init__(self, hierarchyType, hierarchy):
-        if hierarchyType != "file" and hierarchyType != "class":
+    def __init__(self, hierarchy_type, hierarchy):
+        if hierarchy_type != "file" and hierarchy_type != "class":
             raise ValueError("Hierarchy type must be either 'file' or 'class'.")
-        self.hierarchy_type = hierarchyType
+        self.hierarchy_type = hierarchy_type
 
         # Mimic exhale.graph.ExhaleRoot fields.
         self.class_like = []
@@ -457,24 +457,24 @@ class root(object):
         if node not in self.__dict__[lst_name]:
             self.__dict__[lst_name].append(node)
 
-    def _visit_children(self, parent, childSpec):
+    def _visit_children(self, parent, child_spec):
         self._track_node(parent)
 
-        if not isinstance(childSpec, dict):
+        if not isinstance(child_spec, dict):
             if isinstance(parent, function):
-                if not isinstance(childSpec, signature):
+                if not isinstance(child_spec, signature):
                     raise ValueError(
                         "Specification of 'function' [{0}] must be of type 'signature'".format(parent.name)
                     )
                 else:
-                    parent.setSignature(childSpec)
+                    parent.setSignature(child_spec)
                     return
             else:
                 raise ValueError(
                     "Specification of '{0}' [{1}] must be a dictionary.".format(parent.kind, parent.name)
                 )
 
-        for child in childSpec:
+        for child in child_spec:
             # Special cases, make sure the hierarchy is acceptable
             if parent.kind == "dir":
                 if child.kind not in ["dir", "file"]:
@@ -519,7 +519,7 @@ class root(object):
                     else:
                         parent.def_in_file.children.append(child)
 
-            self._visit_children(child, childSpec[child])
+            self._visit_children(child, child_spec[child])
 
     def toConsole(self):
         """
@@ -534,7 +534,7 @@ class root(object):
             node.toConsole(0)
 
 
-class class_hierarchy(root):
+class class_hierarchy(root):  # noqa N801
     r"""
     Represent a name scope hierarchy.
 
@@ -594,7 +594,7 @@ class class_hierarchy(root):
         super(class_hierarchy, self).__init__("class", hierarchy)
 
 
-class file_hierarchy(root):
+class file_hierarchy(root):  # noqa N801
     r"""
     Represent a parsed directory structure, including which file defines which compound.
 
@@ -669,35 +669,35 @@ class file_hierarchy(root):
 ########################################################################################
 # Test comparison functions.                                                           #
 ########################################################################################
-def _compare_children(hierarchyType, test, testChild, exhaleChild):
-    if testChild.parent:
-        test.assertTrue(exhaleChild.parent is not None)
-        test.assertEqual(testChild.parent.name, exhaleChild.parent.name)
-        test.assertEqual(testChild.parent.kind, exhaleChild.parent.kind)
+def _compare_children(hierarchy_type, test, test_child, exhale_child):
+    if test_child.parent:
+        test.assertTrue(exhale_child.parent is not None)
+        test.assertEqual(test_child.parent.name, exhale_child.parent.name)
+        test.assertEqual(test_child.parent.kind, exhale_child.parent.kind)
     else:
         # namespaces are not represented in the file hierarchy, but in the Exhale graph
         # the parent will be the namespace
-        if "::" in testChild.name and hierarchyType == "file":
-            test.assertTrue(exhaleChild.parent is not None)
-            test.assertTrue(exhaleChild.parent.kind == "namespace")
+        if "::" in test_child.name and hierarchy_type == "file":
+            test.assertTrue(exhale_child.parent is not None)
+            test.assertTrue(exhale_child.parent.kind == "namespace")
         else:
-            test.assertTrue(exhaleChild.parent is None)
+            test.assertTrue(exhale_child.parent is None)
 
-    if hierarchyType == "file":
-        if testChild.def_in_file:
+    if hierarchy_type == "file":
+        if test_child.def_in_file:
             # TODO: populate location variables for files
-            test.assertEqual(testChild.def_in_file.name, exhaleChild.def_in_file.name)
-            test.assertEqual(testChild.def_in_file.location, exhaleChild.def_in_file.location)
+            test.assertEqual(test_child.def_in_file.name, exhale_child.def_in_file.name)
+            test.assertEqual(test_child.def_in_file.location, exhale_child.def_in_file.location)
         else:
-            test.assertTrue(exhaleChild.def_in_file is None)
+            test.assertTrue(exhale_child.def_in_file is None)
 
-    test.assertEqual(testChild.name, exhaleChild.name)
-    test.assertEqual(testChild.kind, exhaleChild.kind)
-    test.assertEqual(len(testChild.children), len(exhaleChild.children))
+    test.assertEqual(test_child.name, exhale_child.name)
+    test.assertEqual(test_child.kind, exhale_child.kind)
+    test.assertEqual(len(test_child.children), len(exhale_child.children))
 
-    for test_grand_child in testChild.children:
+    for test_grand_child in test_child.children:
         exhale_grand_child = None
-        for grand_child in exhaleChild.children:
+        for grand_child in exhale_child.children:
             if grand_child.name == test_grand_child.name and \
                     grand_child.kind == test_grand_child.kind:
                 exhale_grand_child = grand_child
@@ -706,7 +706,7 @@ def _compare_children(hierarchyType, test, testChild, exhaleChild):
             raise RuntimeError("Matching child for [{0}] '{1}' not found!".format(
                 test_grand_child.kind, test_grand_child.name
             ))
-        _compare_children(hierarchyType, test, test_grand_child, exhale_grand_child)
+        _compare_children(hierarchy_type, test, test_grand_child, exhale_grand_child)
 
 
 def _get_exhale_root(test):
@@ -716,11 +716,11 @@ def _get_exhale_root(test):
     # reading this `app.exhale_root` is *NOT* a feature you can rely on!!!
     app = getattr(test, "app", None)
     if app is None:
-        raise RuntimeError("Critical failure: the testRoot.app was 'None'.")
+        raise RuntimeError("Critical failure: the test_root.app was 'None'.")
     return app.exhale_root
 
 
-def compare_class_hierarchy(test, testRoot):
+def compare_class_hierarchy(test, test_root):
     """
     Compare the parsed and expected class hierarchy for the specified test.
 
@@ -733,12 +733,12 @@ def compare_class_hierarchy(test, testRoot):
             in this method.  The :class:`exhale.graph.ExhaleRoot` instance for the test
             project is acquired through this parameter.
 
-        ``testRoot`` (|class_hierarchy|)
+        ``test_root`` (|class_hierarchy|)
             The class hierarchy to compare the parsed root with.
 
     **Raises**
         :class:`python:ValueError`
-            When ``test`` is not an |ExhaleTestCase|, or ``testRoot`` is not a
+            When ``test`` is not an |ExhaleTestCase|, or ``test_root`` is not a
             |class_hierarchy|.
 
     .. |ExhaleTestCase| replace:: :class:`ExhaleTestCase <testing.base.ExhaleTestCase>`
@@ -749,17 +749,17 @@ def compare_class_hierarchy(test, testRoot):
         raise ValueError(
             "'test' parameter was not an instance of 'testing.base.ExhaleTestCase'."
         )
-    if not isinstance(testRoot, class_hierarchy):
-        raise ValueError("testRoot parameter must be an instance of `class_hierarchy`.")
+    if not isinstance(test_root, class_hierarchy):
+        raise ValueError("test_root parameter must be an instance of `class_hierarchy`.")
 
     # Run some preliminary tests
     exhale_root = _get_exhale_root(test)
-    test.assertEqual(len(testRoot.class_like), len(exhale_root.class_like))
-    test.assertEqual(len(testRoot.enums), len(exhale_root.enums))
-    test.assertEqual(len(testRoot.namespaces), len(exhale_root.namespaces))
-    test.assertEqual(len(testRoot.unions), len(exhale_root.unions))
+    test.assertEqual(len(test_root.class_like), len(exhale_root.class_like))
+    test.assertEqual(len(test_root.enums), len(exhale_root.enums))
+    test.assertEqual(len(test_root.namespaces), len(exhale_root.namespaces))
+    test.assertEqual(len(test_root.unions), len(exhale_root.unions))
 
-    for test_obj in testRoot.top_level:
+    for test_obj in test_root.top_level:
         exhale_obj = None
         if test_obj.kind in ["class", "struct"]:
             for cl in exhale_root.class_like:
@@ -791,7 +791,7 @@ def compare_class_hierarchy(test, testRoot):
         _compare_children("class", test, test_obj, exhale_obj)
 
 
-def compare_file_hierarchy(test, testRoot):
+def compare_file_hierarchy(test, test_root):
     """
     Compare the parsed and expected file hierarchy for the specified test.
 
@@ -804,12 +804,12 @@ def compare_file_hierarchy(test, testRoot):
             in this method.  The :class:`exhale.graph.ExhaleRoot` instance for the test
             project is acquired through this parameter.
 
-        ``testRoot`` (|file_hierarchy|)
+        ``test_root`` (|file_hierarchy|)
             The class hierarchy to compare the parsed root with.
 
     **Raises**
         :class:`python:ValueError`
-            When ``test`` is not an |ExhaleTestCase|, or ``testRoot`` is not a
+            When ``test`` is not an |ExhaleTestCase|, or ``test_root`` is not a
             |file_hierarchy|.
 
     .. |file_hierarchy| replace:: :class:`file_hierarchy <testing.hierarchies.file_hierarchy>`
@@ -819,14 +819,14 @@ def compare_file_hierarchy(test, testRoot):
         raise ValueError(
             "'test' parameter was not an instance of 'testing.base.ExhaleTestCase'."
         )
-    if not isinstance(testRoot, file_hierarchy):
-        raise ValueError("testRoot parameter must be an instance of `file_hierarchy`.")
+    if not isinstance(test_root, file_hierarchy):
+        raise ValueError("test_root parameter must be an instance of `file_hierarchy`.")
 
     # Run some preliminary tests
     exhale_root = _get_exhale_root(test)
-    test.assertEqual(len(testRoot.dirs), len(exhale_root.dirs))
-    test.assertEqual(len(testRoot.files), len(exhale_root.files))
-    for test_obj in testRoot.top_level:
+    test.assertEqual(len(test_root.dirs), len(exhale_root.dirs))
+    test.assertEqual(len(test_root.files), len(exhale_root.files))
+    for test_obj in test_root.top_level:
         exhale_obj = None
         if test_obj.kind == "dir":
             for d in exhale_root.dirs:
