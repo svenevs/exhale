@@ -36,7 +36,7 @@ class ConfigurationErrorTests(ExhaleTestCase):
 
     @pytest.mark.raises(
         exception=ConfigError,
-        message="`exhale_args` in `conf.py` must be a dictionary, but was `<class 'int'>`"
+        regex=r"`exhale_args` in `conf\.py` must be a dictionary, but was `<(class|type) 'int'>`",
     )
     @confoverrides(exhale_args=11)
     def test_non_dict_exhale_args(self):

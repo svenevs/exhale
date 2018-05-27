@@ -15,7 +15,9 @@ __ https://docs.pytest.org/en/latest/example/simple.html#package-directory-level
 
 from __future__ import unicode_literals
 
+import re
 import sys
+
 import pytest
 
 pytest_plugins = [
@@ -131,16 +133,30 @@ def pytest_runtest_setup(item):
         exception = raises_marker.kwargs.get('exception')
         exception = exception or Exception
         message = raises_marker.kwargs.get('message')
+        regex = raises_marker.kwargs.get('regex')
+
+        if message and regex:
+            raise ValueError("@pytest.mark.raises: cannot set both `message` and `regex`")
 
         raised_exception = outcome.excinfo[1] if outcome.excinfo else None
         traceback = outcome.excinfo[2] if outcome.excinfo else None
         if isinstance(raised_exception, exception):
             outcome.force_result(None)
-            if message is not None:
+            if message is not None or regex is not None:
                 try:
                     raised_message = str(raised_exception)
-                    if message not in raised_message:
-                        raise ExpectedMessage('"{}" not in "{}"'.format(message, raised_message))
+                    if message and message not in raised_message:
+                        raise ExpectedMessage(
+                            '"{}" not in exception message "{}"'.format(
+                                message, raised_message
+                            )
+                        )
+                    elif regex and not re.match(regex, raised_message):
+                        raise ExpectedMessage(
+                            '"{}" regex does not match exception message: "{}"'.format(
+                                regex, raised_message
+                            )
+                        )
                 except(ExpectedMessage):
                     excinfo = sys.exc_info()
                     if traceback:
