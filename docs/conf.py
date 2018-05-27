@@ -131,8 +131,18 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    # TODO: seems to be broken?
-    # "navigation_depth": 5
+    # TODO: figure out how to compile SASS so you can fix this
+    #       https://github.com/rtfd/sphinx_rtd_theme/issues/457
+    # "navigation_depth": 5,
+    # "collapse_navigation": False
+    #
+    # Then change testing/tests.rst section headings to what you wanted
+    # <h1>All Tests</h1>
+    # .. automodule:: testing.tests
+    # <h2>Exhale Core Tests</h2>
+    # ...
+    # <h2>Project Tests</h2>
+    # ...
 }
 
 # The name for this set of Sphinx documents.  If None, it defaults to

@@ -176,18 +176,30 @@ class ExhaleTestCaseMetaclass(type):
 
                 # If a given test case needs to run app.build(), make sure index.rst
                 # is available as well
+                exhale_args = app_params.kwargs["confoverrides"]["exhale_args"]
                 with open(os.path.join(testroot, "index.rst"), "w") as index_rst:
-                    index_rst.write(textwrap.dedent('''
-                        Exhale Test Case
-                        ================
-                        .. toctree::
-                           :maxdepth: 2
+                    if type(exhale_args) is dict:
+                        index_rst.write(textwrap.dedent('''
+                            Exhale Test Case
+                            ================
+                            .. toctree::
+                               :maxdepth: 2
 
-                           {containmentFolder}/{rootFileName}
-                    ''').format(
-                        # containmentFolder and rootFileName are always in exhale_args
-                        **app_params.kwargs["confoverrides"]["exhale_args"])
-                    )
+                               {containmentFolder}/{rootFileName}
+                        ''').format(
+                            # containmentFolder and rootFileName are always in exhale_args
+                            **app_params.kwargs["confoverrides"]["exhale_args"])
+                        )
+                    else:
+                        # The index.rst needs to be created for sphinx, but this should
+                        # only be getting executed in the configs test that sets
+                        # exhale_args to 11 ;)
+                        index_rst.write(textwrap.dedent('''
+                            Exhale Test Case
+                            ================
+
+                            Deliberately (?) invalid exhale_args xD
+                        '''))
 
                 # run the test in testroot
                 yield testroot

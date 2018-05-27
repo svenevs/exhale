@@ -32,6 +32,20 @@ __name__      = "utils"
 __docformat__ = "reStructuredText"
 
 
+
+
+def html_safe_name(name):
+    raise NotImplementedError("html_safe_name not 'implemented' yet...")
+
+
+def label_safe_name(name):
+    # whitespace -> underscores
+    name = re.sub(r"\s+", "_", name.strip())
+    # remove non-word characters (anything not in [a-zA-Z0-9])
+    return re.sub(r"\W", "", name)
+
+
+
 def heading_mark(title, char):
     '''
     Given an input title and character, creates the reStructuredText underline
