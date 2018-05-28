@@ -1,4 +1,9 @@
 sudo: false
+# TODO: remove before final merge (preventing double builds)
+branches:
+  except:
+  - config-objects
+# TODO: end remove
 matrix:
   allow_failures:
     - env: ALLOW_ME_TO=FAIL
