@@ -18,7 +18,7 @@ def _validate_is_dictionary_with_string_keys(d, title):
     # Make sure it is a dictionary.
     if type(d) is not dict:
         raise ConfigError(
-            "`{title}` in `conf.py` must be a dictionary, but was `{got}`".format(
+            "`{title}` in `conf.py` must be a dictionary, but was `{got}`.".format(
                 title=title,
                 got=type(d)
             )
@@ -28,7 +28,7 @@ def _validate_is_dictionary_with_string_keys(d, title):
     for key in d:
         if not isinstance(key, six.string_types):
             raise ConfigError(
-                "`{title}` had key `{key}` of type `{key_t}`, but only strings are allowed".format(
+                "`{title}` had key `{key}` of type `{key_t}`, but only strings are allowed.".format(
                     title=title, key=key, key_t=type(key)
                 )
             )
@@ -40,28 +40,21 @@ def environment_ready(app):
     from . import utils
     from . import deploy
 
+    # initial type-safety checks for `exhale_args`
     exhale_args = app.config.exhale_args
     _validate_is_dictionary_with_string_keys(exhale_args, "exhale_args")
 
+    # initial type-safety checks for `exhale_projects`
     exhale_projects = app.config.exhale_projects
     _validate_is_dictionary_with_string_keys(exhale_projects, "exhale_projects")
+    for project in exhale_projects:
+        _validate_is_dictionary_with_string_keys(
+            exhale_projects[project], "exhale_projects['{0}']".format(project)
+        )
 
+    # initial type-safety checks for `exhale_global_args`
     exhale_global_args = app.config.exhale_global_args
     _validate_is_dictionary_with_string_keys(exhale_global_args, "exhale_global_args")
-
-    import json
-    print("exhale_args:")
-    print(json.dumps(exhale_args, indent=2))
-
-    print("exhale_projects:")
-    print(json.dumps(exhale_projects, indent=2))
-
-    print("exhale_global_args:")
-    print(json.dumps(exhale_global_args, indent=2))
-
-    # raise RuntimeError("haha")
-
-
 
     # First, setup the extension and verify all of the configurations.
     configs.apply_sphinx_configurations(app)
