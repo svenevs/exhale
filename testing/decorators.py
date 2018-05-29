@@ -13,9 +13,9 @@ from __future__ import unicode_literals
 from copy import deepcopy
 from inspect import isclass
 
-import pytest
+from exhale.utils import deep_update
 
-from .utils import deep_update
+import pytest
 
 
 __all__ = ["default_confoverrides", "confoverrides", "no_run"]

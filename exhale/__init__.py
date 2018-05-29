@@ -14,7 +14,7 @@ from sphinx.errors import ConfigError
 __version__ = "0.1.8"
 
 
-def _validate_is_dictionary_with_string_keys(d, title):
+def _assert_is_dictionary_with_string_keys(d, title):
     # Make sure it is a dictionary.
     if type(d) is not dict:
         raise ConfigError(
@@ -34,6 +34,23 @@ def _validate_is_dictionary_with_string_keys(d, title):
             )
 
 
+class ExhaleProject(object):
+    def __init__(self, config):
+        self.app = config.app
+        self.project_name = config.project_name
+        self.config = config
+
+        self.root = None
+
+    def run_doxygen(self):
+        pass
+
+    def parse(self):
+        pass
+
+    def explode(self):
+        pass
+
 def environment_ready(app):
     # Defer importing configs until sphinx is running.
     from . import configs
@@ -42,19 +59,48 @@ def environment_ready(app):
 
     # initial type-safety checks for `exhale_args`
     exhale_args = app.config.exhale_args
-    _validate_is_dictionary_with_string_keys(exhale_args, "exhale_args")
+    _assert_is_dictionary_with_string_keys(exhale_args, "exhale_args")
 
     # initial type-safety checks for `exhale_projects`
     exhale_projects = app.config.exhale_projects
-    _validate_is_dictionary_with_string_keys(exhale_projects, "exhale_projects")
+    _assert_is_dictionary_with_string_keys(exhale_projects, "exhale_projects")
     for project in exhale_projects:
-        _validate_is_dictionary_with_string_keys(
+        _assert_is_dictionary_with_string_keys(
             exhale_projects[project], "exhale_projects['{0}']".format(project)
         )
 
     # initial type-safety checks for `exhale_global_args`
     exhale_global_args = app.config.exhale_global_args
-    _validate_is_dictionary_with_string_keys(exhale_global_args, "exhale_global_args")
+    _assert_is_dictionary_with_string_keys(exhale_global_args, "exhale_global_args")
+
+    # `exhale_args` implies Exhale can overwrite `exhale_projects`
+    if exhale_args and exhale_projects:
+        raise ConfigError(
+            "`exhale_args` and `exhale_projects` may not both be specified.  "
+            "Using `exhale_args` implies a single project."
+        )
+
+    # `exhale_args` cannot be used with `exhale_global_args`
+    if exhale_args and exhale_global_args:
+        raise ConfigError(
+            "`exhale_args` and `exhale_global_args` may not both be specified.  "
+            "Using `exhale_args` implies a single project."
+        )
+
+    # create `exhale_projects` when `exhale_args` is being used
+    if exhale_args:
+        app.config.exhale_projects = {
+            "exhale_auto": {key: value for key, value in exhale_args.items()}
+        }
+        exhale_projects = app.config.exhale_projects
+
+    # generate each project
+    for project_name in exhale_projects:
+        config = configs.Config(app, project_name)
+        project = ExhaleProject(config)
+        project.run_doxygen()
+        project.parse()
+        project.explode()
 
     # First, setup the extension and verify all of the configurations.
     configs.apply_sphinx_configurations(app)

@@ -44,6 +44,17 @@ class ConfigurationErrorTests(ExhaleTestCase):
     Exception string template for requiring dictionary with string keys config value.
     """
 
+    forbid_api_crossover = r"^`exhale_args` and `{0}` may not both be specified\.  " + \
+                           r"Using `exhale_args` implies a single project\.$"
+    """
+    Exception string template for forbidding use of API crossover.
+
+    ``exhale_args`` and ``exhale_projects`` and/or ``exhale_global_args`` may not be
+    specified at the same time, since ``exhale_args`` will auto-populate
+    ``exhale_projects``.  Additionally, ``exhale_global_args`` only has meaning for
+    multiple projects, so it is forbidden as well.
+    """
+
     @pytest.mark.raises(
         exception=ConfigError, regex=need_dict.format("exhale_args", "int")
     )
@@ -101,4 +112,36 @@ class ConfigurationErrorTests(ExhaleTestCase):
     @confoverrides(exhale_projects={"defcon1": {111: "not valid"}})
     def test_nested_non_string_key_exhale_projects(self):
         """Validate non-string key in nested ``exhale_projects['defcon1']`` raises ``ConfigError``."""
+        pass
+
+    @pytest.mark.raises(
+        exception=ConfigError, regex=forbid_api_crossover.format("exhale_projects")
+    )
+    @confoverrides(exhale_projects={"alpha": {"rootFileTitle": "Alpha API"}})
+    def test_forbid_args_and_projects(self):
+        """Forbid use of ``exhale_args`` and ``exhale_projects`` at same time."""
+        pass
+
+    @pytest.mark.raises(
+        exception=ConfigError, regex=forbid_api_crossover.format("exhale_global_args")
+    )
+    @confoverrides(exhale_global_args={"createTreeView": True})
+    def test_forbid_args_and_global_args(self):
+        """Forbid use of ``exhale_args`` and ``exhale_global_args`` at same time."""
+        pass
+
+    @pytest.mark.raises(
+        exception=ConfigError, regex=forbid_api_crossover.format("exhale_projects")
+    )
+    @confoverrides(
+        exhale_projects={"alpha": {"rootFileTitle": "Alpha API"}},
+        exhale_global_args={"createTreeView": True}
+    )
+    def test_forbid_args_and_projects_and_global_args(self):
+        """
+        Forbid usage of ``exhale_args``, ``exhale_projects``, and ``exhale_global_args`` at same time.
+
+        Exhale (arbitrarily) checks for ``exhale_projects`` first, so that will be the
+        expected error message.
+        """
         pass

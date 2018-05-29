@@ -42,11 +42,14 @@ follows:
 
 from __future__ import unicode_literals
 
+import itertools
 import os
 import six
 import textwrap
 
+import sphinx
 from sphinx.errors import ConfigError, ExtensionError
+
 from types import FunctionType, ModuleType
 
 try:
@@ -56,10 +59,272 @@ except ImportError:
     # Python 3 StringIO
     from io import StringIO
 
+from . import utils
+
 # __all__ = []
 
 __name__ = "configs"
 __docformat__ = "reStructuredText"
+
+
+
+def make_default_configs():
+    return {
+        # Required arguments
+        # "containmentFolder": None,
+        # "rootFileName": None,
+        # "rootFileTitle": None,
+        # "doxygenStripFromPath": None,
+        # Build process logging, colors, and debugging
+        "verboseBuild": False,
+        "alwaysColorize": True,
+        "generateBreatheFileDirectives": False,
+        # Root API document customization
+        "afterTitleDescription": "",
+        "afterHierarchyDescription": "",
+        "fullApiSubSectionTitle": "Full API",
+        "afterBodySummary": "",
+        "fullToctreeMaxDepth": 5,
+        # Clickable hierarchies <3
+        "createTreeView": False,
+        "treeViewIsBootstrap": False,
+        "treeViewBootstrapTextSpanClass": "text-muted",
+        "treeViewBootstrapIconMimicColor": "text-muted",
+        "treeViewBootstrapOnhoverColor": "#F5F5F5",
+        "treeViewBootstrapUseBadgeTags": True,
+        "treeViewBootstrapExpandIcon": "glyphicon glyphicon-plus",
+        "treeViewBootstrapCollapseIcon": "glyphicon glyphicon-minus",
+        "treeViewBootstrapLevels": 1,
+        # Page level customization
+        "includeTemplateParamOrderList": False,
+        "pageLevelConfigMeta": "",
+        "repoRedirectURL": "",
+        # Contents directives
+        "contentsDirectives": True,
+        "contentsTitle": "Contents",
+        "contentsSpecifiers": [":local:", ":backlinks: none"],
+        "kindsWithContentsDirectives": ["file", "namespace"],
+        # Breathe customization
+        "customSpecificationsMapping": {},
+        # Doxygen execution
+        "exhaleExecutesDoxygen": False,
+        "exhaleUseDoxyfile": False,
+        "exhaleDoxygenStdin": None,
+        "exhaleSilentDoxygen": False
+    }
+
+
+class Config(object):
+    REQUIRED_KV = [
+        ("containmentFolder",    six.string_types,  True),
+        ("rootFileName",         six.string_types, False),
+        ("rootFileTitle",        six.string_types, False),
+        ("doxygenStripFromPath", six.string_types,  True)
+    ]
+
+    OPTIONAL_KV = [
+        # Build Process Logging, Colors, and Debugging
+        ("verboseBuild",                                bool),
+        ("alwaysColorize",                              bool),
+        ("generateBreatheFileDirectives",               bool),
+        # Root API Document Customization and Treeview
+        ("afterTitleDescription",           six.string_types),
+        ("afterHierarchyDescription",       six.string_types),
+        ("fullApiSubSectionTitle",          six.string_types),
+        ("afterBodySummary",                six.string_types),
+        ("fullToctreeMaxDepth",                          int),
+        # Clickable Hierarchies <3
+        ("createTreeView",                              bool),
+        ("treeViewIsBootstrap",                         bool),
+        ("treeViewBootstrapTextSpanClass",  six.string_types),
+        ("treeViewBootstrapIconMimicColor", six.string_types),
+        ("treeViewBootstrapOnhoverColor",   six.string_types),
+        ("treeViewBootstrapUseBadgeTags",               bool),
+        ("treeViewBootstrapExpandIcon",     six.string_types),
+        ("treeViewBootstrapCollapseIcon",   six.string_types),
+        ("treeViewBootstrapLevels",                      int),
+        # Page Level Customization
+        ("includeTemplateParamOrderList",               bool),
+        ("pageLevelConfigMeta",             six.string_types),
+        ("repoRedirectURL",                 six.string_types),
+        ("contentsDirectives",                          bool),
+        ("contentsTitle",                   six.string_types),
+        ("contentsSpecifiers",                          list),
+        ("kindsWithContentsDirectives",                 list),
+        # Breathe Customization
+        ("customSpecificationsMapping",                 dict),
+        # Doxygen Execution and Customization
+        ("exhaleExecutesDoxygen",                       bool),
+        ("exhaleUseDoxyfile",                           bool),
+        ("exhaleDoxygenStdin",              six.string_types),
+        ("exhaleSilentDoxygen",                         bool)
+    ]
+
+    def __init__(self, app, project_name):
+        if not isinstance(app, sphinx.application.Sphinx):
+            raise ValueError("`app` parameter must be an instance of 'sphinx.application.Sphinx'.")
+        if not isinstance(project_name, six.string_types):
+            raise ValueError("`project_name` parameter must be a string.")
+        self.app = app
+        self.project_name = project_name
+        self.project_name_safe = utils.label_safe_name(project_name)
+
+        # Used for internal verification of available keys
+        self.keys_available = [
+            spec[0] for spec in itertools.chain(Config.REQUIRED_KV, Config.OPTIONAL_KV)
+        ]
+        # At the end of input processing, fail out if unrecognized keys were found.
+        self.keys_processed = []
+
+        # Start with the default configurations.
+        configs = make_default_configs()
+
+        # If common arguments for multiple projects, apply those next.
+        exhale_global_args = app.config.exhale_global_args
+        if type(exhale_global_args) is not dict:
+            raise ConfigError("`exhale_global_args` in `conf.py` must be a dictionary.")
+        if exhale_global_args:
+            configs = utils.deep_update(configs, exhale_global_args)
+
+        # Last, gather the project specific configurations.
+        project_configs = app.config.exhale_projects[project_name]
+        if type(project_configs) is not dict:
+            raise ConfigError("`exhale_projects['{0}']` in `conf.py` must be a dictionary.")
+        project_configs = self._validate_required_configs(project_configs)
+
+        # Apply the project-specific configurations last and validate option configs
+        configs = utils.deep_update(configs, project_configs)
+        self._validate_optional_configs(configs)
+
+        # Make
+        for key in configs:
+            setattr(self, key, configs[key])
+
+    def _key_error(self, key):
+        return "Did not find required key `{key}` in `exhale_projects['{proj}']`.".format(
+            key=key, proj=self.project_name
+        )
+
+    def _value_error(self, key, expected, got):
+        return "The type of the value for key `{key}` must be `{expected}`, but was `{got}`.".format(
+            key=key, expected=expected, got=got
+        )
+
+    def _validate_required_configs(self, project_configs):
+        for key, expected_type, make_absolute in Config.REQUIRED_KV:
+            # Make sure we have the key
+            if key not in project_configs:
+                raise ConfigError(self._key_error(key))
+            # Make sure the value is at the very least the correct type
+            val = project_configs[key]
+            if not isinstance(val, expected_type):
+                raise ConfigError(self._value_error(key, expected_type, type(val)))
+            # Make sure that a value was provided (e.g. no empty strings)
+            if not val:
+                raise ConfigError("Non-empty value for key [{0}] required.".format(key))
+            # If the string represents a path, make it absolute
+            if make_absolute:
+                # Directories are made absolute relative to app.confdir (where conf.py is)
+                if not os.path.isabs(val):
+                    val = os.path.abspath(os.path.join(
+                        os.path.abspath(self.app.confdir), val
+                    ))
+                    project_configs[key] = val
+            # Mark this key as being processed for error checking later
+            self.keys_processed.append(key)
+
+        # Return the potentially modified dictionary
+        return project_configs
+
+    def _validate_optional_configs(self, final_configs):
+        for key, expected_type in Config.OPTIONAL_KV:
+            # Override the default settings if the key was provided
+            if key in final_configs:
+                # Make sure the value is at the very least the correct type
+                val = final_configs[key]
+                if not isinstance(val, expected_type):
+                    raise ConfigError(self._value_error(key, expected_type, type(val)))
+                self.keys_processed.append(key)
+
+        self._validate_contents_directives(final_configs)
+
+    def _assert_is_list_of_strings(self, lst, title):
+        for spec in lst:
+            if not isinstance(spec, six.string_types):
+                raise ConfigError(
+                    "`{title}` must be a list of strings, but `{spec}` was of type `{spec_t}`.".format(
+                        title=title,
+                        spec=spec,
+                        spec_t=type(spec)
+                    )
+                )
+
+    def _validate_contents_directives(self, final_configs):
+        self._assert_is_list_of_strings(
+            final_configs["contentsSpecifiers"], "contentsSpecifiers"
+        )
+        self._assert_is_list_of_strings(
+            final_configs["kindsWithContentsDirectives"], "kindsWithContentsDirectives"
+        )
+        for kind in final_configs["kindsWithContentsDirectives"]:
+            if kind not in utils.AVAILABLE_KINDS:
+                raise ConfigError(
+                    "Unkown `{kind}` in `kindsWithContentsDirectives`.  See utils.AVAILABLE_KINDS.".format(
+                        kind=kind
+                    )
+                )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ########################################################################################
 ##                                                                                     #
