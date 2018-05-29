@@ -21,6 +21,9 @@ import codecs
 import traceback
 import textwrap
 
+from contextlib import contextmanager
+from collections import Mapping
+
 # Fancy error printing <3
 try:
     import pygments
@@ -33,7 +36,14 @@ __name__      = "utils"
 __docformat__ = "reStructuredText"
 
 
-from collections import Mapping
+@contextmanager
+def cd(path):
+    cwd = os.getcwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(cwd)
 
 
 def deep_update(orig, override):

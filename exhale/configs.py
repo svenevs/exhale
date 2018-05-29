@@ -247,6 +247,7 @@ class Config(object):
                 self.keys_processed.append(key)
 
         self._validate_contents_directives(final_configs)
+        self._validate_doxygen_configs(final_configs)
 
     def _assert_is_list_of_strings(self, lst, title):
         for spec in lst:
@@ -260,9 +261,13 @@ class Config(object):
                 )
 
     def _validate_contents_directives(self, final_configs):
+        # verify contentsSpecifiers can be used as expected
         self._assert_is_list_of_strings(
             final_configs["contentsSpecifiers"], "contentsSpecifiers"
         )
+        self.keys_processed.append("contentsSpecifiers")
+
+        # verify the kinds requested for .. contents:: directives are valid kinds
         self._assert_is_list_of_strings(
             final_configs["kindsWithContentsDirectives"], "kindsWithContentsDirectives"
         )
@@ -273,6 +278,33 @@ class Config(object):
                         kind=kind
                     )
                 )
+        self.keys_processed.append("kindsWithContentsDirectives")
+
+    def _validate_doxygen_configs(self, final_configs):
+        exhaleExecutesDoxygen = final_configs["exhaleExecutesDoxygen"]
+        exhaleUseDoxyfile = final_configs["exhaleUseDoxyfile"]
+        exhaleDoxygenStdin = final_configs["exhaleDoxygenStdin"]
+        if exhaleExecutesDoxygen:
+            # Cannot use both, only one or the other
+            if exhaleUseDoxyfile and (exhaleDoxygenStdin is not None):
+                raise ConfigError(
+                    "You must choose one of `exhaleUseDoxyfile` or `exhaleDoxygenStdin`, not both."
+                )
+
+            # The Doxyfile *must* be at the same level as conf.py
+            # This is done so that when separate source / build directories are being
+            # used, we can guarantee where the Doxyfile is.
+            if exhaleUseDoxyfile:
+                doxyfile_path = os.path.abspath(os.path.join(
+                    self.app.confdir, "Doxyfile"
+                ))
+                if not os.path.exists(doxyfile_path):
+                    raise ConfigError(
+                        "The file [{0}] does not exist".format(doxyfile_path)
+                    )
+
+        for key in ["exhaleExecutesDoxygen", "exhaleUseDoxyfile", "exhaleDoxygenStdin"]:
+            self.keys_processed.append(key)
 
 
 
@@ -1634,73 +1666,74 @@ def apply_sphinx_configurations(app):
     global _doxygen_xml_output_directory
     _doxygen_xml_output_directory = doxy_xml_dir
 
-    # If requested, the time is nigh for executing doxygen.  The strategy:
-    # 1. Execute doxygen if requested
-    # 2. Verify that the expected doxy_xml_dir (specified to `breathe`) was created
-    # 3. Assuming everything went to plan, let exhale take over and create all of the .rst docs
-    if exhaleExecutesDoxygen:
-        # Cannot use both, only one or the other
-        if exhaleUseDoxyfile and (exhaleDoxygenStdin is not None):
-            raise ConfigError("You must choose one of `exhaleUseDoxyfile` or `exhaleDoxygenStdin`, not both.")
+    # # If requested, the time is nigh for executing doxygen.  The strategy:
+    # # 1. Execute doxygen if requested
+    # # 2. Verify that the expected doxy_xml_dir (specified to `breathe`) was created
+    # # 3. Assuming everything went to plan, let exhale take over and create all of the .rst docs
+    # if exhaleExecutesDoxygen:
+    #     # Cannot use both, only one or the other
+    #     if exhaleUseDoxyfile and (exhaleDoxygenStdin is not None):
+    #         raise ConfigError("You must choose one of `exhaleUseDoxyfile` or `exhaleDoxygenStdin`, not both.")
 
-        # The Doxyfile *must* be at the same level as conf.py
-        # This is done so that when separate source / build directories are being used,
-        # we can guarantee where the Doxyfile is.
-        if exhaleUseDoxyfile:
-            doxyfile_path = os.path.abspath(os.path.join(app.confdir, "Doxyfile"))
-            if not os.path.exists(doxyfile_path):
-                raise ConfigError("The file [{0}] does not exist".format(doxyfile_path))
+    #     # The Doxyfile *must* be at the same level as conf.py
+    #     # This is done so that when separate source / build directories are being used,
+    #     # we can guarantee where the Doxyfile is.
+    #     if exhaleUseDoxyfile:
+    #         doxyfile_path = os.path.abspath(os.path.join(app.confdir, "Doxyfile"))
+    #         if not os.path.exists(doxyfile_path):
+    #             raise ConfigError("The file [{0}] does not exist".format(doxyfile_path))
 
-        here = os.path.abspath(os.curdir)
-        if here == app.confdir:
-            returnPath = None
-        else:
-            returnPath = here
+    #     here = os.path.abspath(os.curdir)
+    #     if here == app.confdir:
+    #         returnPath = None
+    #     else:
+    #         returnPath = here
 
-        # All necessary information ready, go to where the Doxyfile is, run Doxygen
-        # and then return back (where applicable) so sphinx can continue
-        start = utils.get_time()
-        if returnPath:
-            app.info(utils.info(
-                "Exhale: changing directories to [{0}] to execute Doxygen.".format(app.confdir)
-            ))
-            os.chdir(app.confdir)
-        app.info(utils.info("Exhale: executing doxygen."))
-        status = deploy.generateDoxygenXML()
-        # Being overly-careful to put sphinx back where it was before potentially erroring out
-        if returnPath:
-            app.info(utils.info(
-                "Exhale: changing directories back to [{0}] after Doxygen.".format(returnPath)
-            ))
-            os.chdir(returnPath)
-        if status:
-            raise ExtensionError(status)
-        else:
-            end = utils.get_time()
-            app.info(utils.progress(
-                "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
-            ))
-    else:
-        if exhaleUseDoxyfile:
-            app.warn("Exhale: `exhaleUseDoxyfile` ignored since `exhaleExecutesDoxygen=False`")
-        if exhaleDoxygenStdin is not None:
-            app.warn("Exhale: `exhaleDoxygenStdin` ignored since `exhaleExecutesDoxygen=False`")
-        if exhaleSilentDoxygen:
-            app.warn("Exhale: `exhaleSilentDoxygen=True` ignored since `exhaleExecutesDoxygen=False`")
+    #     # All necessary information ready, go to where the Doxyfile is, run Doxygen
+    #     # and then return back (where applicable) so sphinx can continue
+    #     start = utils.get_time()
+    #     if returnPath:
+    #         app.info(utils.info(
+    #             "Exhale: changing directories to [{0}] to execute Doxygen.".format(app.confdir)
+    #         ))
+    #         os.chdir(app.confdir)
+    #     app.info(utils.info("Exhale: executing doxygen."))
+    #     status = deploy.generateDoxygenXML()
+    #     # Being overly-careful to put sphinx back where it was before potentially erroring out
+    #     if returnPath:
+    #         app.info(utils.info(
+    #             "Exhale: changing directories back to [{0}] after Doxygen.".format(returnPath)
+    #         ))
+    #         os.chdir(returnPath)
+    #     if status:
+    #         raise ExtensionError(status)
+    #     else:
+    #         end = utils.get_time()
+    #         app.info(utils.progress(
+    #             "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
+    #         ))
+    # else:
+    #     if exhaleUseDoxyfile:
+    #         app.warn("Exhale: `exhaleUseDoxyfile` ignored since `exhaleExecutesDoxygen=False`")
+    #     if exhaleDoxygenStdin is not None:
+    #         app.warn("Exhale: `exhaleDoxygenStdin` ignored since `exhaleExecutesDoxygen=False`")
+    #     if exhaleSilentDoxygen:
+    #         app.warn("Exhale: `exhaleSilentDoxygen=True` ignored since `exhaleExecutesDoxygen=False`")
 
-    # Either Doxygen was run prior to this being called, or we just finished running it.
-    # Make sure that the files we need are actually there.
-    if not os.path.isdir(doxy_xml_dir):
-        raise ConfigError(
-            "Exhale: the specified folder [{0}] does not exist.  Has Doxygen been run?".format(doxy_xml_dir)
-        )
-    index = os.path.join(doxy_xml_dir, "index.xml")
-    if not os.path.isfile(index):
-        raise ConfigError("Exhale: the file [{0}] does not exist.  Has Doxygen been run?".format(index))
+    if False:
+        # Either Doxygen was run prior to this being called, or we just finished running it.
+        # Make sure that the files we need are actually there.
+        if not os.path.isdir(doxy_xml_dir):
+            raise ConfigError(
+                "Exhale: the specified folder [{0}] does not exist.  Has Doxygen been run?".format(doxy_xml_dir)
+            )
+        index = os.path.join(doxy_xml_dir, "index.xml")
+        if not os.path.isfile(index):
+            raise ConfigError("Exhale: the file [{0}] does not exist.  Has Doxygen been run?".format(index))
 
-    # Legacy / debugging feature, warn of its purpose
-    if generateBreatheFileDirectives:
-        app.warn("Exhale: `generateBreatheFileDirectives` is a debugging feature not intended for production.")
+        # Legacy / debugging feature, warn of its purpose
+        if generateBreatheFileDirectives:
+            app.warn("Exhale: `generateBreatheFileDirectives` is a debugging feature not intended for production.")
 
     ####################################################################################
     # If using a fancy treeView, add the necessary frontend files.                     #

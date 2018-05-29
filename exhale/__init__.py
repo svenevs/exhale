@@ -8,10 +8,18 @@
 
 from __future__ import unicode_literals
 
+from . import configs
+from . import deploy
+from . import graph
+from . import parse
+from . import utils
+
+import os
 import six
-from sphinx.errors import ConfigError
+from sphinx.errors import ConfigError, ExtensionError
 
 __version__ = "0.1.8"
+__all__ = ["configs", "deploy", "graph", "parse", "utils"]
 
 
 def _assert_is_dictionary_with_string_keys(d, title):
@@ -43,7 +51,22 @@ class ExhaleProject(object):
         self.root = None
 
     def run_doxygen(self):
-        pass
+        # All necessary information ready, go to where the Doxyfile is, run Doxygen
+        # and then return back (where applicable) so sphinx can continue
+        start = utils.get_time()
+        status = None
+
+        with utils.cd(self.app.confdir):
+            self.app.info(utils.info("Exhale: executing doxygen."))
+            status = deploy.generateDoxygenXML()
+
+        if status:
+            raise ExtensionError(status)
+
+        end = utils.get_time()
+        self.app.info(utils.progress(
+            "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
+        ))
 
     def parse(self):
         pass
@@ -94,6 +117,10 @@ def environment_ready(app):
         }
         exhale_projects = app.config.exhale_projects
 
+    # First, setup the extension and verify all of the configurations.
+    configs.apply_sphinx_configurations(app)
+
+    ####### Next, perform any cleanup
     # generate each project
     for project_name in exhale_projects:
         config = configs.Config(app, project_name)
@@ -102,9 +129,6 @@ def environment_ready(app):
         project.parse()
         project.explode()
 
-    # First, setup the extension and verify all of the configurations.
-    configs.apply_sphinx_configurations(app)
-    ####### Next, perform any cleanup
 
     # Generate the full API!
     try:
