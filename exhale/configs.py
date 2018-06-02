@@ -59,8 +59,6 @@ except ImportError:
     # Python 3 StringIO
     from io import StringIO
 
-from . import utils
-
 # __all__ = []
 
 __name__ = "configs"
@@ -165,6 +163,8 @@ class Config(object):
             raise ValueError("`app` parameter must be an instance of 'sphinx.application.Sphinx'.")
         if not isinstance(project_name, six.string_types):
             raise ValueError("`project_name` parameter must be a string.")
+
+        from . import utils#flake8 fail
         self.app = app
         self.project_name = project_name
         self.project_name_safe = utils.label_safe_name(project_name)
@@ -271,6 +271,7 @@ class Config(object):
         self._assert_is_list_of_strings(
             final_configs["kindsWithContentsDirectives"], "kindsWithContentsDirectives"
         )
+        from . import utils#flake8 fail
         for kind in final_configs["kindsWithContentsDirectives"]:
             if kind not in utils.AVAILABLE_KINDS:
                 raise ConfigError(

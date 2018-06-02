@@ -8,18 +8,18 @@
 
 from __future__ import unicode_literals
 
-from . import configs
-from . import deploy
-from . import graph
-from . import parse
-from . import utils
+# from . import configs
+# from . import deploy
+# from . import graph
+# from . import parse
+# from . import utils
 
 import os
 import six
 from sphinx.errors import ConfigError, ExtensionError
 
 __version__ = "0.1.8"
-__all__ = ["configs", "deploy", "graph", "parse", "utils"]
+# __all__ = ["configs", "deploy", "graph", "parse", "utils"]
 
 
 def _assert_is_dictionary_with_string_keys(d, title):
@@ -51,6 +51,7 @@ class ExhaleProject(object):
         self.root = None
 
     def run_doxygen(self):
+        from . import deploy
         # All necessary information ready, go to where the Doxyfile is, run Doxygen
         # and then return back (where applicable) so sphinx can continue
         start = utils.get_time()
