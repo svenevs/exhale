@@ -99,7 +99,7 @@ class TestProjectDirective(Directive):
 
             See also: :data:`ExhaleTestCase.test_project <testing.base.ExhaleTestCase.test_project>`.
         '''.format(
-            project=self.content[0],
+            project=self.content[0].replace(" ", r"\ "),  # rst links need spaces escaped
             baseurl=get_projects_baseurl()
         ))
         project_node = testproject("\n".join(self.content))

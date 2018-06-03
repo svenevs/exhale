@@ -10,6 +10,12 @@ configs
 .. automodule:: testing.tests.configs
    :members:
 
+Spaces
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.tests.with_spaces
+   :members:
+
 Project Tests
 ========================================================================================
 
