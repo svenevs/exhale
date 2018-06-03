@@ -6,72 +6,48 @@
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 """
-Tests for the ``c_maths`` project.
+Tests for the ``with spaces`` project.
+
+This test is mostly the same as the ``c_maths`` projects, but it contains spaces in
+both the directory structure and file names to make sure everything is still generated
+and working as expected.
 """
 
 from __future__ import unicode_literals
-import os
 
 from testing.base import ExhaleTestCase
-from testing.decorators import confoverrides, no_run
+from testing.decorators import no_cleanup
 from testing.hierarchies import                                       \
     class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, \
     directory, file, file_hierarchy, function, signature
 
 
-class CMathsTests(ExhaleTestCase):
+class WithSpacesTests(ExhaleTestCase):
     """
-    Primary test class for project ``c_maths``.
+    Primary test class for project ``with spaces``.
     """
 
-    test_project = "c_maths"
-    """.. testproject:: c_maths"""
+    test_project = "with spaces"
+    """.. testproject:: with spaces"""
 
+    @no_cleanup
     def test_app(self):
         """Simply checks :func:`testing.base.ExhaleTestCase.checkRequiredConfigs`."""
         self.checkRequiredConfigs()
-
-    @confoverrides(exhale_args={"containmentFolder": "./alt_api"})
-    def test_alt_out(self):
-        """
-        Test ``"./alt_api"`` rather than default ``"./api"`` as ``"containmentFolder"``.
-        """
-        self.checkRequiredConfigs()
+        self.app.build()
 
     def test_hierarchies(self):
         """Verify the class and file hierarchies."""
         # verify the file hierarchy and file declaration relationships
         file_hierarchy_dict = {
             directory("include"): {
-                file("main.h"): {
-                    function("int", "add"): signature("int a", "int b"),
-                    function("int", "sub"): signature("int a", "int b")
+                directory("with spaces"): {
+                    file("with spaces.h"): {
+                        function("int", "add"): signature("int a", "int b"),
+                        function("int", "sub"): signature("int a", "int b")
+                    }
                 }
             }
         }
         compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict))
         compare_class_hierarchy(self, class_hierarchy({}))
-
-
-@no_run
-class CMathsTestsNoRun(ExhaleTestCase):
-    """
-    Secondary test case for project ``c_maths``.
-
-    A :func:`testing.decorators.no_run` decorated test class.
-    """
-
-    test_project = "c_maths"
-    """.. testproject:: c_maths"""
-
-    def test_classwide_no_run(self):
-        """
-        Verify that the default ``"./api"`` folder is indeed **not** generated.
-        """
-        exhale_args = self.app.config.exhale_args
-        containmentFolder = exhale_args["containmentFolder"]
-        self.assertEqual(containmentFolder, "./api")
-
-        # check that nothing has been generated
-        containmentFolder = self.getAbsContainmentFolder()
-        self.assertFalse(os.path.exists(containmentFolder))
