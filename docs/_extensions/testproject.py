@@ -1,4 +1,14 @@
-
+########################################################################################
+# License: CC0 1.0                                                                     #
+#                                                                                      #
+# See full license text here: https://creativecommons.org/publicdomain/zero/1.0/       #
+########################################################################################
+# In the event that this code is useful to you, please feel free to use it without     #
+# attribution.  The CC0 1.0 license is chosen in the event that you need a license.    #
+#                                                                                      #
+# Note that this code is basically just a bad modification of the Sphinx tutorial:     #
+# http://www.sphinx-doc.org/en/master/extdev/tutorial.html                             #
+########################################################################################
 import re
 import textwrap
 
@@ -20,7 +30,9 @@ class testproject(nodes.Admonition, nodes.Element):
     pass
 
 
+# set by get_projects_baseurl once, then re-used for remaining calls in TestProjectDirective:run
 projects_baseurl = None
+
 
 # get a github specific URL to where the test projects live using the current commit
 def get_projects_baseurl():

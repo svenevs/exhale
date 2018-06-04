@@ -231,11 +231,27 @@ htmlhelp_basename = 'ExhaleDoc'
 
 
 def setup(app):
-    # testproject.py defines these classes (they cannot be defined in conf.py)
-    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+    import os
+    import sys
+    # make sure you can import by modifying sys.path
+    extensions_dir = os.path.join(
+       os.path.abspath(os.path.dirname(__file__)),
+       '_extensions'
+    )
+    sys.path.insert(0, extensions_dir)
+    ####################################################################################
+    # Add directive: .. testproject::                                                  #
+    ####################################################################################
     from testproject import testproject, visit_testproject_node, depart_testproject_node, TestProjectDirective
     app.add_node(testproject, html=(visit_testproject_node, depart_testproject_node))
     app.add_directive('testproject', TestProjectDirective)
+    ####################################################################################
+    # Add directives: .. member:: and .. param::                                       #
+    ####################################################################################
+    # import and add the new directives
+    from attr_param import AttrDirective, ParamDirective
+    app.add_directive('attr', AttrDirective)
+    app.add_directive('param', ParamDirective)
     ####################################################################################
     # Multiline string documentation                                                   #
     ####################################################################################

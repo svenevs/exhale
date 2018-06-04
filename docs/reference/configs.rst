@@ -7,6 +7,9 @@ Exhale Configs Module
 
 .. automodule:: exhale.configs
 
+.. autoclass:: exhale.configs.Config
+   :members:
+
 .. _required_configs:
 
 Required Configuration Arguments

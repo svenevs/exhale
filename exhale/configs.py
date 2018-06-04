@@ -113,6 +113,35 @@ def make_default_configs():
 
 
 class Config(object):
+    """
+    The configurations of a specific project.
+
+    **Parameters**
+
+    .. param:: app
+       :type:  sphinx:sphinx.application.Sphinx
+
+           The Sphinx application.
+
+    .. param:: project_name
+       :type:  python:str
+
+       The name of the project.  Must be a key **already** in ``exhale_projects``
+       (specified in ``conf.py``, or set automatically when ``exhale_args`` is provided
+       for a single project -- see ``exhale/__init__.py:environment_ready``).
+
+    **Attributes**
+
+    .. attr:: containmentFolder
+       :type: python:str
+
+       This is some stuff about the containment folder.
+
+    .. attr:: rootFileName
+       :type: python:list
+
+       This is what you do about the root file name.
+    """
     REQUIRED_KV = [
         ("containmentFolder",    six.string_types,  True),
         ("rootFileName",         six.string_types, False),
