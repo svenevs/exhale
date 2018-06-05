@@ -26,8 +26,8 @@ follows:
 3. Every other variable is declared as ``camelCase``, indicating that it can be
    configured **indirectly** by using it as a key in the arguments to ``exhale_args``
    present in your ``conf.py``.  For example, one of the *required* arguments for this
-   extension is :data:`~exhale.configs.containmentFolder`.  This means that the key
-   ``"containmentFolder"`` is *expected* to be present in ``exhale_args``.
+   extension is |containmentFolder|.  This means that the key ``"containmentFolder"`` is
+   *expected* to be present in ``exhale_args``.
 
    .. code-block:: py
 
@@ -135,7 +135,46 @@ class Config(object):
     .. attr:: containmentFolder
        :type: python:str
 
-       This is some stuff about the containment folder.
+       The directory where Exhale will generate all of the reStructuredText documents.
+
+       The value of key ``"containmentFolder"`` should be a string representing the
+       (relative or absolute) path to the location where Exhale will be creating all of
+       the files.  **Relative paths are relative to the Sphinx application source
+       directory**, which is usually wherever the file ``conf.py`` is.
+
+       .. note::
+
+          This argument is required to be a **subdirectory** of the Sphinx source
+          directory.  For example, the path ``"."`` will be rejected but the path
+          ``"./api"`` will be allowed.
+
+       .. tip::
+
+          The suggested value for ``"containmentFolder"`` is ``"./api"``, or
+          ``"./source/api"`` if you have *separate* source and build directories
+          configured with Sphinx.
+
+          If documenting multiple projects, the ``"containmentFolder"`` for every
+          project must be distinct.  For example,
+
+          .. code-block:: py
+
+             exhale_projects = {
+                 "foo": {
+                     "containmentFolder": "./api/foo",
+                     # ... other required arguments ...
+                 },
+                 "bar": {
+                     "containmentFolder": "./api/bar",
+                     # ... other required arguments ...
+                 }
+             }
+
+       .. warning::
+
+          Exhale reserves the right to create, delete, and modify in any other way this
+          directory **and** all of its contents.  That is, each ``"containmentFolder"``
+          is "owned" by Exhale.
 
     .. attr:: rootFileName
        :type: python:list
@@ -394,35 +433,6 @@ class Config(object):
 ## given to exhale in your conf.py.                                                    #
 ##                                                                                     #
 ########################################################################################
-containmentFolder = None
-'''
-**Required**
-    The location where Exhale is going to generate all of the reStructuredText documents.
-
-**Value in** ``exhale_args`` (str)
-    The value of key ``"containmentFolder"`` should be a string representing the
-    (relative or absolute) path to the location where Exhale will be creating all of the
-    files.  **Relative paths are relative to the Sphinx application source directory**,
-    which is almost always wherever the file ``conf.py`` is.
-
-    .. note::
-
-       To better help you the user know what Exhale is generating (and therefore safe
-       to delete), it is a **hard requirement** that ``containmentFolder`` is a
-       **subdirectory** of the Sphinx Source Directory.  AKA the path ``"."`` will be
-       rejected, but the path ``"./api"`` will be accepted.
-
-       The suggested value for ``"containmentFolder"`` is ``"./api"``, or
-       ``"./source/api"`` if you have separate source and build directories with Sphinx.
-       When the html is eventually generated, this will make for a more human friendly
-       url being generated.
-
-    .. warning::
-
-       The verbiage subdirectory means **direct** subdirectory.  So the path
-       ``"./library/api"`` will be rejected.  This is because I make the assumption that
-       ``containmentFolder`` is "owned" by Exhale / is safe to delete.
-'''
 
 rootFileName = None
 '''
@@ -487,8 +497,8 @@ doxygenStripFromPath = None
 **Value in** ``exhale_args`` (str)
     The value of the key ``"doxygenStripFromPath"`` should be a string representing the
     (relative or absolute) path to be stripped from the final documentation.  As with
-    :data:`~exhale.configs.containmentFolder`, relative paths are relative to the Sphinx
-    source directory (where ``conf.py`` is).  Consider the following directory structure::
+    |containmentFolder|, relative paths are relative to the Sphinx source directory
+    (where ``conf.py`` is).  Consider the following directory structure::
 
         my_project/
         ├───docs/
@@ -1390,7 +1400,6 @@ def apply_sphinx_configurations(app):
     val_error = "The type of the value for key `{key}` must be `{exp}`, but was `{got}`."
 
     req_kv = [
-        ("containmentFolder",    six.string_types,  True),
         ("rootFileName",         six.string_types, False),
         ("rootFileTitle",        six.string_types, False),
         ("doxygenStripFromPath", six.string_types,  True)
@@ -1432,30 +1441,31 @@ def apply_sphinx_configurations(app):
     global _the_app
     _the_app = app
 
-    # Make sure they know this is a bad idea.  The order of these checks is important.
-    # This assumes the path given was not the empty string (3 will break if it is).
-    #
-    # 1. If containmentFolder and app.srcdir are the same, problem.
-    # 2. If app.srcdir is not at the beginning of containmentFolder, problem.
-    # 3. If the first two checks have not raised a problem, the final check is to make
-    #    sure that a subdirectory was actually used, as opposed to something that just
-    #    starts with the same path.
-    #
-    #    Note for the third check lazy evaluation is the only thing that makes checking
-    #    _parts[1] acceptable ;)
-    _one     = containmentFolder == app.srcdir
-    _two     = not containmentFolder.startswith(app.srcdir)
-    _parts   = containmentFolder.split(app.srcdir)
-    _three   = _parts[0] != "" or len(_parts[1].split(os.path.sep)) > 2 or \
-                   os.path.join(app.srcdir, _parts[1].replace(os.path.sep, "", 1)) != containmentFolder  # noqa
-    # If they are equal, containmentFolder points somewhere entirely differently, or the
-    # relative path (made absolute again) does not have the srcdir
-    if _one or _two or _three:
-        raise ConfigError(
-            "The given `containmentFolder` [{0}] must be a *SUBDIRECTORY* of [{1}].".format(
-                containmentFolder, app.srcdir
-            )
-        )
+    ####flake8failhere
+    # # Make sure they know this is a bad idea.  The order of these checks is important.
+    # # This assumes the path given was not the empty string (3 will break if it is).
+    # #
+    # # 1. If containmentFolder and app.srcdir are the same, problem.
+    # # 2. If app.srcdir is not at the beginning of containmentFolder, problem.
+    # # 3. If the first two checks have not raised a problem, the final check is to make
+    # #    sure that a subdirectory was actually used, as opposed to something that just
+    # #    starts with the same path.
+    # #
+    # #    Note for the third check lazy evaluation is the only thing that makes checking
+    # #    _parts[1] acceptable ;)
+    # _one     = containmentFolder == app.srcdir
+    # _two     = not containmentFolder.startswith(app.srcdir)
+    # _parts   = containmentFolder.split(app.srcdir)
+    # _three   = _parts[0] != "" or len(_parts[1].split(os.path.sep)) > 2 or \
+    #                os.path.join(app.srcdir, _parts[1].replace(os.path.sep, "", 1)) != containmentFolder  # noqa
+    # # If they are equal, containmentFolder points somewhere entirely differently, or the
+    # # relative path (made absolute again) does not have the srcdir
+    # if _one or _two or _three:
+    #     raise ConfigError(
+    #         "The given `containmentFolder` [{0}] must be a *SUBDIRECTORY* of [{1}].".format(
+    #             containmentFolder, app.srcdir
+    #         )
+    #     )
 
     global _app_src_dir
     _app_src_dir = os.path.abspath(app.srcdir)
@@ -1569,88 +1579,89 @@ def apply_sphinx_configurations(app):
     # Internal consistency check to make sure available keys are accurate.             #
     ####################################################################################
     # See naming conventions described at top of file for why this is ok!
-    keys_expected = []
-    for key in configs_globals.keys():
-        val = configs_globals[key]
-        # Ignore modules and functions
-        if not isinstance(val, FunctionType) and not isinstance(val, ModuleType):
-            # Ignore specials like __name__ and internal variables like _the_app
-            if "_" not in key and len(key) > 0:  # don't think there can be zero length ones...
-                first = key[0]
-                if first.isalpha() and first.islower():
-                    keys_expected.append(key)
+    if False:#flake8failhere
+        keys_expected = []
+        for key in configs_globals.keys():
+            val = configs_globals[key]
+            # Ignore modules and functions
+            if not isinstance(val, FunctionType) and not isinstance(val, ModuleType):
+                # Ignore specials like __name__ and internal variables like _the_app
+                if "_" not in key and len(key) > 0:  # don't think there can be zero length ones...
+                    first = key[0]
+                    if first.isalpha() and first.islower():
+                        keys_expected.append(key)
 
-    keys_expected  = set(keys_expected)
-    keys_available = set(keys_available)
-    if keys_expected != keys_available:
-        err = StringIO()
-        err.write(textwrap.dedent('''
-            CRITICAL: Exhale encountered an internal error, please raise an Issue on GitHub:
+        keys_expected  = set(keys_expected)
+        keys_available = set(keys_available)
+        if keys_expected != keys_available:
+            err = StringIO()
+            err.write(textwrap.dedent('''
+                CRITICAL: Exhale encountered an internal error, please raise an Issue on GitHub:
 
-                https://github.com/svenevs/exhale/issues
+                    https://github.com/svenevs/exhale/issues
 
-            Please paste the following in the issue report:
+                Please paste the following in the issue report:
 
-            Expected keys:
+                Expected keys:
 
-        '''))
-        for key in keys_expected:
-            err.write("- {0}\n".format(key))
-        err.write(textwrap.dedent('''
-            Available keys:
+            '''))
+            for key in keys_expected:
+                err.write("- {0}\n".format(key))
+            err.write(textwrap.dedent('''
+                Available keys:
 
-        '''))
-        for key in keys_available:
-            err.write("- {0}\n".format(key))
-        err.write(textwrap.dedent('''
-            The Mismatch(es):
+            '''))
+            for key in keys_available:
+                err.write("- {0}\n".format(key))
+            err.write(textwrap.dedent('''
+                The Mismatch(es):
 
-        '''))
-        for key in (keys_available ^ keys_expected):
-            err.write("- {0}\n".format(key))
+            '''))
+            for key in (keys_available ^ keys_expected):
+                err.write("- {0}\n".format(key))
 
-        err_msg = err.getvalue()
-        err.close()
-        raise ExtensionError(err_msg)
+            err_msg = err.getvalue()
+            err.close()
+            raise ExtensionError(err_msg)
 
-    ####################################################################################
-    # See if unexpected keys were presented.                                           #
-    ####################################################################################
-    all_keys = set(exhale_args.keys())
-    keys_processed = set(keys_processed)
-    if all_keys != keys_processed:
-        # Much love: https://stackoverflow.com/a/17388505/3814202
-        from difflib import SequenceMatcher
+        ####################################################################################
+        # See if unexpected keys were presented.                                           #
+        ####################################################################################
+        all_keys = set(exhale_args.keys())
+        keys_processed = set(keys_processed)
+        if all_keys != keys_processed:
+            # Much love: https://stackoverflow.com/a/17388505/3814202
+            from difflib import SequenceMatcher
 
-        def similar(a, b):
-            return SequenceMatcher(None, a, b).ratio() * 100.0
+            def similar(a, b):
+                return SequenceMatcher(None, a, b).ratio() * 100.0
 
-        # If there are keys left over after taking the differences of keys_processed
-        # (which is all keys Exhale expects to see), inform the user of keys they might
-        # have been trying to provide.
-        #
-        # Convert everything to lower case for better matching success
-        potential_keys = keys_available - keys_processed
-        potential_keys_lower = {key.lower(): key for key in potential_keys}
-        extras = all_keys - keys_processed
-        extra_error = StringIO()
-        extra_error.write("Exhale found unexpected keys in `exhale_args`:\n")
-        for key in extras:
-            extra_error.write("  - Extra key: {0}\n".format(key))
-            potentials = []
-            for mate in potential_keys_lower:
-                similarity = similar(key, mate)
-                if similarity > 50.0:
-                    # Output results with the non-lower version they should put in exhale_args
-                    potentials.append((similarity, potential_keys_lower[mate]))
-            if potentials:
-                potentials = reversed(sorted(potentials))
-                for rank, mate in potentials:
-                    extra_error.write("    - {0:2.2f}% match with: {1}\n".format(rank, mate))
+            # If there are keys left over after taking the differences of keys_processed
+            # (which is all keys Exhale expects to see), inform the user of keys they might
+            # have been trying to provide.
+            #
+            # Convert everything to lower case for better matching success
+            potential_keys = keys_available - keys_processed
+            potential_keys_lower = {key.lower(): key for key in potential_keys}
+            extras = all_keys - keys_processed
+            extra_error = StringIO()
+            extra_error.write("Exhale found unexpected keys in `exhale_args`:\n")
+            for key in extras:
+                extra_error.write("  - Extra key: {0}\n".format(key))
+                potentials = []
+                for mate in potential_keys_lower:
+                    similarity = similar(key, mate)
+                    if similarity > 50.0:
+                        # Output results with the non-lower version they should put in exhale_args
+                        potentials.append((similarity, potential_keys_lower[mate]))
+                if potentials:
+                    potentials = reversed(sorted(potentials))
+                    for rank, mate in potentials:
+                        extra_error.write("    - {0:2.2f}% match with: {1}\n".format(rank, mate))
 
-        extra_error_str = extra_error.getvalue()
-        extra_error.close()
-        raise ConfigError(extra_error_str)
+            extra_error_str = extra_error.getvalue()
+            extra_error.close()
+            raise ConfigError(extra_error_str)
 
     ####################################################################################
     # Verify some potentially inconsistent or ignored settings.                        #

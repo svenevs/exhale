@@ -897,14 +897,15 @@ class ExhaleRoot(object):
         ``variables`` (list)
             The full list of ExhaleNodes of kind ``variable``.
     '''
-    def __init__(self):
+    def __init__(self, project):
+        self.project = project
+        self.config = project.config
         # file generation location and root index data
-        self.root_directory        = configs.containmentFolder
         self.root_file_name        = configs.rootFileName
-        self.full_root_file_path   = os.path.join(self.root_directory, self.root_file_name)
-        self.class_hierarchy_file       = os.path.join(self.root_directory, "class_view_hierarchy.rst")
-        self.file_hierarchy_file   = os.path.join(self.root_directory, "file_view_hierarchy.rst")
-        self.unabridged_api_file   = os.path.join(self.root_directory, "unabridged_api.rst")
+        self.full_root_file_path   = os.path.join(self.config.containmentFolder, self.root_file_name)
+        self.class_hierarchy_file  = os.path.join(self.config.containmentFolder, "class_view_hierarchy.rst")
+        self.file_hierarchy_file   = os.path.join(self.config.containmentFolder, "file_view_hierarchy.rst")
+        self.unabridged_api_file   = os.path.join(self.config.containmentFolder, "unabridged_api.rst")
 
         # whether or not we should generate the raw html tree view
         self.use_tree_view = configs.createTreeView
@@ -1850,19 +1851,15 @@ class ExhaleRoot(object):
         self.generateAPIRootBody()
 
     def generateAPIRootHeader(self):
-        '''
-        This method creates the root library api file that will include all of the
-        different hierarchy views and full api listing.  If ``self.root_directory`` is
-        not a current directory, it is created first.  Afterward, the root API file is
-        created and its title is written, as well as the value of
-        ``configs.afterTitleDescription``.
-        '''
+        """
+        .. todo:: creates |containmentFolder| and library root document
+        """
         try:
-            if not os.path.isdir(self.root_directory):
-                os.mkdir(self.root_directory)
+            if not os.path.isdir(self.config.containmentFolder):
+                os.mkdir(self.config.containmentFolder)
         except:
             utils.fancyError(
-                "Cannot create the directory: {0}".format(self.root_directory)
+                "Cannot create the directory: {0}".format(self.config.containmentFolder)
             )
         try:
             with codecs.open(self.full_root_file_path, "w", "utf-8") as generated_index:
@@ -1947,7 +1944,7 @@ class ExhaleRoot(object):
         as well as the ``program_link_name`` fields.
 
         Since we are operating inside of a ``containmentFolder``, this method **will**
-        include ``self.root_directory`` in this path so that you can just use::
+        include ``self.config.containmentFolder`` in its path so that you can just use::
 
             with codecs.open(node.file_name, "w", "utf-8") as gen_file:
                 # ... write the file ...
@@ -2020,7 +2017,7 @@ class ExhaleRoot(object):
 
         # create the file and link names
         node.file_name = os.path.join(
-            self.root_directory,
+            self.config.containmentFolder,
             "{kind}_{name}.rst".format(kind=node.kind, name=html_safe_name)
         )
         node.link_name = "{kind}_{name}".format(
@@ -2032,7 +2029,7 @@ class ExhaleRoot(object):
 
         if node.kind == "file":
             node.program_file = os.path.join(
-                self.root_directory,
+                self.config.containmentFolder,
                 "program_listing_file_{name}.rst".format(name=html_safe_name)
             )
             node.program_link_name = "program_listing_file_{name}".format(
@@ -2990,10 +2987,10 @@ class ExhaleRoot(object):
     def gerrymanderNodeFilenames(self):
         '''
         When creating nodes, the filename needs to be relative to ``conf.py``, so it
-        will include ``self.root_directory``.  However, when generating the API, the
-        file we are writing to is in the same directory as the generated node files so
-        we need to remove the directory path from a given ExhaleNode's ``file_name``
-        before we can ``include`` it or use it in a ``toctree``.
+        will include ``self.config.containmentFolder``.  However, when generating the
+        API, the file we are writing to is in the same directory as the generated node
+        files so we need to remove the directory path from a given ExhaleNode's
+        ``file_name`` before we can ``include`` it or use it in a ``toctree``.
         '''
         for node in self.all_nodes:
             node.file_name = os.path.basename(node.file_name)

@@ -132,8 +132,7 @@ __ https://github.com/svenevs/exhale/issues/2
    The consequence of fixing the link is that *locally* the "View Page Source" that
    would let you see the generated reStructuredText (e.g. to get the link name) is
    now gone.  You will have to open the file *manually* in a text editor.  Recall that
-   the generated files get placed in the folder specified by
-   :data:`~exhale.configs.containmentFolder`.
+   the generated files get placed in the folder specified by |containmentFolder|.
 
 .. _faq_metaprogramming_and_template_specialization:
 

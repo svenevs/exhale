@@ -70,10 +70,55 @@ class ExhaleProject(object):
         ))
 
     def parse(self):
-        pass
+        from . import utils
+        from .graph import ExhaleRoot
+        import sys
+        try:
+            self.root = ExhaleRoot(self)
+        except:
+            utils.fancyError("Unable to create an `ExhaleRoot` object:")
+
+        try:
+            sys.stdout.write("{0}\n".format(utils.info("Exhale: parsing Doxygen XML.")))
+            start = utils.get_time()
+
+            self.root.parse()
+
+            end = utils.get_time()
+            sys.stdout.write("{0}\n".format(
+                utils.progress("Exhale: finished parsing Doxygen XML in {0}.".format(
+                    utils.time_string(start, end)
+                ))
+            ))
+        except:
+            utils.fancyError("Exception caught while parsing:")
 
     def explode(self):
-        pass
+        import sys
+        try:
+            sys.stdout.write("{0}\n".format(
+                utils.info("Exhale: generating reStructuredText documents.")
+            ))
+            start = utils.get_time()
+
+            self.root.generateFullAPI()
+
+            end = utils.get_time()
+            sys.stdout.write("{0}\n".format(
+                utils.progress("Exhale: generated reStructuredText documents in {0}.".format(
+                    utils.time_string(start, end)
+                ))
+            ))
+        except:
+            utils.fancyError("Exception caught while generating:")
+
+        # << verboseBuild
+        #   toConsole only prints if verbose mode is enabled
+        self.root.toConsole()
+
+        # allow access to the result after-the-fact
+        from . import configs
+        configs._the_app.exhale_root = self.root
 
 def environment_ready(app):
     # Defer importing configs until sphinx is running.
@@ -129,13 +174,6 @@ def environment_ready(app):
         project.run_doxygen()
         project.parse()
         project.explode()
-
-
-    # Generate the full API!
-    try:
-        deploy.explode()
-    except:
-        utils.fancyError("Exhale: could not generate reStructuredText documents :/")
 
 
 def setup(app):

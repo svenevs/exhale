@@ -71,26 +71,7 @@ Breathe as your *default* project.  The two arguments that must be present in yo
 Required Arguments for Exhale
 ****************************************************************************************
 
-Users must provide the following values to ``exhale_args`` in their ``conf.py``.
-
-.. tip::
-
-   Recall the variable name conventions from above.  If you want to specify the value
-   for ``containmentFolder`` so that :data:`~exhale.configs.containmentFolder` is
-   populated, the name of the *key* is the string ``"containmentFolder"``.  Each entry
-   below details what the ``type`` of the *value* of the key should be.  So in this case
-   you might have
-
-   .. code-block:: py
-
-      exhale_args = {
-          "containmentFolder": "./api",
-          # other required entries here
-      }
-
 .. end_minimum_requirements_breathe_and_exhale
-
-.. autodata:: exhale.configs.containmentFolder
 
 .. autodata:: exhale.configs.rootFileName
 
