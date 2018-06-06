@@ -184,4 +184,8 @@ def setup(app):
 
     app.connect("builder-inited", environment_ready)
 
-    return {"version": __version__}
+    return {
+        "version": __version__,
+        "parallel_read_safe": True,
+        "parallel_write_safe": True
+    }
