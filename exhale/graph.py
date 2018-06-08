@@ -1659,7 +1659,7 @@ class ExhaleRoot(object):
 
         # hack to make things work right on RTD
         # TODO: do this at construction rather than as a post process!
-        if configs.doxygenStripFromPath is not None:
+        if self.config.doxygen.stripFromPath is not None:
             for node in itertools.chain(self.files, self.dirs):
                 if node.kind == "file":
                     manip = node.location
@@ -1667,7 +1667,7 @@ class ExhaleRoot(object):
                     manip = node.name
 
                 abs_strip_path = os.path.normpath(os.path.abspath(
-                    configs.doxygenStripFromPath
+                    self.config.doxygen.stripFromPath
                 ))
                 if manip.startswith(abs_strip_path):
                     manip = os.path.relpath(manip, abs_strip_path)

@@ -73,6 +73,11 @@ def _upgrade_doxygen(app):
     for from_key, to_key in mapping:
         _upgrade_flat_to_nested_dict(app, from_key, 'doxygen', to_key)
 
+def _upgrade_root_file(app):
+    mapping = (
+        ''
+    )
+
 def _auto_upgrade(app):
     _upgrade_doxygen(app)
 

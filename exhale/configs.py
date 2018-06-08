@@ -74,7 +74,6 @@ def make_default_configs():
         # "containmentFolder": None,
         # "rootFileName": None,
         # "rootFileTitle": None,
-        # "doxygenStripFromPath": None,
         # Build process logging, colors, and debugging
         "verboseBuild": False,
         "alwaysColorize": True,
@@ -98,7 +97,6 @@ def make_default_configs():
         # Page level customization
         "includeTemplateParamOrderList": False,
         "pageLevelConfigMeta": "",
-        "repoRedirectURL": "",
         # Contents directives
         "contentsDirectives": True,
         "contentsTitle": "Contents",
@@ -110,17 +108,13 @@ def make_default_configs():
         "exhaleExecutesDoxygen": True,
         "doxygen": {
             "silent": False
-        },
-        "exhaleUseDoxyfile": False,
-        "exhaleDoxygenStdin": None,
-        "exhaleSilentDoxygen": False
+        }
     }
 
 
 
 # exhale_args = {
 #     "doxygen": {
-#         "stripFromPath": "..", #doxygenStripFromPath
 #         "doxyfile": "path", #exhaleUseDoxyfile
 #         "stdin": "INPUT = ../include", #exhaleDoxygenStdin
 #         "silent": False # exhale
@@ -128,7 +122,94 @@ def make_default_configs():
 # }
 
 class DoxygenConfig(object):
+    """
+    The configurations required to run Doxygen.
+
+    **Parameters**
+
+        .. todo:: documentmeplz
+
+    **Attributes**
+
+    .. attr:: stripFromPath
+       :type: python:str
+
+       The value to send to Doxygen via the ``STRIP_FROM_PATH`` configuration.  This
+       value is **required** to be specified for **all** projects, *regardless* of
+       whether or not Exhale is executing Doxygen.  It must be provided because Doxygen
+       seems to selectively ignore this (on Read the Docs, Travis, etc), so Exhale must
+       manually strip the path.
+
+       The value should be a string representing the (relative or absolute) path to be
+       stripped from the final documentation.  As with |containmentFolder|, relative
+       paths are relative to wherever ``conf.py`` is.  Consider the following directory
+       structure:
+
+       .. code-block:: none
+
+          my_project/
+          ├───docs/
+          │       conf.py
+          │
+          └───include/
+              └───my_project/
+                      common.hpp
+
+       In this scenario, if you supplied ``"stripFromPath": ".."``, then the file page
+       for ``common.hpp`` would list its declaration as
+       ``include/my_project/common.hpp``.  If you instead set it to be ``"../include"``,
+       then the file page for ``common.hpp`` would list its declaration as just
+       ``my_project/common.hpp``.
+
+       As a consequence, modification of this variable directly affects what shows up in
+       the file hierarchy.  In the previous example, the difference would really just be
+       whether or not all files are nestled underneath a global ``include`` folder or
+       not.
+
+       .. warning::
+
+          It is **your** responsibility to ensure that the value you provide for this
+          configuration is valid.  The file hierarchy will almost certainly break if
+          you give nonsense.
+
+       .. note::
+
+          Depending on your project layout, some links may be broken in the above
+          example if you use ``"../include"`` that work when you use ``".."``.  To get
+          your docs working, revert to ``".."``.  If you're feeling nice, raise an issue
+          on GitHub --- I haven't been able to track this one down yet :/
+
+          Particularly, this seems to happen with projects that have duplicate filenames
+          in different folders, e.g.:
+
+          .. code-block:: none
+
+             include/
+             └───my_project/
+                 │    common.hpp
+                 │
+                 └───viewing/
+                         common.hpp
+    """
+    ALLOWED_PUBLIC_KV = [
+        ('stripFromPath', six.string_types),
+        ('doxyfile', bool),
+        ('stdin', six.string_types),
+        ('silent', bool)
+    ]
+    """
+    List of tuples of string keys to allowed type value for ``'doxygen'`` dictionary.
+
+    Validated **externally** in :class:`exhale.configs.Config._validate_doxygen_configs`
+    in order to allow dictionary unpacking in ``__setattr__`` function.
+    """
+
     def __init__(self, outputDirectory=None, stripFromPath=None, doxyfile=None, stdin=None, silent=False, ignoreList=[]):
+        if not isinstance(outputDirectory, six.string_types):
+            raise ValueError('DoxygenConfig:outputDirectory parameter was not a string.')
+        if not os.path.isabs(outputDirectory):
+            raise ValueError('DoxygenConfig:outputDirectory parameter must be an absolute path.')
+
         self.outputDirectory = outputDirectory
         self.xmlOutputDirectory = os.path.join(outputDirectory, "xml")
         self.stripFromPath = stripFromPath
@@ -212,7 +293,6 @@ class Config(object):
         ("containmentFolder",    six.string_types,  True),
         ("rootFileName",         six.string_types, False),
         ("rootFileTitle",        six.string_types, False),
-        ("doxygenStripFromPath", six.string_types,  True)
     ]
 
     # REQUIRED_KV = [("doxygen", dict)]
@@ -241,7 +321,6 @@ class Config(object):
         # Page Level Customization
         ("includeTemplateParamOrderList",               bool),
         ("pageLevelConfigMeta",             six.string_types),
-        ("repoRedirectURL",                 six.string_types),
         ("contentsDirectives",                          bool),
         ("contentsTitle",                   six.string_types),
         ("contentsSpecifiers",                          list),
@@ -290,7 +369,7 @@ class Config(object):
 
         # Apply the project-specific configurations last and validate option configs
         configs = utils.deep_update(configs, project_configs)
-        self._validate_required_configs(configs)
+        self._validate_doxygen_configs(configs)
         self._validate_optional_configs(configs)
 
         # Absolute paths in Exhale are resolved against app.confdir (where `conf.py` is)
@@ -301,7 +380,12 @@ class Config(object):
 
         # Make sure paths are absolute for remainder of execution
         configs['containmentFolder'] = make_absolute(configs['containmentFolder'])
-        configs['doxygen']['stripFromPath'] = make_absolute(configs['doxygen']['stripFromPath'])
+        stripFromPath = make_absolute(configs['doxygen']['stripFromPath'])
+        if not os.path.exists(stripFromPath):
+            raise ConfigError(
+                '"stripFromPath" of [{0}] does not exist!'.format(stripFromPath)
+            )
+        configs['doxygen']['stripFromPath'] = stripFromPath
 
         # At last, set all of the attributes for this configuration object
         for key in configs:
@@ -327,13 +411,6 @@ class Config(object):
             key=key, expected=expected, got=got
         )
 
-    def _validate_required_configs(self, final_configs):
-        doxygen = final_configs.get('doxygen', None)
-        if not doxygen:
-            raise ValueError('doxygen key not provided, sub-key "stripFromPath" is required.')
-
-
-
     def _validate_optional_configs(self, final_configs):
         for key, expected_type in Config.OPTIONAL_KV:
             # Override the default settings if the key was provided
@@ -345,7 +422,6 @@ class Config(object):
                 self.keys_processed.append(key)
 
         self._validate_contents_directives(final_configs)
-        self._validate_doxygen_configs(final_configs)
 
     def _validate_contents_directives(self, final_configs):
         # verify contentsSpecifiers can be used as expected
@@ -369,31 +445,37 @@ class Config(object):
         self.keys_processed.append("kindsWithContentsDirectives")
 
     def _validate_doxygen_configs(self, final_configs):
-        exhaleExecutesDoxygen = final_configs["exhaleExecutesDoxygen"]
-        exhaleUseDoxyfile = final_configs["exhaleUseDoxyfile"]
-        exhaleDoxygenStdin = final_configs["exhaleDoxygenStdin"]
-        if exhaleExecutesDoxygen:
-            # Cannot use both, only one or the other
-            if exhaleUseDoxyfile and (exhaleDoxygenStdin is not None):
+        doxygen = final_configs.get('doxygen', None)
+
+        # TODO: let is_dictionary_with_string_keys have message templates supplied?
+        if not doxygen:
+            raise ConfigError('doxygen key not provided, sub-key "stripFromPath" is required.')
+        verify.is_dictionary_with_string_keys(doxygen, 'doxygen')
+
+        # Make sure the values of the specified keys are appropriate
+        for key, value_type in DoxygenConfig.ALLOWED_PUBLIC_KV:
+            if key in doxygen:
+                value = doxygen[key]
+                if not isinstance(value, value_type):
+                    raise ConfigError(self._value_error(key, value_type, type(value)))
+
+        if 'stripFromPath' not in doxygen:
+            raise ConfigError('"doxygen" sub-key "stripFromPath" is required.')
+
+        if final_configs['exhaleExecutesDoxygen']:
+            stdin = doxygen.get('stdin', None)
+            doxyfile = doxygen.get('doxyfile', None)
+            if not stdin and not doxyfile:
                 raise ConfigError(
-                    "You must choose one of `exhaleUseDoxyfile` or `exhaleDoxygenStdin`, not both."
+                    '"exhaleExecutesDoxygen" was True, but neither "stdin" nor '
+                    '"doxyfile" keys in the "doxygen" dictionary were provided.  '
+                    'Exhale must know how to execute Doxygen, and encourages the stdin '
+                    'approach (e.g. "stdin": "INPUT = ../include").'
                 )
 
-            # The Doxyfile *must* be at the same level as conf.py
-            # This is done so that when separate source / build directories are being
-            # used, we can guarantee where the Doxyfile is.
-            if exhaleUseDoxyfile:
-                doxyfile_path = os.path.abspath(os.path.join(
-                    self.app.confdir, "Doxyfile"
-                ))
-                if not os.path.exists(doxyfile_path):
-                    raise ConfigError(
-                        "The file [{0}] does not exist".format(doxyfile_path)
-                    )
-
-        for key in ["exhaleExecutesDoxygen", "exhaleUseDoxyfile", "exhaleDoxygenStdin"]:
-            self.keys_processed.append(key)
-
+            if doxyfile:
+                # TODO: resolve path against self.app.confdir
+                raise NotImplementedError('This will change to paths rather than bool.')
 
 
 
@@ -504,62 +586,6 @@ rootFileTitle = None
     navigation menus.
 
     An example value could be ``"Library API"``.
-'''
-
-doxygenStripFromPath = None
-'''
-**Required**
-    When building on Read the Docs, there seem to be issues regarding the Doxygen
-    variable ``STRIP_FROM_PATH`` when built remotely.  That is, it isn't stripped at
-    all.  This value enables Exhale to manually strip the path.
-
-**Value in** ``exhale_args`` (str)
-    The value of the key ``"doxygenStripFromPath"`` should be a string representing the
-    (relative or absolute) path to be stripped from the final documentation.  As with
-    |containmentFolder|, relative paths are relative to the Sphinx source directory
-    (where ``conf.py`` is).  Consider the following directory structure::
-
-        my_project/
-        ├───docs/
-        │       conf.py
-        │
-        └───include/
-            └───my_project/
-                    common.hpp
-
-    In this scenario, if you supplied ``"doxygenStripFromPath" = ".."``, then the file
-    page for ``common.hpp`` would list its declaration as
-    ``include/my_project/common.hpp``.  If you instead set it to be ``"../include"``,
-    then the file page for ``common.hpp`` would list its declaration as just
-    ``my_project/common.hpp``.
-
-    As a consequence, modification of this variable directly affects what shows up in
-    the file view hierarchy.  In the previous example, the difference would really just
-    be whether or not all files are nestled underneath a global ``include`` folder or
-    not.
-
-    .. warning::
-
-       It is **your** responsibility to ensure that the value you provide for this
-       configuration is valid.  The file view hierarchy will almost certainly break if
-       you give nonsense.
-
-    .. note::
-
-       Depending on your project layout, some links may be broken in the above example
-       if you use ``"../include"`` that work when you use ``".."``.  To get your docs
-       working, revert to ``".."``.  If you're feeling nice, raise an issue on GitHub
-       and let me know --- I haven't been able to track this one down yet :/
-
-       Particularly, this seems to happen with projects that have duplicate filenames
-       in different folders, e.g.::
-
-           include/
-           └───my_project/
-               │    common.hpp
-               │
-               └───viewing/
-                       common.hpp
 '''
 
 ########################################################################################
@@ -1025,36 +1051,6 @@ pageLevelConfigMeta = None
     for more information.
 '''
 
-repoRedirectURL = None
-'''
-.. todo::
-
-   **This feature is NOT implemented yet**!  Hopefully soon.  It definitely gets under
-   my skin.  It's mostly documented just to show up in the ``todolist`` for me ;)
-
-**Optional**
-    When using the Sphinx RTD theme, there is a button placed in the top-right saying
-    something like "Edit this on GitHub".  Since the documents are all being generated
-    dynamically (and not supposed to be tracked by ``git``), the links all go nowhere.
-    Set this so Exhale can try and fix this.
-
-**Value in** ``exhale_args`` (str)
-    The url of the repository your documentation is being generated from.
-
-    .. warning::
-
-       Seriously this isn't implemented.  I may not even need this from you.  The harder
-       part is figuring out how to map a given nodes "``def_in_file``" to the correct
-       URL.  I should be able to get the URL from ``git remote`` and construct the
-       URL from that and ``git branch``.  Probably just some path hacking with
-       ``git rev-parse --show-toplevel`` and comparing that to
-       :data:`~exhale.configs.doxygenStripFromPath`?
-
-       Please feel free to `add your input here`__.
-
-       __ https://github.com/svenevs/exhale/issues/2
-'''
-
 # Using Contents Directives ############################################################
 contentsDirectives = True
 '''
@@ -1207,7 +1203,7 @@ exhaleUseDoxyfile = False
           section.
 
        2. ``STRIP_FROM_PATH`` is configured to be identical to what is specified with
-          :data:`~exhale.configs.doxygenStripFromPath`.
+          |stripFromPath|.
 
        I have no idea what happens when these conflict, but it likely will never result
        in valid documentation.
@@ -1421,7 +1417,6 @@ def apply_sphinx_configurations(app):
     req_kv = [
         ("rootFileName",         six.string_types, False),
         ("rootFileTitle",        six.string_types, False),
-        # ("doxygenStripFromPath", six.string_types,  True)
     ]
     for key, expected_type, make_absolute in req_kv:
         # Used in error checking later
@@ -1502,12 +1497,6 @@ def apply_sphinx_configurations(app):
             "Exhale is reStructuredText only, but '.rst' was not found in `source_suffix` list of `conf.py`."
         )
 
-    # Make sure the doxygen strip path is an exclude-able path
-    # if not os.path.exists(doxygenStripFromPath):
-    #     raise ConfigError(
-    #         "The path given as `doxygenStripFromPath` ({0}) does not exist!".format(doxygenStripFromPath)
-    #     )
-
     ####################################################################################
     # Gather the optional input for exhale.                                            #
     ####################################################################################
@@ -1535,7 +1524,6 @@ def apply_sphinx_configurations(app):
         # Page Level Customization
         ("includeTemplateParamOrderList",               bool),
         ("pageLevelConfigMeta",             six.string_types),
-        ("repoRedirectURL",                 six.string_types),
         ("contentsDirectives",                          bool),
         ("contentsTitle",                   six.string_types),
         ("contentsSpecifiers",                          list),

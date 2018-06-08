@@ -229,22 +229,31 @@ html_short_title = 'Exhale'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'ExhaleDoc'
 
-rst_epilog = ""
-
 # convenience replacements for writing e.g. |containmentFolder| and linking to the
 # member of exhale.configs.Config.containmentFolder
 import itertools
 from exhale.configs import Config
-config_replacements_list = [
+
+configs_Config_repl_list = [
     'containmentFolder'
     # TODO: after migration, just use this
     # pack[0] for pack in itertools.chain(Config.REQUIRED_KV, Config.OPTIONAL_KV)
 ]
-configs_replacements = "\n".join(
+configs_Config_replacements = '\n'.join(
     '.. |{config}| replace:: :data:`~exhale.configs.Config.{config}`'.format(config=config)
-    for config in config_replacements_list
+    for config in configs_Config_repl_list
 )
-rst_epilog = "{0}\n{1}".format(rst_epilog, configs_replacements)
+configs_DoxygenConfig_repl_list = [
+    'stripFromPath'
+]
+configs_DoxygenConfig_replacements = '\n'.join(
+    '.. |{config}| replace:: :data:`~exhale.configs.DoxygenConfig.{config}`'.format(config=config)
+    for config in configs_DoxygenConfig_repl_list
+)
+rst_epilog = '\n'.join([
+    configs_Config_replacements,
+    configs_DoxygenConfig_replacements
+])
 
 
 def setup(app):

@@ -211,7 +211,7 @@ def generate_doxygen_xml(config):
         # There are two doxygen specs that we explicitly disallow
         #
         # 1. OUTPUT_DIRECTORY: this is *ALREADY* specified implicitly via breathe
-        # 2. STRIP_FROM_PATH: this is a *REQUIRED* config (`doxygenStripFromPath`)
+        # 2. STRIP_FROM_PATH: this is a *REQUIRED* config (`doxygen.stripFromPath`)
         #
         # There is one doxygen spec that is REQUIRED to be given:
         #
@@ -250,22 +250,10 @@ def generate_doxygen_xml(config):
 
         if not _valid_config(config.doxygen.stdin, "STRIP_FROM_PATH", False):
             return textwrap.dedent('''
-                `exhaleDoxygenStdin` may *NOT* specify `STRIP_FROM_PATH`.  Exhale does
+                `doxygen["stdin"]` may *NOT* specify `STRIP_FROM_PATH`.  Exhale does
                 this internally by using the value you provided to `exhale_args` in
-                your `conf.py` for the key `doxygenStripFromPath`.
-
-                Based on what you had in `conf.py`, Exhale will be using:
-
-                    {strip}
-
-                NOTE: the above is what you specified directly in `exhale_args`.  Exhale
-                      will be using an absolute path to send to Doxygen.  It is:
-
-                    {absolute}
-            '''.format(
-                strip=configs._the_app.config.exhale_args["doxygenStripFromPath"],
-                absolute=configs.doxygenStripFromPath
-            ))
+                your `conf.py` for the key `doxygen["stripFromPath"]`.
+            ''')
 
         if not _valid_config(config.doxygen.stdin, "INPUT", True):
             return textwrap.dedent('''

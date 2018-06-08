@@ -10,6 +10,9 @@ Exhale Configs Module
 .. autoclass:: exhale.configs.Config
    :members:
 
+.. autoclass:: exhale.configs.DoxygenConfig
+   :members:
+
 .. _required_configs:
 
 Required Configuration Arguments
@@ -76,8 +79,6 @@ Required Arguments for Exhale
 .. autodata:: exhale.configs.rootFileName
 
 .. autodata:: exhale.configs.rootFileTitle
-
-.. autodata:: exhale.configs.doxygenStripFromPath
 
 Optional Configuration Arguments
 ----------------------------------------------------------------------------------------
@@ -310,8 +311,7 @@ something like this, where special treatment is given to File pages specifically
 
            .. tip::
 
-              The value of :data:`~exhale.configs.doxygenStripFromPath` **directly**
-              affects what path is displayed here.
+              The value of |stripFromPath| **directly** affects what path is displayed here.
 
            .. danger::
 
@@ -394,8 +394,6 @@ something like this, where special treatment is given to File pages specifically
 .. autodata:: exhale.configs.includeTemplateParamOrderList
 
 .. autodata:: exhale.configs.pageLevelConfigMeta
-
-.. autodata:: exhale.configs.repoRedirectURL
 
 Using Contents Directives
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -630,7 +628,7 @@ get confused by.
            OUTPUT_DIRECTORY       = {out}
            # Tell doxygen to strip the path names (RTD builds produce long abs paths...)
            STRIP_FROM_PATH        = {strip}
-       '''.format(out=doxy_dir, strip=configs.doxygenStripFromPath))
+       '''.format(out=doxy_dir, strip=config.doxygen.stripFromPath))
 
        # The configurations you specified
        external_configs = textwrap.dedent(configs.exhaleDoxygenStdin)
