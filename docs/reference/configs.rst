@@ -665,15 +665,12 @@ get confused by.
 
 **Using a Doxyfile**
     If you have your own customized ``Doxyfile``, just make sure it is in the same
-    directory as ``conf.py``.  See the documentation for
-    :data:`~exhale.configs.exhaleUseDoxyfile` for items you need to make sure agree with
-    the configurations you have applied elsewhere to Breathe / Exhale.
+    directory as ``conf.py``.  See the documentation for |doxyfile| for items you need
+    to make sure agree with the configurations you have applied elsewhere to Breathe / Exhale.
 
 .. end_doxygen_execution_and_customization
 
 .. autodata:: exhale.configs.exhaleExecutesDoxygen
-
-.. autodata:: exhale.configs.exhaleUseDoxyfile
 
 .. autodata:: exhale.configs.exhaleDoxygenStdin
 

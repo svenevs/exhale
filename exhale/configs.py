@@ -115,7 +115,6 @@ def make_default_configs():
 
 # exhale_args = {
 #     "doxygen": {
-#         "doxyfile": "path", #exhaleUseDoxyfile
 #         "stdin": "INPUT = ../include", #exhaleDoxygenStdin
 #         "silent": False # exhale
 #     }
@@ -190,6 +189,11 @@ class DoxygenConfig(object):
                  │
                  └───viewing/
                          common.hpp
+
+        .. attr:: doxyfile
+           :type: bool
+
+           .. todo:: this is deprecated, it will soon be a string path rather than a bool
     """
     ALLOWED_PUBLIC_KV = [
         ('stripFromPath', six.string_types),
@@ -329,7 +333,6 @@ class Config(object):
         ("customSpecificationsMapping",                 dict),
         # Doxygen Execution and Customization
         ("exhaleExecutesDoxygen",                       bool),
-        # ("exhaleUseDoxyfile",                           bool),
         # ("exhaleDoxygenStdin",              six.string_types),
         # ("exhaleSilentDoxygen",                         bool)
     ]
@@ -1172,41 +1175,8 @@ exhaleExecutesDoxygen = False
     Have Exhale launch Doxygen when you execute ``make html``.
 
 **Value in** ``exhale_args`` (bool)
-    Set to ``True`` to enable launching Doxygen.  You must set either
-    :data:`~exhale.configs.exhaleUseDoxyfile` or :data:`~exhale.configs.exhaleDoxygenStdin`.
-'''
-
-exhaleUseDoxyfile = False
-'''
-**Optional**
-    If :data:`~exhale.configs.exhaleExecutesDoxygen` is ``True``, this tells Exhale to
-    use your own ``Doxyfile``.  The encouraged approach is to use
+    Set to ``True`` to enable launching Doxygen.  You must set either |doxyfile| or
     :data:`~exhale.configs.exhaleDoxygenStdin`.
-
-**Value in** ``exhale_args`` (bool)
-    Set to ``True`` to have Exhale use your ``Doxyfile``.
-
-    .. note::
-
-       The ``Doxyfile`` must be in the **same** directory as ``conf.py``.  Exhale will
-       change directories to here before launching Doxygen when you have separate source
-       and build directories for Sphinx configured.
-
-    .. warning::
-
-       No sanity checks on the ``Doxyfile`` are performed.  If you are using this option
-       you need to verify two parameters in particular:
-
-       1. ``OUTPUT_DIRECTORY`` is configured so that
-          ``breathe_projects[breathe_default_project]`` agrees.  See the
-          :ref:`Mapping of Project Names to Doxygen XML Output Paths <breathe_project>`
-          section.
-
-       2. ``STRIP_FROM_PATH`` is configured to be identical to what is specified with
-          |stripFromPath|.
-
-       I have no idea what happens when these conflict, but it likely will never result
-       in valid documentation.
 '''
 
 exhaleDoxygenStdin = None
@@ -1260,8 +1230,7 @@ defaults shown here.
 .. tip::
 
    See the documentation for :data:`~exhale.configs.exhaleDoxygenStdin`, as well as
-   :data:`~exhale.configs.exhaleUseDoxyfile`.  Only **one** may be provided to the
-   ``exhale_args`` in your ``conf.py``.
+   |doxyfile|.  Only **one** may be provided to the ``exhale_args`` in your ``conf.py``.
 
 .. include:: ../DEFAULT_DOXYGEN_STDIN_BASE_value.rst
 '''
@@ -1532,7 +1501,6 @@ def apply_sphinx_configurations(app):
         ("customSpecificationsMapping",                 dict),
         # Doxygen Execution and Customization
         ("exhaleExecutesDoxygen",                       bool),
-        # ("exhaleUseDoxyfile",                           bool),
         # ("exhaleDoxygenStdin",              six.string_types),
         # ("exhaleSilentDoxygen",                         bool)
     ]

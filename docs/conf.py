@@ -244,7 +244,7 @@ configs_Config_replacements = '\n'.join(
     for config in configs_Config_repl_list
 )
 configs_DoxygenConfig_repl_list = [
-    'stripFromPath'
+    'stripFromPath', 'doxyfile'
 ]
 configs_DoxygenConfig_replacements = '\n'.join(
     '.. |{config}| replace:: :data:`~exhale.configs.DoxygenConfig.{config}`'.format(config=config)

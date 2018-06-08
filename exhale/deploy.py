@@ -204,8 +204,8 @@ def generate_doxygen_xml(config):
         )
 
     # Case 1: the user has their own `Doxyfile`.
-    if configs.exhaleUseDoxyfile:
-        return _generate_doxygen("Doxyfile")
+    if config.doxygen.doxyfile:
+        return _generate_doxygen(config.doxygen.doxyfile)
     # Case 2: use stdin, with some defaults and potentially additional specs from user
     else:
         # There are two doxygen specs that we explicitly disallow
