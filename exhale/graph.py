@@ -154,7 +154,9 @@ class ExhaleNode(object):
             ``program_file``. Set to ``None`` on creation, refer to
             :func:`~exhale.graph.ExhaleRoot.initializeNodeFilenameAndLink`.
     '''
-    def __init__(self, name, kind, refid):
+    def __init__(self, root, name, kind, refid):
+        self.root = root # convenience reference
+        self.config = root.config # convenience reference
         self.name        = os.path.normpath(name) if kind == 'dir' else name
         self.kind        = kind
         self.refid       = refid
@@ -1000,7 +1002,7 @@ class ExhaleRoot(object):
         .. todo:: node discovery has changed, breathe no longer used...update docs
         '''
         doxygen_index_xml = os.path.join(
-            configs._doxygen_xml_output_directory,
+            self.config.doxygen.xmlOutputDirectory,
             "index.xml"
         )
         try:
@@ -1025,7 +1027,7 @@ class ExhaleRoot(object):
                 curr_name  = compound.find("name").get_text()
                 curr_kind  = compound.attrs["kind"]
                 curr_refid = compound.attrs["refid"]
-                curr_node  = ExhaleNode(curr_name, curr_kind, curr_refid)
+                curr_node  = ExhaleNode(self, curr_name, curr_kind, curr_refid)
                 self.trackNodeIfUnseen(curr_node)
 
                 # For things like files and namespaces, a "member" list will include
@@ -1038,7 +1040,7 @@ class ExhaleRoot(object):
                             child_name  = member.find("name").get_text()
                             child_kind  = member.attrs["kind"]
                             child_refid = member.attrs["refid"]
-                            child_node  = ExhaleNode(child_name, child_kind, child_refid)
+                            child_node  = ExhaleNode(self, child_name, child_kind, child_refid)
                             self.trackNodeIfUnseen(child_node)
 
                             if curr_kind == "namespace":
@@ -1138,7 +1140,7 @@ class ExhaleRoot(object):
                         # some older versions of doxygen don't reliably strip from path
                         # so make sure to remove it
                         abs_strip_path = os.path.normpath(os.path.abspath(
-                            configs.doxygenStripFromPath
+                            self.config.doxygen.stripFromPath
                         ))
                         if location_str.startswith(abs_strip_path):
                             location_str = os.path.relpath(location_str, abs_strip_path)
@@ -1591,11 +1593,6 @@ class ExhaleRoot(object):
             ``XML_PROGRAMLISTING = NO`` with Doxygen.  An example of such an enum would
             be an enum declared inside of a namespace within this file.
         '''
-        if not os.path.isdir(configs._doxygen_xml_output_directory):
-            utils.fancyError("The doxygen xml output directory [{0}] is not valid!".format(
-                configs._doxygen_xml_output_directory
-            ))
-
         # parse the doxygen xml file and extract all refid's put in it
         # keys: file object, values: list of refid's
         doxygen_xml_file_ownerships = {}
@@ -1611,7 +1608,9 @@ class ExhaleRoot(object):
         for f in self.files:
             doxygen_xml_file_ownerships[f] = []
             try:
-                doxy_xml_path = os.path.join(configs._doxygen_xml_output_directory, "{0}.xml".format(f.refid))
+                doxy_xml_path = os.path.join(
+                    self.config.doxygen.xmlOutputDirectory, "{0}.xml".format(f.refid)
+                )
                 with codecs.open(doxy_xml_path, "r", "utf-8") as doxy_file:
                     processing_code_listing = False  # shows up at bottom of xml
                     for line in doxy_file:

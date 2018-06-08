@@ -39,7 +39,7 @@ def _generate_doxygen(doxygen_input):
     **current working directory**.  Search for ``returnPath`` in the implementation of
     :func:`~exhale.configs.apply_sphinx_configurations` for handling of this aspect.
 
-    This method is intended to be called by :func:`~exhale.deploy.generateDoxygenXML`,
+    This method is intended to be called by :func:`~exhale.deploy.generate_doxygen_xml`,
     which is in turn called by :func:`~exhale.configs.apply_sphinx_configurations`.
 
     Two versions of the
@@ -180,28 +180,28 @@ def _generate_doxygen(doxygen_input):
     return None
 
 
-def _valid_config(config, required):
+def _valid_config(doxygen_input, config, required):
     '''
     .. todo:: add documentation of this method
 
-    ``config``: doxygen input we're looking for
+    doxygen_input: what to send to doxygen
+    ``config``: doxygen input we're looking for (e.g., OUTPUT_DIRECTORY)
     ``required``: if ``True``, must be present.  if ``False``, NOT ALLOWED to be present
     '''
     re_template = r"\s*{config}\s*=.*".format(config=config)
-    found = re.search(re_template, configs.exhaleDoxygenStdin)
+    found = re.search(re_template, doxygen_input)
     if required:
         return found is not None
     else:
         return found is None
 
 
-def generateDoxygenXML():
-    # If this happens, we really shouldn't be here...
-    if not configs.exhaleExecutesDoxygen:
-        return textwrap.dedent('''
-            `generateDoxygenXML` should *ONLY* be called internally.  You should
-            set `exhaleExecutesDoxygen=True` in `exhale_args` in `conf.py`.
-        ''')
+def generate_doxygen_xml(config):
+    # assumption: config.exhaleExecutesDoxygen is True (how we got here)
+    if not config.doxygen:
+        raise ValueError(
+            'generate_doxygen_xml:config parameter did not have a DoxygenConfig.'
+        )
 
     # Case 1: the user has their own `Doxyfile`.
     if configs.exhaleUseDoxyfile:
@@ -218,10 +218,7 @@ def generateDoxygenXML():
         # 1. INPUT (where doxygen should parse).
         #
         # The below is a modest attempt to validate that these were / were not given.
-        if not isinstance(configs.exhaleDoxygenStdin, six.string_types):
-            return "`exhaleDoxygenStdin` config must be a string!"
-
-        if not _valid_config("OUTPUT_DIRECTORY", False):
+        if not _valid_config(config.doxygen.stdin, "OUTPUT_DIRECTORY", False):
             # If we are hitting this code, these should both exist and be configured
             # since this method is called **AFTER** the configuration verification code
             # performed in configs.apply_sphinx_configurations
@@ -251,7 +248,7 @@ def generateDoxygenXML():
                 path=breathe_projects[breathe_default_project].rsplit("{sep}xml".format(sep=os.sep), 1)[0]
             ))
 
-        if not _valid_config("STRIP_FROM_PATH", False):
+        if not _valid_config(config.doxygen.stdin, "STRIP_FROM_PATH", False):
             return textwrap.dedent('''
                 `exhaleDoxygenStdin` may *NOT* specify `STRIP_FROM_PATH`.  Exhale does
                 this internally by using the value you provided to `exhale_args` in
@@ -270,7 +267,7 @@ def generateDoxygenXML():
                 absolute=configs.doxygenStripFromPath
             ))
 
-        if not _valid_config("INPUT", True):
+        if not _valid_config(config.doxygen.stdin, "INPUT", True):
             return textwrap.dedent('''
                 `exhaleDoxygenStdin` *MUST* specify the `INPUT` doxygen config variable.
                 The INPUT variable is what tells Doxygen where to look for code to
@@ -296,7 +293,7 @@ def generateDoxygenXML():
         # For these, we just want to warn them of the impact but still allow an override
         re_template = r"\s*{config}\s*=\s*(.*)"
         for cfg in ("ALIASES", "PREDEFINED"):
-            found = re.search(re_template.format(config=cfg), configs.exhaleDoxygenStdin)
+            found = re.search(re_template.format(config=cfg), config.doxygen.stdin)
             if found:
                 sys.stderr.write(utils.info(textwrap.dedent('''
                     You have supplied to `exhaleDoxygenStdin` a configuration of:
@@ -318,14 +315,14 @@ def generateDoxygenXML():
 
         # Include their custom doxygen definitions after the defaults so that they can
         # override anything they want to.  Populate the necessary output dir and strip path.
-        doxy_dir = configs._doxygen_xml_output_directory.rsplit("{sep}xml".format(sep=os.sep), 1)[0]
+        doxy_dir = config.doxygen.outputDirectory
         internal_configs = textwrap.dedent('''
             # Tell doxygen to output wherever breathe is expecting things
             OUTPUT_DIRECTORY       = "{out}"
             # Tell doxygen to strip the path names (RTD builds produce long abs paths...)
             STRIP_FROM_PATH        = "{strip}"
-        '''.format(out=doxy_dir, strip=configs.doxygenStripFromPath))
-        external_configs = textwrap.dedent(configs.exhaleDoxygenStdin)
+        '''.format(out=doxy_dir, strip=config.doxygen.stripFromPath))
+        external_configs = textwrap.dedent(config.doxygen.stdin)
         # Place external configs last so that if the _valid_config method isn't actually
         # catching what it should be, the internal configs will override theirs
         full_input = "{base}\n{external}\n{internal}\n\n".format(base=configs.DEFAULT_DOXYGEN_STDIN_BASE,

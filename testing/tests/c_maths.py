@@ -64,8 +64,6 @@ class CMathsTestsNoRun(ExhaleTestCase):
     test_project = "c_maths"
     """.. testproject:: c_maths"""
 
-    import pytest# flake8fail: @no_run temporarily broken
-    @pytest.mark.xfail()
     def test_classwide_no_run(self):
         """
         Verify that the default ``"./api"`` folder is indeed **not** generated.

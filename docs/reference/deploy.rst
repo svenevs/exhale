@@ -10,7 +10,7 @@ Doxygen Execution Functions
 
 .. autofunction:: exhale.deploy._valid_config
 
-.. autofunction:: exhale.deploy.generateDoxygenXML
+.. autofunction:: exhale.deploy.generate_doxygen_xml
 
 Library API Generation
 ----------------------------------------------------------------------------------------

@@ -52,6 +52,8 @@ from sphinx.errors import ConfigError, ExtensionError
 
 from types import FunctionType, ModuleType
 
+from . import verify
+
 try:
     # Python 2 StringIO
     from cStringIO import StringIO
@@ -105,11 +107,36 @@ def make_default_configs():
         # Breathe customization
         "customSpecificationsMapping": {},
         # Doxygen execution
-        "exhaleExecutesDoxygen": False,
+        "exhaleExecutesDoxygen": True,
+        "doxygen": {
+            "silent": False
+        },
         "exhaleUseDoxyfile": False,
         "exhaleDoxygenStdin": None,
         "exhaleSilentDoxygen": False
     }
+
+
+
+# exhale_args = {
+#     "doxygen": {
+#         "stripFromPath": "..", #doxygenStripFromPath
+#         "doxyfile": "path", #exhaleUseDoxyfile
+#         "stdin": "INPUT = ../include", #exhaleDoxygenStdin
+#         "silent": False # exhale
+#     }
+# }
+
+class DoxygenConfig(object):
+    def __init__(self, outputDirectory=None, stripFromPath=None, doxyfile=None, stdin=None, silent=False, ignoreList=[]):
+        self.outputDirectory = outputDirectory
+        self.xmlOutputDirectory = os.path.join(outputDirectory, "xml")
+        self.stripFromPath = stripFromPath
+        self.doxyfile = doxyfile
+        self.stdin = stdin
+        self.silent = silent
+        # self.ignoreRegex
+
 
 
 class Config(object):
@@ -188,6 +215,8 @@ class Config(object):
         ("doxygenStripFromPath", six.string_types,  True)
     ]
 
+    # REQUIRED_KV = [("doxygen", dict)]
+
     OPTIONAL_KV = [
         # Build Process Logging, Colors, and Debugging
         ("verboseBuild",                                bool),
@@ -221,9 +250,9 @@ class Config(object):
         ("customSpecificationsMapping",                 dict),
         # Doxygen Execution and Customization
         ("exhaleExecutesDoxygen",                       bool),
-        ("exhaleUseDoxyfile",                           bool),
-        ("exhaleDoxygenStdin",              six.string_types),
-        ("exhaleSilentDoxygen",                         bool)
+        # ("exhaleUseDoxyfile",                           bool),
+        # ("exhaleDoxygenStdin",              six.string_types),
+        # ("exhaleSilentDoxygen",                         bool)
     ]
 
     def __init__(self, app, project_name):
@@ -258,15 +287,35 @@ class Config(object):
         project_configs = app.config.exhale_projects[project_name]
         if type(project_configs) is not dict:
             raise ConfigError("`exhale_projects['{0}']` in `conf.py` must be a dictionary.")
-        project_configs = self._validate_required_configs(project_configs)
 
         # Apply the project-specific configurations last and validate option configs
         configs = utils.deep_update(configs, project_configs)
+        self._validate_required_configs(configs)
         self._validate_optional_configs(configs)
 
-        # Make
+        # Absolute paths in Exhale are resolved against app.confdir (where `conf.py` is)
+        def make_absolute(path):
+            if not os.path.isabs(path):
+                return os.path.normpath(os.path.abspath(os.path.join(app.confdir, path)))
+            return path
+
+        # Make sure paths are absolute for remainder of execution
+        configs['containmentFolder'] = make_absolute(configs['containmentFolder'])
+        configs['doxygen']['stripFromPath'] = make_absolute(configs['doxygen']['stripFromPath'])
+
+        # At last, set all of the attributes for this configuration object
         for key in configs:
             setattr(self, key, configs[key])
+
+    def __setattr__(self, name, value):
+        if name == 'doxygen':
+            doxygen = DoxygenConfig(
+                outputDirectory=os.path.dirname(self.app.config.breathe_projects[self.project_name]),
+                **value
+            )
+            super(Config, self).__setattr__(name, doxygen)
+        else:
+            super(Config, self).__setattr__(name, value)
 
     def _key_error(self, key):
         return "Did not find required key `{key}` in `exhale_projects['{proj}']`.".format(
@@ -278,31 +327,12 @@ class Config(object):
             key=key, expected=expected, got=got
         )
 
-    def _validate_required_configs(self, project_configs):
-        for key, expected_type, make_absolute in Config.REQUIRED_KV:
-            # Make sure we have the key
-            if key not in project_configs:
-                raise ConfigError(self._key_error(key))
-            # Make sure the value is at the very least the correct type
-            val = project_configs[key]
-            if not isinstance(val, expected_type):
-                raise ConfigError(self._value_error(key, expected_type, type(val)))
-            # Make sure that a value was provided (e.g. no empty strings)
-            if not val:
-                raise ConfigError("Non-empty value for key [{0}] required.".format(key))
-            # If the string represents a path, make it absolute
-            if make_absolute:
-                # Directories are made absolute relative to app.confdir (where conf.py is)
-                if not os.path.isabs(val):
-                    val = os.path.abspath(os.path.join(
-                        os.path.abspath(self.app.confdir), val
-                    ))
-                    project_configs[key] = val
-            # Mark this key as being processed for error checking later
-            self.keys_processed.append(key)
+    def _validate_required_configs(self, final_configs):
+        doxygen = final_configs.get('doxygen', None)
+        if not doxygen:
+            raise ValueError('doxygen key not provided, sub-key "stripFromPath" is required.')
 
-        # Return the potentially modified dictionary
-        return project_configs
+
 
     def _validate_optional_configs(self, final_configs):
         for key, expected_type in Config.OPTIONAL_KV:
@@ -317,26 +347,15 @@ class Config(object):
         self._validate_contents_directives(final_configs)
         self._validate_doxygen_configs(final_configs)
 
-    def _assert_is_list_of_strings(self, lst, title):
-        for spec in lst:
-            if not isinstance(spec, six.string_types):
-                raise ConfigError(
-                    "`{title}` must be a list of strings, but `{spec}` was of type `{spec_t}`.".format(
-                        title=title,
-                        spec=spec,
-                        spec_t=type(spec)
-                    )
-                )
-
     def _validate_contents_directives(self, final_configs):
         # verify contentsSpecifiers can be used as expected
-        self._assert_is_list_of_strings(
+        verify.is_list_of_strings(
             final_configs["contentsSpecifiers"], "contentsSpecifiers"
         )
         self.keys_processed.append("contentsSpecifiers")
 
         # verify the kinds requested for .. contents:: directives are valid kinds
-        self._assert_is_list_of_strings(
+        verify.is_list_of_strings(
             final_configs["kindsWithContentsDirectives"], "kindsWithContentsDirectives"
         )
         from . import utils#flake8 fail
@@ -1139,7 +1158,7 @@ inserted to help enforce that Exhale made the dictionary going into
 ########################################################################################
 # Doxygen Execution and Customization                                                  #
 ########################################################################################
-_doxygen_xml_output_directory = None
+# _doxygen_xml_output_directory = None
 '''
 The absolute path the the root level of the doxygen xml output.  If the path to the
 ``index.xml`` file created by doxygen was ``./doxyoutput/xml/index.xml``, then this
@@ -1333,45 +1352,45 @@ def apply_sphinx_configurations(app):
     # Import local to function to prevent circular imports elsewhere in the framework.
     from . import deploy
     from . import utils
-    ####################################################################################
-    # Make sure they have the `breathe` configs setup in a way that we can use them.   #
-    ####################################################################################
-    # Breathe allows users to have multiple projects to configure in one `conf.py`
-    # A dictionary of keys := project names, values := path to Doxygen xml output dir
-    breathe_projects = app.config.breathe_projects
-    if not breathe_projects:
-        raise ConfigError("You must set the `breathe_projects` in `conf.py`.")
-    elif type(breathe_projects) is not dict:
-        raise ConfigError("The type of `breathe_projects` in `conf.py` must be a dictionary.")
-    # The breathe_default_project is required by `exhale` to determine where to look for
-    # the doxygen xml.
-    #
-    # TODO: figure out how to allow multiple breathe projects?
-    breathe_default_project = app.config.breathe_default_project
-    if not breathe_default_project:
-        raise ConfigError("You must set the `breathe_default_project` in `conf.py`.")
-    elif not isinstance(breathe_default_project, six.string_types):
-        raise ConfigError("The type of `breathe_default_project` must be a string.")
+    # ####################################################################################
+    # # Make sure they have the `breathe` configs setup in a way that we can use them.   #
+    # ####################################################################################
+    # # Breathe allows users to have multiple projects to configure in one `conf.py`
+    # # A dictionary of keys := project names, values := path to Doxygen xml output dir
+    # breathe_projects = app.config.breathe_projects
+    # if not breathe_projects:
+    #     raise ConfigError("You must set the `breathe_projects` in `conf.py`.")
+    # elif type(breathe_projects) is not dict:
+    #     raise ConfigError("The type of `breathe_projects` in `conf.py` must be a dictionary.")
+    # # The breathe_default_project is required by `exhale` to determine where to look for
+    # # the doxygen xml.
+    # #
+    # # TODO: figure out how to allow multiple breathe projects?
+    # breathe_default_project = app.config.breathe_default_project
+    # if not breathe_default_project:
+    #     raise ConfigError("You must set the `breathe_default_project` in `conf.py`.")
+    # elif not isinstance(breathe_default_project, six.string_types):
+    #     raise ConfigError("The type of `breathe_default_project` must be a string.")
 
-    if breathe_default_project not in breathe_projects:
-        raise ConfigError(
-            "The given breathe_default_project='{0}' was not a valid key in `breathe_projects`:\n{1}".format(
-                breathe_default_project, breathe_projects
-            )
-        )
+    # if breathe_default_project not in breathe_projects:
+    #     raise ConfigError(
+    #         "The given breathe_default_project='{0}' was not a valid key in `breathe_projects`:\n{1}".format(
+    #             breathe_default_project, breathe_projects
+    #         )
+    #     )
 
-    # Grab where the Doxygen xml output is supposed to go, make sure it is a string,
-    # defer validation of existence until after potentially running Doxygen based on
-    # the configs given to exhale
-    doxy_xml_dir = breathe_projects[breathe_default_project]
-    if not isinstance(doxy_xml_dir, six.string_types):
-        raise ConfigError(
-            "The type of `breathe_projects[breathe_default_project]` from `conf.py` was not a string."
-        )
+    # # Grab where the Doxygen xml output is supposed to go, make sure it is a string,
+    # # defer validation of existence until after potentially running Doxygen based on
+    # # the configs given to exhale
+    # doxy_xml_dir = breathe_projects[breathe_default_project]
+    # if not isinstance(doxy_xml_dir, six.string_types):
+    #     raise ConfigError(
+    #         "The type of `breathe_projects[breathe_default_project]` from `conf.py` was not a string."
+    #     )
 
-    # Make doxy_xml_dir relative to confdir (where conf.py is)
-    if not os.path.isabs(doxy_xml_dir):
-        doxy_xml_dir = os.path.abspath(os.path.join(app.confdir, doxy_xml_dir))
+    # # Make doxy_xml_dir relative to confdir (where conf.py is)
+    # if not os.path.isabs(doxy_xml_dir):
+    #     doxy_xml_dir = os.path.abspath(os.path.join(app.confdir, doxy_xml_dir))
 
     ####################################################################################
     # Initial sanity-check that we have the arguments needed.                          #
@@ -1402,7 +1421,7 @@ def apply_sphinx_configurations(app):
     req_kv = [
         ("rootFileName",         six.string_types, False),
         ("rootFileTitle",        six.string_types, False),
-        ("doxygenStripFromPath", six.string_types,  True)
+        # ("doxygenStripFromPath", six.string_types,  True)
     ]
     for key, expected_type, make_absolute in req_kv:
         # Used in error checking later
@@ -1484,10 +1503,10 @@ def apply_sphinx_configurations(app):
         )
 
     # Make sure the doxygen strip path is an exclude-able path
-    if not os.path.exists(doxygenStripFromPath):
-        raise ConfigError(
-            "The path given as `doxygenStripFromPath` ({0}) does not exist!".format(doxygenStripFromPath)
-        )
+    # if not os.path.exists(doxygenStripFromPath):
+    #     raise ConfigError(
+    #         "The path given as `doxygenStripFromPath` ({0}) does not exist!".format(doxygenStripFromPath)
+    #     )
 
     ####################################################################################
     # Gather the optional input for exhale.                                            #
@@ -1525,9 +1544,9 @@ def apply_sphinx_configurations(app):
         ("customSpecificationsMapping",                 dict),
         # Doxygen Execution and Customization
         ("exhaleExecutesDoxygen",                       bool),
-        ("exhaleUseDoxyfile",                           bool),
-        ("exhaleDoxygenStdin",              six.string_types),
-        ("exhaleSilentDoxygen",                         bool)
+        # ("exhaleUseDoxyfile",                           bool),
+        # ("exhaleDoxygenStdin",              six.string_types),
+        # ("exhaleSilentDoxygen",                         bool)
     ]
     for key, expected_type in opt_kv:
         # Used in error checking later
@@ -1703,9 +1722,9 @@ def apply_sphinx_configurations(app):
                     )
                 )
 
-    # Specify where the doxygen output should be going
-    global _doxygen_xml_output_directory
-    _doxygen_xml_output_directory = doxy_xml_dir
+    # # Specify where the doxygen output should be going
+    # global _doxygen_xml_output_directory
+    # _doxygen_xml_output_directory = doxy_xml_dir
 
     # # If requested, the time is nigh for executing doxygen.  The strategy:
     # # 1. Execute doxygen if requested

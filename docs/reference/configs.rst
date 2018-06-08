@@ -673,8 +673,6 @@ get confused by.
 
 .. end_doxygen_execution_and_customization
 
-.. autodata:: exhale.configs._doxygen_xml_output_directory
-
 .. autodata:: exhale.configs.exhaleExecutesDoxygen
 
 .. autodata:: exhale.configs.exhaleUseDoxyfile

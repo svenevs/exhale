@@ -8,6 +8,8 @@ Available Decorators
 
 .. autofunction:: testing.decorators.confoverrides
 
+.. autofunction:: testing.decorators.flatoverrides
+
 .. autofunction:: testing.decorators.no_cleanup
 
 .. autofunction:: testing.decorators.no_run

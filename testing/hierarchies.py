@@ -58,6 +58,12 @@ __all__ = [
 ]
 
 
+class fake_root(object):  # noqa N801
+    """|ExhaleNode| requires a root parameter."""
+    def __init__(self):
+        self.config = None
+
+
 ########################################################################################
 # Doxygen compound test classes (proxies to exhale.graph.ExhaleNode).                  #
 ########################################################################################
@@ -80,7 +86,7 @@ class node(ExhaleNode):  # noqa N801
     """
 
     def __init__(self, name, kind):
-        super(node, self).__init__(name, kind, "")  # no Doxygen refid available
+        super(node, self).__init__(fake_root(), name, kind, "")  # no Doxygen refid available
 
     def __str__(self):
         """

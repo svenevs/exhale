@@ -291,7 +291,9 @@ def makeCustomSpecificationsMapping(func):
 
 
 def nodeCompoundXMLContents(node):
-    node_xml_path = os.path.join(configs._doxygen_xml_output_directory, "{0}.xml".format(node.refid))
+    node_xml_path = os.path.join(
+        node.config.doxygen.xmlOutputDirectory, "{0}.xml".format(node.refid)
+    )
     if os.path.isfile(node_xml_path):
         try:
             with codecs.open(node_xml_path, "r", "utf-8") as xml:

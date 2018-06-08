@@ -12,10 +12,10 @@ Tests for validating error handling with configs set in ``conf.py``.
 from __future__ import unicode_literals
 import pytest
 
-from sphinx.errors import ConfigError
+from sphinx.errors import ConfigError, ExtensionError
 
 from testing.base import ExhaleTestCase
-from testing.decorators import confoverrides, no_run
+from testing.decorators import confoverrides, flatoverrides, no_run
 
 
 @no_run
@@ -143,5 +143,56 @@ class ConfigurationErrorTests(ExhaleTestCase):
 
         Exhale (arbitrarily) checks for ``exhale_projects`` first, so that will be the
         expected error message.
+        """
+        pass
+
+    @pytest.mark.raises(
+        exception=ConfigError,
+        message=(
+            '`breathe_default_project` must be a key in `breathe_projects`.  *INSTEAD* '
+            'of fixing this, please consider letting Exhale automatically populate '
+            'these for you (delete both from `conf.py`).'
+        )
+    )
+    @confoverrides(
+        breathe_projects={'c_maths': '_doxygen/xml'},
+        breathe_default_project='This is not a real project xD'
+    )
+    def test_invalid_breathe_default_project(self):
+        """
+        Forbid ``breathe_default_project`` not being a key in ``breathe_projects``.
+        """
+        pass
+
+    @pytest.mark.raises(
+        exception=ConfigError, message='exhale_projects.keys() must be identical to breathe_projects.keys().'
+    )
+    @flatoverrides(exhale_args={})
+    @confoverrides(exhale_projects={'betty': {'rootFileTitle': 'Hi'}}, breathe_projects={'billy': './xml'})
+    def test_breathe_exhale_mismatch(self):
+        """
+        Forbid mismatching key sets for ``exhale_projects`` and ``breathe_projects``.
+        """
+        pass
+
+    @pytest.mark.raises(
+        exception=ExtensionError,
+        message=(
+            'As of exhale v1.0.0, `breathe` must appear *AFTER* `exhale` in the '
+            '`extensions` list in `conf.py`.  Unfortunately, this cannot be fixed '
+            'automatically by exhale, by the time this code is executing it is already '
+            'too late.  Please *DELETE* `breathe` to allow exhale to fix this for you '
+            '(exhale will setup breathe internally).  Your new `extensions` list '
+            "should look like:\n\nextensions = [\n    'exhale'\n]"
+        )
+    )
+    @flatoverrides(extensions=['breathe', 'exhale'])
+    def test_extension_order_dilemma(self):
+        """
+        Forbid ``'breathe'`` before ``'exhale'`` in ``extensions`` list of ``conf.py``.
+
+        If ``'breathe'`` appears before ``'exhale'``, their static initialization will
+        take place before exhale can automatically configure ``breathe_projects`` and
+        potentially ``breathe_default_project`` (in the case of ``exhale_args``).
         """
         pass

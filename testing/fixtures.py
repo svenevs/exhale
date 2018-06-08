@@ -9,7 +9,7 @@
 Provides fixtures to be available for all test cases.
 """
 from __future__ import unicode_literals
-from exhale import deploy
+import exhale
 import pytest
 
 
@@ -30,7 +30,7 @@ def no_run():
 
     __ https://docs.pytest.org/en/latest/_modules/_pytest/fixtures.html
     """
-    explode = deploy.explode
-    deploy.explode = lambda: None
+    _no_run = exhale._no_run
+    exhale._no_run = lambda: True
     yield
-    deploy.explode = explode
+    exhale._no_run = _no_run

@@ -18,7 +18,7 @@ from exhale.utils import deep_update
 import pytest
 
 
-__all__ = ["default_confoverrides", "confoverrides", "no_run"]
+__all__ = ["default_confoverrides", "confoverrides", "flatoverrides", "no_run"]
 
 
 def _apply_confoverride_to_class(cls, config, priority):
@@ -62,7 +62,6 @@ def _apply_confoverride_to_class(cls, config, priority):
             continue
 
         # meth is a test method, let's go and mark it!
-
         # create marker kwargs
         kwargs = dict(confoverrides=deepcopy(config))
 
@@ -83,6 +82,13 @@ def _apply_confoverride_to_class(cls, config, priority):
         sphinx_kwargs = {}
         for __, kw in markers_kwargs:
             deep_update(sphinx_kwargs, kw)
+
+        # When marked via @flatoverrides, we seek to force a value in rather than
+        # updating / merging with existing values.
+        if 'exhale_flat_override' in meth.__dict__:
+            flat_overrides = meth.exhale_flat_override.kwargs['confoverrides']
+            for key in flat_overrides:
+                sphinx_kwargs['confoverrides'][key] = flat_overrides[key]
 
         # and finally we set the sphinx markers with the combined kwargs, that override
         # the previous ones
@@ -252,3 +258,39 @@ def no_run(obj):
             The decorated ``obj``.
     """
     return pytest.mark.usefixtures("no_run")(obj)
+
+
+def flatoverrides(**config):
+    """
+    Force a sphinx ``conf.py`` top-level override.
+
+    Usage is similar to ``@confoverrides``, only instead of updating values they will
+    be forcibly overwritten.  This is useful for forcing errors through, or setting
+    ``exhale_args`` to be ``{}`` when testing projects.  For example:
+
+    .. code-block:: py
+
+       # `exhale_args` and `exhale_projects` cannot be specified at the same time,
+       # so to test projects we need to be able to "delete" `exhale_args`
+       @flatoverrides(exhale_args={})
+       @confoverrides(exhale_projects={
+           'one': {'doxygen': {'stripFromPath': '../one/include'}},
+           'two': {'doxygen': {'stripFromPath': '../two/include'}}
+       })
+       def test_projects_one_two(self):
+           # ... run tests ...
+
+    .. danger::
+
+       Flat here means only top-level entries in ``conf.py``, using something like
+       ``@flatoverrides(exhale_args={'someKey': 'someValue'})`` will almost certainly
+       break the test, as ``exhale_args`` now only contains ``'someKey'`` mapping to
+       ``'someValue'``.
+    """
+    def actual_decorator(meth_or_cls):
+        if not config:
+            return meth_or_cls
+
+        return pytest.mark.exhale_flat_override(confoverrides=config)(meth_or_cls)
+
+    return actual_decorator

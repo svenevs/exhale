@@ -43,10 +43,12 @@ def make_default_config(project):
             written in a ``conf.py``.
     """
     return {
-        "breathe_projects": {
-            project: "./_doxygen/xml"
-        },
-        "breathe_default_project": project,
+        # "breathe_projects": {
+        #     project: "./_doxygen/xml"
+        # },
+        # "breathe_default_project": project,
+        'project': project,
+        'extensions': ['exhale'],
         "exhale_args": {
             # required arguments
             "containmentFolder": "./api",
@@ -122,23 +124,33 @@ class ExhaleTestCaseMetaclass(type):
                 if isinstance(self.testroot, six.string_types):
                     # This cleanup happens between each test case, do not delete docs/
                     # until all tests for this class are done!
-                    containmentFolder = self.getAbsContainmentFolder()
-                    if os.path.isdir(containmentFolder):
-                        shutil.rmtree(containmentFolder)
+                    try:
+                        containmentFolder = self.getAbsContainmentFolder()
+                        if os.path.isdir(containmentFolder):
+                            shutil.rmtree(containmentFolder)
+                    except:  # noqa E722 (can fail for a few reasons, including @no_exhale_args)
+                        pass
                     # Delete the doctrees as well as e.g. _build/html, app.outdir is going
                     # to be docs/_build/{builder_name}
                     _build = os.path.abspath(os.path.dirname(app.outdir))
                     if os.path.isdir(_build):
                         shutil.rmtree(_build)
                     # Make sure doxygen output is deleted between runs
-                    doxy_xml_dir = app.config.breathe_projects[test_project]
-                    if not os.path.isabs(doxy_xml_dir):
-                        doxy_xml_dir = os.path.abspath(os.path.join(
-                            self.app.srcdir, doxy_xml_dir
-                        ))
-                    doxy_dir = os.path.dirname(doxy_xml_dir)
-                    if os.path.isdir(doxy_dir):
-                        shutil.rmtree(doxy_dir)
+                    doxy_xml_dir = app.config.breathe_projects.get(test_project, None)
+                    if doxy_xml_dir:
+                        if not os.path.isabs(doxy_xml_dir):
+                            doxy_xml_dir = os.path.abspath(os.path.join(
+                                self.app.srcdir, doxy_xml_dir
+                            ))
+                        doxy_dir = os.path.dirname(doxy_xml_dir)
+                        if os.path.isdir(doxy_dir):
+                            shutil.rmtree(doxy_dir)
+
+                self.app.config.exhale_args = {}
+                self.app.config.exhale_projects = {}
+                self.app.config.exhale_global_args = {}
+                self.app.config.breathe_projects = {}
+                self.app.config.breathe_default_project = None
                 self.app = None
 
             ############################################################################
@@ -169,16 +181,15 @@ class ExhaleTestCaseMetaclass(type):
                 with open(os.path.join(testroot, "conf.py"), "w") as conf_py:
                     conf_py.write(textwrap.dedent('''\
                         # -*- coding: utf-8 -*-
-                        extensions = ["breathe", "exhale"]
                         master_doc = "index"
                         source_suffix = [".rst"]
                     '''))
 
                 # If a given test case needs to run app.build(), make sure index.rst
                 # is available as well
-                exhale_args = app_params.kwargs["confoverrides"]["exhale_args"]
+                exhale_args = app_params.kwargs["confoverrides"].get('exhale_args', None)
                 with open(os.path.join(testroot, "index.rst"), "w") as index_rst:
-                    if type(exhale_args) is dict:
+                    if type(exhale_args) is dict and 'containmentFolder' in exhale_args:
                         index_rst.write(textwrap.dedent('''
                             Exhale Test Case
                             ================
@@ -315,7 +326,7 @@ class ExhaleTestCase(unittest.TestCase):
         containmentFolder    = self.getAbsContainmentFolder()
         rootFileName         = self.app.config.exhale_args["rootFileName"]
         rootFileTitle        = self.app.config.exhale_args["rootFileTitle"]
-        doxygenStripFromPath = self.app.config.exhale_args["doxygenStripFromPath"]
+        stripFromPath = self.app.config.exhale_args['doxygen']['stripFromPath']
 
         # validate that the containmentFolder was created
         assert os.path.isdir(containmentFolder)
@@ -329,6 +340,6 @@ class ExhaleTestCase(unittest.TestCase):
             exhale.utils.heading_mark(rootFileTitle, exhale.configs.SECTION_HEADING_CHAR)
         )
         assert root_heading in root_contents
-        # TODO: validate doxygenStripFromPath
-        if doxygenStripFromPath:  # this is only here to avoid a flake8 fail on a todo
+        # TODO: validate stripFromPath
+        if stripFromPath:  # this is only here to avoid a flake8 fail on a todo
             pass
