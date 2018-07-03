@@ -133,67 +133,67 @@ class DoxygenConfig(object):
     .. attr:: stripFromPath
        :type: python:str
 
-       The value to send to Doxygen via the ``STRIP_FROM_PATH`` configuration.  This
-       value is **required** to be specified for **all** projects, *regardless* of
-       whether or not Exhale is executing Doxygen.  It must be provided because Doxygen
-       seems to selectively ignore this (on Read the Docs, Travis, etc), so Exhale must
-       manually strip the path.
+        The value to send to Doxygen via the ``STRIP_FROM_PATH`` configuration.  This
+        value is **required** to be specified for **all** projects, *regardless* of
+        whether or not Exhale is executing Doxygen.  It must be provided because Doxygen
+        seems to selectively ignore this (on Read the Docs, Travis, etc), so Exhale must
+        manually strip the path.
 
-       The value should be a string representing the (relative or absolute) path to be
-       stripped from the final documentation.  As with |containmentFolder|, relative
-       paths are relative to wherever ``conf.py`` is.  Consider the following directory
-       structure:
+        The value should be a string representing the (relative or absolute) path to be
+        stripped from the final documentation.  As with |containmentFolder|, relative
+        paths are relative to wherever ``conf.py`` is.  Consider the following directory
+        structure:
 
-       .. code-block:: none
+        .. code-block:: none
 
-          my_project/
-          ├───docs/
-          │       conf.py
-          │
-          └───include/
-              └───my_project/
-                      common.hpp
+            my_project/
+            ├───docs/
+            │       conf.py
+            │
+            └───include/
+                └───my_project/
+                        common.hpp
 
-       In this scenario, if you supplied ``"stripFromPath": ".."``, then the file page
-       for ``common.hpp`` would list its declaration as
-       ``include/my_project/common.hpp``.  If you instead set it to be ``"../include"``,
-       then the file page for ``common.hpp`` would list its declaration as just
-       ``my_project/common.hpp``.
+        In this scenario, if you supplied ``"stripFromPath": ".."``, then the file page
+        for ``common.hpp`` would list its declaration as
+        ``include/my_project/common.hpp``.  If you instead set it to be
+        ``"../include"``, then the file page for ``common.hpp`` would list its
+        declaration as just ``my_project/common.hpp``.
 
-       As a consequence, modification of this variable directly affects what shows up in
-       the file hierarchy.  In the previous example, the difference would really just be
-       whether or not all files are nestled underneath a global ``include`` folder or
-       not.
+        As a consequence, modification of this variable directly affects what shows up
+        in the file hierarchy.  In the previous example, the difference would really
+        just be whether or not all files are nestled underneath a global ``include``
+        folder or not.
 
-       .. warning::
+        .. warning::
 
-          It is **your** responsibility to ensure that the value you provide for this
-          configuration is valid.  The file hierarchy will almost certainly break if
-          you give nonsense.
+            It is **your** responsibility to ensure that the value you provide for this
+            configuration is valid.  The file hierarchy will almost certainly break if
+            you give nonsense.
 
-       .. note::
+        .. note::
 
-          Depending on your project layout, some links may be broken in the above
-          example if you use ``"../include"`` that work when you use ``".."``.  To get
-          your docs working, revert to ``".."``.  If you're feeling nice, raise an issue
-          on GitHub --- I haven't been able to track this one down yet :/
+            Depending on your project layout, some links may be broken in the above
+            example if you use ``"../include"`` that work when you use ``".."``.  To get
+            your docs working, revert to ``".."``.  If you're feeling nice, raise an
+            issue on GitHub --- I haven't been able to track this one down yet :/
 
-          Particularly, this seems to happen with projects that have duplicate filenames
-          in different folders, e.g.:
+            Particularly, this seems to happen with projects that have duplicate
+            filenames in different folders, e.g.:
 
-          .. code-block:: none
+            .. code-block:: none
 
-             include/
-             └───my_project/
-                 │    common.hpp
-                 │
-                 └───viewing/
-                         common.hpp
+                include/
+                └───my_project/
+                    │    common.hpp
+                    │
+                    └───viewing/
+                            common.hpp
 
         .. attr:: doxyfile
            :type: bool
 
-           .. todo:: this is deprecated, it will soon be a string path rather than a bool
+            .. todo:: this is deprecated, it will soon be a string path rather than a bool
     """
     ALLOWED_PUBLIC_KV = [
         ('stripFromPath', six.string_types),
@@ -233,65 +233,65 @@ class Config(object):
     .. param:: app
        :type:  sphinx:sphinx.application.Sphinx
 
-           The Sphinx application.
+        The Sphinx application.
 
     .. param:: project_name
        :type:  python:str
 
-       The name of the project.  Must be a key **already** in ``exhale_projects``
-       (specified in ``conf.py``, or set automatically when ``exhale_args`` is provided
-       for a single project -- see ``exhale/__init__.py:environment_ready``).
+        The name of the project.  Must be a key **already** in ``exhale_projects``
+        (specified in ``conf.py``, or set automatically when ``exhale_args`` is provided
+        for a single project -- see ``exhale/__init__.py:environment_ready``).
 
     **Attributes**
 
     .. attr:: containmentFolder
        :type: python:str
 
-       The directory where Exhale will generate all of the reStructuredText documents.
+        The directory where Exhale will generate all of the reStructuredText documents.
 
-       The value of key ``"containmentFolder"`` should be a string representing the
-       (relative or absolute) path to the location where Exhale will be creating all of
-       the files.  **Relative paths are relative to the Sphinx application source
-       directory**, which is usually wherever the file ``conf.py`` is.
+        The value of key ``"containmentFolder"`` should be a string representing the
+        (relative or absolute) path to the location where Exhale will be creating all of
+        the files.  **Relative paths are relative to the Sphinx application source
+        directory**, which is usually wherever the file ``conf.py`` is.
 
-       .. note::
+        .. note::
 
-          This argument is required to be a **subdirectory** of the Sphinx source
-          directory.  For example, the path ``"."`` will be rejected but the path
-          ``"./api"`` will be allowed.
+            This argument is required to be a **subdirectory** of the Sphinx source
+            directory.  For example, the path ``"."`` will be rejected but the path
+            ``"./api"`` will be allowed.
 
-       .. tip::
+        .. tip::
 
-          The suggested value for ``"containmentFolder"`` is ``"./api"``, or
-          ``"./source/api"`` if you have *separate* source and build directories
-          configured with Sphinx.
+            The suggested value for ``"containmentFolder"`` is ``"./api"``, or
+            ``"./source/api"`` if you have *separate* source and build directories
+            configured with Sphinx.
 
-          If documenting multiple projects, the ``"containmentFolder"`` for every
-          project must be distinct.  For example,
+            If documenting multiple projects, the ``"containmentFolder"`` for every
+            project must be distinct.  For example,
 
-          .. code-block:: py
+            .. code-block:: py
 
-             exhale_projects = {
-                 "foo": {
-                     "containmentFolder": "./api/foo",
-                     # ... other required arguments ...
-                 },
-                 "bar": {
-                     "containmentFolder": "./api/bar",
-                     # ... other required arguments ...
-                 }
-             }
+                exhale_projects = {
+                    "foo": {
+                        "containmentFolder": "./api/foo",
+                        # ... other required arguments ...
+                    },
+                    "bar": {
+                        "containmentFolder": "./api/bar",
+                        # ... other required arguments ...
+                    }
+                }
 
-       .. warning::
+        .. warning::
 
-          Exhale reserves the right to create, delete, and modify in any other way this
-          directory **and** all of its contents.  That is, each ``"containmentFolder"``
-          is "owned" by Exhale.
+            Exhale reserves the right to create, delete, and modify in any other way
+            this directory **and** all of its contents.  That is, each
+            ``"containmentFolder"`` is "owned" by Exhale.
 
     .. attr:: rootFileName
        :type: python:list
 
-       This is what you do about the root file name.
+        This is what you do about the root file name.
     """
     REQUIRED_KV = [
         ("containmentFolder",    six.string_types,  True),
