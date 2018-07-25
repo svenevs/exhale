@@ -16,6 +16,7 @@ import re
 import os
 import sys
 import codecs
+import hashlib
 import itertools
 import textwrap
 from bs4 import BeautifulSoup
@@ -1965,19 +1966,29 @@ class ExhaleRoot(object):
         :param: node
             The node that we are setting the above information for.
         '''
-        # Set both html_safe_name and title for every node depending on its kind
+        # Flag for title special treatment at end.
         template_special = False
-        if node.kind == "file" or node.kind == "dir":
-            if node.kind == "file":
-                path = node.location
-            else:
-                path = node.name
 
-            html_safe_name = path.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
-            title = os.path.basename(path)
+        # Special cases: directories and files do not have an equivalent C++ domain
+        # construct in Sphinx, as well as Exhale does not use the corresponding Breathe
+        # directive for these compounds.  Similarly, Exhale does not use the Breathe
+        # namespace directive.  As such, where possible, the filename should be as
+        # human-friendly has possible so that users can conveniently link to the
+        # internal Exhal ref's using e.g. :ref:`file_dir_subdir_filename.h`.
+        SPECIAL_CASES = ["dir", "file", "namespace"]
+        if node.kind in SPECIAL_CASES:
+            if node.kind == "file":
+                unique_id = node.location
+            else:
+                unique_id = node.name
+
+            unique_id = unique_id.replace(":", "_").replace(os.sep, "_").replace(" ", "_").replace("__", "_")
+            if node.kind == "namespace":
+                title = node.name.split("::")[-1]
+            else:
+                title = os.path.basename(unique_id)
         else:
-            # begin html_safe_name, templates will do more work
-            html_safe_name = node.name.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
+            unique_id = node.refid
 
             # special treatment for templates
             first_lt = node.name.find("<")
@@ -2001,8 +2012,8 @@ class ExhaleRoot(object):
             # additionally, I feel that nested classes should have their fully qualified
             # name without namespaces for clarity
             prepend_parent = False
-            if node.kind == "class" or node.kind == "struct" or node.kind == "enum" or node.kind == "union":
-                if node.parent is not None and (node.parent.kind == "class" or node.parent.kind == "struct"):
+            if node.kind in ["class", "struct", "enum", "union"]:
+                if node.parent is not None and node.parent.kind in ["class", "struct"]:
                     prepend_parent = True
             if prepend_parent:
                 title = "{parent}::{child}".format(
@@ -2010,40 +2021,66 @@ class ExhaleRoot(object):
                     child=title
                 )
 
-        # account for decltype(&T::var) etc, could be in name or template params
-        html_safe_name = html_safe_name.replace("&", "_AMP_").replace("*", "_STAR_")
-        html_safe_name = html_safe_name.replace("(", "_LPAREN_").replace(")", "_RPAREN_")
-        html_safe_name = html_safe_name.replace("<", "_LT_").replace(">", "_GT_").replace(",", "_COMMA_")
+        # `unique_id` and `title` should be set approriately for all nodes by this point
+        if node.kind in SPECIAL_CASES:
+            node.link_name = "{kind}_{id}".format(kind=node.kind, id=unique_id)
+            node.file_name = "{link_name}.rst".format(link_name=node.link_name)
+        else:
+            # The node.link_name is the internal reference for exhale to link to in the
+            # library API listing.  We cannot use unique_id in "non-special-cases"
+            # because that will be the Doxygen refid, which Breathe will use as the
+            # actual documentation ref.  This link_name is an anchor point to the top
+            # of the page, but it cannot be a duplicate.
+            #
+            # Lastly, the Doxygen refid has the kind _may_ have the kind in it (e.g., a
+            # class or struct), but also may _not_ (e.g., a function is a hash appended
+            # to the file that defined it).  So a little bit of trickery is used to make
+            # sure that the generated filename is at least _somewhat_ understandable for
+            # a human to know what it is documenting (or at least its kind...).
+            # `struct` and includes the proper C++ mangled name afterward.
+            node.link_name = "exhale_{kind}_{id}".format(kind=node.kind, id=unique_id)
+            if unique_id.startswith(node.kind):
+                node.file_name = "{id}.rst".format(id=unique_id)
+            else:
+                node.file_name = "{kind}_{id}.rst".format(kind=node.kind, id=unique_id)
 
-        if html_safe_name.endswith("_"):
-            html_safe_name = html_safe_name[:-1]
+        # Make sure this file can always be generated.  We do not need to change the
+        # node.link_name, just make sure the file being written to is OK.
+        if len(node.file_name) >= configs.MAXIMUM_FILENAME_LENGTH:
+            # hashlib.sha1 will produce a length 40 string.
+            node.file_name = "{kind}_{sha1}.rst".format(
+                kind=node.kind, sha1=hashlib.sha1(node.link_name.encode()).hexdigest()
+            )
 
-        # create the file and link names
-        node.file_name = os.path.join(
-            self.root_directory,
-            "{kind}_{name}.rst".format(kind=node.kind, name=html_safe_name)
-        )
-        node.link_name = "{kind}_{name}".format(
-            kind=utils.qualifyKind(node.kind).lower(),
-            name=html_safe_name
-        )
-        if node.template_params or template_special:
-            node.link_name = "template_{link}".format(link=node.link_name)
-
+        # Create the program listing internal link and filename.
         if node.kind == "file":
-            node.program_file = os.path.join(
-                self.root_directory,
-                "program_listing_file_{name}.rst".format(name=html_safe_name)
-            )
-            node.program_link_name = "program_listing_file_{name}".format(
-                name=html_safe_name
-            )
+            node.program_link_name = "program_listing_{link_name}".format(link_name=node.link_name)
+            node.program_file = "{pl_link_name}.rst".format(pl_link_name=node.program_link_name)
+
+            # Adding a 'program_listing_' prefix may have made this too long.  If so,
+            # change both node.file_name and node.program_file for consistency.
+            if len(node.program_file) >= configs.MAXIMUM_FILENAME_LENGTH:
+                sha1 = hashlib.sha1(node.link_name.encode()).hexdigest()
+                node.file_name = "{kind}_{sha1}.rst".format(kind=node.kind, sha1=sha1)
+                node.program_file = "program_listing_{file_name}".format(file_name=node.file_name)
+
+        # Now force everything in the containment folder
+        for attr in ["file_name", "program_file"]:
+            if hasattr(node, attr):
+                setattr(node, attr, os.path.join(self.root_directory, getattr(node, attr)))
+
+        #flake8failhereplease: add a test with decltype!
+        # account for decltype(&T::var) etc, could be in name or template params
+        # html_safe_name = html_safe_name.replace("&", "_AMP_").replace("*", "_STAR_")
+        # html_safe_name = html_safe_name.replace("(", "_LPAREN_").replace(")", "_RPAREN_")
+        # html_safe_name = html_safe_name.replace("<", "_LT_").replace(">", "_GT_").replace(",", "_COMMA_")
 
         # breathe does not prepend the namespace for variables and typedefs, so
         # I choose to leave the fully qualified name in the title for added clarity
-        if node.kind == "variable" or node.kind == "typedef":
+        if node.kind in ["variable", "typedef"]:
             title = node.name
 
+        # Last but not least, set the title for the page to be generated.
         node.title = "{kind} {title}".format(
             kind=utils.qualifyKind(node.kind),
             title=title
