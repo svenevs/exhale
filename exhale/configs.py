@@ -72,7 +72,7 @@ def make_default_configs():
     return {
         # Required arguments
         # "containmentFolder": None,
-        # "rootFileName": None,
+        "rootFileName": "library_root.rst",
         # "rootFileTitle": None,
         # Build process logging, colors, and debugging
         "verboseBuild": False,
@@ -289,9 +289,35 @@ class Config(object):
             ``"containmentFolder"`` is "owned" by Exhale.
 
     .. attr:: rootFileName
-       :type: python:list
+       :type: python:str
 
-        This is what you do about the root file name.
+        The basename of the file that **you** will be linking to from your
+        reStructuredText documents.  Do **not** include the |containmentFolder| path in
+        this file name, Exhale will create the file
+        ``"{contaimentFolder}/{rootFileName}"`` for you.  **The default value of this
+        variable is** ``"library_root.rst"``.
+
+        The user is responsible for including this in a ``toctree`` directive somewhere,
+        such as in ``index.rst``.  For example, if you specify
+
+        - ``"containmentFolder" = "./api"``, and
+        - ``"rootFileName" = "library_root.rst"``
+
+        then exhale will generate the file ``./api/library_root.rst``.  You would then
+        include this file in a ``toctree`` directive (say in ``index.rst``) with:
+
+        .. raw:: html
+
+            <div class="highlight-rest">
+              <div class="highlight">
+                <pre>
+            .. toctree::
+               :maxdepth: 2
+
+               about
+               <b>api/library_root</b></pre>
+              </div>
+            </div>
     """
     REQUIRED_KV = [
         ("containmentFolder",    six.string_types,  True),
@@ -362,8 +388,7 @@ class Config(object):
         exhale_global_args = app.config.exhale_global_args
         if type(exhale_global_args) is not dict:
             raise ConfigError("`exhale_global_args` in `conf.py` must be a dictionary.")
-        if exhale_global_args:
-            configs = utils.deep_update(configs, exhale_global_args)
+        configs = utils.deep_update(configs, exhale_global_args)
 
         # Last, gather the project specific configurations.
         project_configs = app.config.exhale_projects[project_name]
@@ -539,39 +564,7 @@ class Config(object):
 ########################################################################################
 
 rootFileName = None
-'''
-**Required**
-    The name of the file that **you** will be linking to from your reStructuredText
-    documents.  Do **not** include the ``containmentFolder`` path in this file name,
-    Exhale will create the file ``"{contaimentFolder}/{rootFileName}"`` for you.
 
-**Value in** ``exhale_args`` (str)
-    The value of key ``"rootFileName"`` should be a string representing the name of
-    the file you will be including in your top-level ``toctree`` directive.  In order
-    for Sphinx to be happy, you should include a ``.rst`` suffix.  All of the generated
-    API uses reStructuredText, and that will not ever change.
-
-    For example, if you specify
-
-    - ``"containmentFolder" = "./api"``, and
-    - ``"rootFileName" = "library_root.rst"``
-
-    Then exhale will generate the file ``./api/library_root.rst``.  You would then
-    include this file in a ``toctree`` directive (say in ``index.rst``) with:
-
-    .. raw:: html
-
-       <div class="highlight-rest">
-         <div class="highlight">
-           <pre>
-       .. toctree::
-          :maxdepth: 2
-
-          about
-          <b>api/library_root</b></pre>
-         </div>
-       </div>
-'''
 
 rootFileTitle = None
 '''
