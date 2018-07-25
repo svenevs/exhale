@@ -949,6 +949,15 @@ SUB_SECTION_HEADING_CHAR = "-"
 SUB_SUB_SECTION_HEADING_CHAR = "*"
 ''' The restructured text H3 heading character used to underline sub-subsections. '''
 
+MAXIMUM_FILENAME_LENGTH = 255
+'''
+When a potential filename is longer than ``255``, a sha1 sum is used to shorten.  Note
+that there is no ubiquitous and reliable way to query this information, as it depends
+on both the operating system, filesystem, **and** even the location (directory path) the
+file would be generated to (depending on the filesystem).  As such, a conservative value
+of ``255`` should guarantee that the desired filename can always be created.
+'''
+
 _the_app = None
 ''' The Sphinx ``app`` object.  Currently unused, saved for availability in future. '''
 
