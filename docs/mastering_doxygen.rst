@@ -321,7 +321,7 @@ documenting specific aspects:
 | ``\c``          | Teletype a single word (e.g. ``\c computeroutput``).               |
 +-----------------+--------------------------------------------------------------------+
 
-__ https://www.stack.nl/~dimitri/doxygen/manual/docblocks.html
+__ http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html
 
 Doxygen Documentation Pitfalls
 ----------------------------------------------------------------------------------------
@@ -342,7 +342,7 @@ documentation is empty)!  From the Doxygen documentation reiteration_:
     (functions, typedefs, enum, macros, etc), you must document the file in which they
     are defined.
 
-.. _reiteration: https://www.stack.nl/~dimitri/doxygen/manual/docblocks.html
+.. _reiteration: http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html
 
 .. _file_associations:
 
@@ -382,7 +382,7 @@ might look like:
         thing() {}
      };
 
-.. _FAQ: https://www.stack.nl/~dimitri/doxygen/manual/faq.html#faq_code_inc
+.. _FAQ: http://www.stack.nl/~dimitri/doxygen/manual/faq.html#faq_code_inc
 
 Features Available by Using Sphinx / Breathe / Exhale by way of reStructuredText
 ----------------------------------------------------------------------------------------
