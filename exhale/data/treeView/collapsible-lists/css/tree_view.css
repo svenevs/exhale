@@ -1,8 +1,10 @@
 /* Source taken directly from:
- *     view-source:http://code.stephenmorley.org/javascript/collapsible-lists/
+ *     view-source:http://code.iamkate.com/javascript/collapsible-lists/
  *
- * Stephen Morley's license for this code is CC0:
- *     http://code.stephenmorley.org/about-this-site/copyright/
+ * Kate Morley's license for this code is CC0:
+ *     Created by [Kate Morley](http://iamkate.com/). Except where explicitly
+ *     stated otherwise, all content is released under the terms of the
+ *     [CC0 1.0 Universal legal code](http://creativecommons.org/publicdomain/zero/1.0/legalcode).
  */
 .treeView{
   -moz-user-select:none;

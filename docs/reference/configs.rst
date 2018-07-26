@@ -224,7 +224,7 @@ theme.  Basically
 
    __ https://ryan-roemer.github.io/sphinx-bootstrap-theme
 
-   .. _collapsibleLists: http://code.stephenmorley.org/javascript/collapsible-lists/
+   .. _collapsibleLists: http://code.iamkate.com/javascript/collapsible-lists/
 
 2. When using either the ``sphinx-bootstrap-theme``, or any other theme that
    incorporates Bootstrap, you will need to make sure to **also** set
