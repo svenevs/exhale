@@ -31,29 +31,16 @@ from testing.base import ExhaleTestCase
 __all__ = [
     "root", "file_hierarchy", "class_hierarchy",
     "node",
-    # TODO: this stays like this until they're all implemented ;)
-    # AVAILABLE_KINDS = [
-    #     "class",      --> clike
-    #     "struct",     --> clike
     "clike",
-    #     "function",   --> function
     "function", "signature",
-    #     "enum",       --> enum
     "enum",
-    #     "enumvalue",  # unused
-    #     "namespace",  --> namespace
     "namespace",
-    #     "define",     --> XXXXX
-    #     "typedef",    --> XXXXX
-    #     "variable",   --> XXXXX
-    #     "file",       --> file
+    "define",
+    "typedef",
+    "variable",
     "file",
-    #     "dir",        --> directory
     "directory",
-    #     "group",      # unused
-    #     "union"       --> union
     "union",
-    # ]
     "compare_file_hierarchy", "compare_class_hierarchy"
 ]
 
@@ -61,7 +48,7 @@ __all__ = [
 ########################################################################################
 # Doxygen compound test classes (proxies to exhale.graph.ExhaleNode).                  #
 ########################################################################################
-class node(ExhaleNode):  # noqa N801
+class node(ExhaleNode):  # noqa: N801
     """
     Testing hierarchy parent class for pass-through construction of |ExhaleNode|.
 
@@ -103,7 +90,7 @@ class node(ExhaleNode):  # noqa N801
             child.toConsole(level + 1)
 
 
-class clike(node):  # noqa N801
+class clike(node):  # noqa: N801
     """
     Represent a ``class`` or ``struct``.
 
@@ -123,7 +110,7 @@ class clike(node):  # noqa N801
         self.template = template
 
 
-class directory(node):  # noqa N801
+class directory(node):  # noqa: N801
     """
     Represent a ``directory`` in a file hierarchy.
 
@@ -140,7 +127,23 @@ class directory(node):  # noqa N801
         super(directory, self).__init__(name, "dir")
 
 
-class enum(node):  # noqa N801
+class define(node):  # noqa: N801
+    """
+    Represents a ``define``.
+
+    **Parameters**
+
+        ``name`` (:class:`python:str`)
+            The name of the define / macro being representated
+
+    .. todo:: Do macros (with parameters) need special treatment?
+    """
+
+    def __init__(self, name):
+        super(define, self).__init__(name, "define")
+
+
+class enum(node):  # noqa: N801
     """
     Represent an ``enum``.
 
@@ -158,7 +161,7 @@ class enum(node):  # noqa N801
         self.values = values
 
 
-class file(node):  # noqa N801
+class file(node):  # noqa: N801
     """
     Represent a ``file``.
 
@@ -183,7 +186,7 @@ class file(node):  # noqa N801
         return "{0}: {1}".format(self.kind, self.location)
 
 
-class function(node):  # noqa N801
+class function(node):  # noqa: N801
     """
     Represent a (partial) ``function``.
 
@@ -245,7 +248,7 @@ class function(node):  # noqa N801
         self.signature = signature
 
 
-class signature(object):  # noqa N801
+class signature(object):  # noqa: N801
     """
     Represent a |function| signature.
 
@@ -298,7 +301,7 @@ class signature(object):  # noqa N801
         return ", ".join(a for a in self.args)
 
 
-class namespace(node):  # noqa N801
+class namespace(node):  # noqa: N801
     """
     Represent a ``namespace``.
 
@@ -311,7 +314,30 @@ class namespace(node):  # noqa N801
         super(namespace, self).__init__(name, "namespace")
 
 
-class union(node):  # noqa N801
+class typedef(node):  # noqa: N801
+    """
+    Represents a ``typedef``.
+
+    **Parameters**
+        ``new_name`` (:class:`python:str`)
+            The new name to typedef *to*.  For example, if you had
+            ``using my_float = float;`` the new name is ``"my_float"``.
+
+        ``old_name`` (:class:`python:str`)
+            The old name to typedef *from*.  For example, if you had
+            ``using my_float = float;`` the old name is ``"float"``.
+
+        ``template``
+            .. todo:: e.g. ``template <typename X> using ...``.  Not implemented.
+    """
+
+    def __init__(self, new_name, old_name, template=None):
+        super(typedef, self).__init__(new_name, "typedef")
+        self.old_name = old_name
+        self.template = template
+
+
+class union(node):  # noqa: N801
     """
     Represent a ``union``.
 
@@ -326,10 +352,29 @@ class union(node):  # noqa N801
         super(union, self).__init__(name, "union")
 
 
+class variable(node):  # noqa: N801
+    """
+    Represent a ``variable``.
+
+    **Parameters**
+        ``_type`` (:class:`python:str`)
+            The type of the variable (e.g., ``"int"`` or ``"std::string"``).
+
+        ``name`` (:class:`python:str`)
+            The name of the variable, e.g. ``int foo = 0;`` has a name of ``"foo"``.
+
+    .. todo:: nothing is actually done for validating types at this time
+    """
+
+    def __init__(self, _type, name):
+        super(variable, self).__init__(name, "variable")
+        self.type = _type
+
+
 ########################################################################################
 # Doxygen index test classes (proxies to exhale.graph.ExhaleRoot).                     #
 ########################################################################################
-class root(object):  # noqa N801
+class root(object):  # noqa: N801
     """
     Represent a class or file hierarchy to simulate an :class:`exhale.graph.ExhaleRoot`.
 
@@ -446,6 +491,8 @@ class root(object):  # noqa N801
             lst_name = "files"
         elif kind == "namespace":
             lst_name = "namespaces"
+        elif kind == "typedef":
+            lst_name = "typedefs"
         elif kind == "union":
             lst_name = "unions"
         elif kind == "variable":
@@ -534,7 +581,7 @@ class root(object):  # noqa N801
             node.toConsole(0)
 
 
-class class_hierarchy(root):  # noqa N801
+class class_hierarchy(root):  # noqa: N801
     r"""
     Represent a name scope hierarchy.
 
@@ -594,7 +641,7 @@ class class_hierarchy(root):  # noqa N801
         super(class_hierarchy, self).__init__("class", hierarchy)
 
 
-class file_hierarchy(root):  # noqa N801
+class file_hierarchy(root):  # noqa: N801
     r"""
     Represent a parsed directory structure, including which file defines which compound.
 
@@ -691,9 +738,36 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
         else:
             test.assertTrue(exhale_child.def_in_file is None)
 
-    test.assertEqual(test_child.name, exhale_child.name)
-    test.assertEqual(test_child.kind, exhale_child.kind)
-    test.assertEqual(len(test_child.children), len(exhale_child.children))
+    # Make sure they have the same name.
+    test.assertEqual(
+        test_child.name,
+        exhale_child.name,
+        "test_child.name [{tc_name}] != exhale_child.name [{ec_name}]".format(
+            tc_name=test_child.name, ec_name=exhale_child.name
+        )
+    )
+    # Make sure they have the same kind.
+    test.assertEqual(
+        test_child.kind,
+        exhale_child.kind,
+        "test_child.kind [{tc_kind}] != exhale_child.kind [{ec_kind}]".format(
+            tc_kind=test_child.kind, ec_kind=exhale_child.kind
+        )
+    )
+    # Make sure they have the same number of children.
+    CHILD_COUNT_IGNORE_KINDS = ["enumvalue", "group"]
+    num_exhale_children = sum(child.kind not in CHILD_COUNT_IGNORE_KINDS for child in exhale_child.children)
+    test.assertEqual(
+        len(test_child.children),
+        num_exhale_children,
+        "\ntest_child.children names:\n\n{tc_names}\n\nexhale_child.children names:\n\n{ec_names}\n".format(
+            tc_names="\n- ".join(["{name}".format(name=child.name) for child in test_child.children]),
+            ec_names="\n- ".join([
+                "{name}".format(name=child.name)
+                for child in exhale_child.children if child.kind not in CHILD_COUNT_IGNORE_KINDS
+            ])
+        )
+    )
 
     for test_grand_child in test_child.children:
         exhale_grand_child = None
