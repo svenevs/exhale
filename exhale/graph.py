@@ -1986,7 +1986,7 @@ class ExhaleRoot(object):
             if node.kind == "namespace":
                 title = node.name.split("::")[-1]
             else:
-                title = os.path.basename(unique_id)
+                title = os.path.basename(unique_id.replace("_", os.sep))
         else:
             unique_id = node.refid
 
@@ -2032,12 +2032,11 @@ class ExhaleRoot(object):
             # actual documentation ref.  This link_name is an anchor point to the top
             # of the page, but it cannot be a duplicate.
             #
-            # Lastly, the Doxygen refid has the kind _may_ have the kind in it (e.g., a
-            # class or struct), but also may _not_ (e.g., a function is a hash appended
-            # to the file that defined it).  So a little bit of trickery is used to make
-            # sure that the generated filename is at least _somewhat_ understandable for
-            # a human to know what it is documenting (or at least its kind...).
-            # `struct` and includes the proper C++ mangled name afterward.
+            # Lastly, the Doxygen refid _may_ have the kind in it (e.g., a class or
+            # struct), but also may _not_ (e.g., a function is a hash appended to the
+            # file that defined it).  So a little bit of trickery is used to make sure
+            # that the generated filename is at least _somewhat_ understandable for a
+            # human to know what it is documenting (or at least its kind...).
             node.link_name = "exhale_{kind}_{id}".format(kind=node.kind, id=unique_id)
             if unique_id.startswith(node.kind):
                 node.file_name = "{id}.rst".format(id=unique_id)
