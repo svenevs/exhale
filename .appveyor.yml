@@ -6,9 +6,10 @@ environment:
     - PYTHON: "C:\\Python36-x64"
 
 install:
-  - choco install doxygen.portable
-  - "%PYTHON%\\python.exe -m pip install -U setuptools"
-  - "%PYTHON%\\python.exe -m pip install tox"
+  # doxygen.portable is not updated, use newer doxygen
+  - choco install doxygen.install
+  - set PATH=C:\Program Files\doxygen\bin;%PATH%
+  - "%PYTHON%\\python.exe -m pip install -U pip setuptools tox"
 
 build: off
 
