@@ -9,6 +9,12 @@ All Tests
 .. automodule:: testing.tests.c_maths
    :members:
 
+``cpp_long_names``
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.tests.cpp_long_names
+   :members:
+
 ``cpp_nesting``
 ----------------------------------------------------------------------------------------
 

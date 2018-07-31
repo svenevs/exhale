@@ -1,4 +1,4 @@
-# noqa D100
+# noqa: D100
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -98,7 +98,7 @@ except Exception as e:
 # Gather the version information inside of exhale/__init__.py.                         #
 ########################################################################################
 sys.path.insert(0, here)
-import exhale  # noqa E402
+import exhale  # noqa: E402, I100
 version = exhale.__version__
 
 ########################################################################################

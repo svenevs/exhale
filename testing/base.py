@@ -65,7 +65,7 @@ class ExhaleTestCaseMetaclass(type):
     Metaclass to enforce mandatory attributes on :class:`testing.base.ExhaleTestCase`.
     """
 
-    def __new__(mcs, name, bases, attrs):  # noqa N804
+    def __new__(mcs, name, bases, attrs):  # noqa: N804
         """
         Return a new instance with the specified attributes.
 
@@ -173,6 +173,12 @@ class ExhaleTestCaseMetaclass(type):
                         master_doc = "index"
                         source_suffix = [".rst"]
                     '''))
+                    # Absurd test cases may need an increased recursion limit for Sphinx
+                    if self.test_project in ["cpp_long_names"]:
+                        conf_py.write(textwrap.dedent('''
+                            import sys
+                            sys.setrecursionlimit(2000)
+                        '''))
 
                 # If a given test case needs to run app.build(), make sure index.rst
                 # is available as well
