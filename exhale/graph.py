@@ -18,7 +18,9 @@ import sys
 import codecs
 import hashlib
 import itertools
+import platform
 import textwrap
+
 from bs4 import BeautifulSoup
 
 try:
@@ -2066,7 +2068,16 @@ class ExhaleRoot(object):
         # Now force everything in the containment folder
         for attr in ["file_name", "program_file"]:
             if hasattr(node, attr):
-                setattr(node, attr, os.path.join(self.root_directory, getattr(node, attr)))
+                full_path = os.path.join(self.root_directory, getattr(node, attr))
+                if platform.system() == "Windows" and len(full_path) >= configs.MAXIMUM_WINDOWS_PATH_LENGTH:
+                    # NOTE: self.root_directory is *ALREADY* an absolute path, this
+                    #       prefix requires absolute paths!  See documentation for
+                    #       configs.MAXIMUM_WINDOWS_PATH_LENGTH.
+                    full_path = "{magic}{full_path}".format(
+                        magic="{slash}{slash}?{slash}".format(slash="\\"),  # \\?\ I HATE YOU WINDOWS
+                        full_path=full_path
+                    )
+                setattr(node, attr, full_path)
 
         #flake8failhereplease: add a test with decltype!
         # account for decltype(&T::var) etc, could be in name or template params

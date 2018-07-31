@@ -958,6 +958,21 @@ file would be generated to (depending on the filesystem).  As such, a conservati
 of ``255`` should guarantee that the desired filename can always be created.
 '''
 
+MAXIMUM_WINDOWS_PATH_LENGTH = 260
+r'''
+The file path length on Windows cannot be greater than or equal to ``260`` characters.
+
+Since Windows' pathetically antiquated filesystem cannot handle this, they have enabled
+a "magic" prefix they call an *extended-length path*.  This is achieved by inserting
+the prefix ``\\?\`` which allows you to go up to a maximum path of ``32,767`` characters
+**but you may only do this for absolute paths**.  See `Maximum Path Length Limitation`__
+for more information.
+
+Dear Windows, did you know it is the 21st century?
+
+__ https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
+'''
+
 _the_app = None
 ''' The Sphinx ``app`` object.  Currently unused, saved for availability in future. '''
 
