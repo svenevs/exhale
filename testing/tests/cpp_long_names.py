@@ -298,7 +298,10 @@ class CPPLongNames(ExhaleTestCase):
         self.checkRequiredConfigs()
 
         # Make sure that the generated files and such _actually_ work via Sphinx.
-        self.app.build()
+        # NOTE: Sphinx actually crashes for the same reasons Exhale was on Windows
+        #       because they do not prefix with \\?\ for >= 260 length paths x0
+        if platform.system() != "Windows":
+            self.app.build()
 
         # Define a testing function that will check either:
         #

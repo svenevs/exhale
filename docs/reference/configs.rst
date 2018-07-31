@@ -710,6 +710,10 @@ Utility Variables
 
 .. autodata:: exhale.configs.SUB_SUB_SECTION_HEADING_CHAR
 
+.. autodata:: exhale.configs.MAXIMUM_FILENAME_LENGTH
+
+.. autodata:: exhale.configs.MAXIMUM_WINDOWS_PATH_LENGTH
+
 .. autodata:: exhale.configs._the_app
 
 .. autodata:: exhale.configs._app_src_dir
