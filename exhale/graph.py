@@ -1984,7 +1984,7 @@ class ExhaleRoot(object):
             else:
                 unique_id = node.name
 
-            unique_id = unique_id.replace(":", "_").replace(os.sep, "_").replace(" ", "_").replace("__", "_")
+            unique_id = unique_id.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
             if node.kind == "namespace":
                 title = node.name.split("::")[-1]
             else:
