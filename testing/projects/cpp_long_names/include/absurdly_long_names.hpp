@@ -1,5 +1,5 @@
 /**
- * \file absurdly_long_names.hpp
+ * \file
  *
  * \brief Tests constructs with names longer than 255 characters.
  *
