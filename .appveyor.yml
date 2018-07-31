@@ -17,4 +17,4 @@ test_script:
   - easy_install --version
   - doxygen --version
   # Installs dependencies and runs the tests.
-  - "%PYTHON%\\python.exe -m tox -e py"
+  - "%PYTHON%\\Scripts\\tox -e py"
