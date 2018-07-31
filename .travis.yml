@@ -1,4 +1,24 @@
 sudo: false
+
+linux_apt: &linux_apt
+  apt:
+    packages:
+      # The dependencies for compiling doxygen from source.
+      - flex
+      - bison
+
+linux_install_script: &linux_install
+  - curl -LO http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.src.tar.gz
+  - tar -xf doxygen-1.8.14.src.tar.gz
+  - cd doxygen-1.8.14/
+  - mkdir build && cd build/
+  - cmake ..
+  - make -j
+  - export PATH="$PWD/bin:$PATH"
+  # Go back to repository root for the rest
+  - cd $(git rev-parse --show-toplevel)
+  - pip install -U pip setuptools tox codecov
+
 matrix:
   allow_failures:
     - env: ALLOW_ME_TO=FAIL
@@ -7,14 +27,10 @@ matrix:
     # Linux :: Python :: 2.7                                                           #
     ####################################################################################
     - os: linux
-      addons:
-        apt:
-          packages:
-            - doxygen
+      addons: *linux_apt
       language: python
       python: "2.7"
-      install:
-        - pip install -U tox codecov
+      install: *linux_install
       script:
         - doxygen --version
         - tox -e py -- --cov=exhale
@@ -24,14 +40,10 @@ matrix:
     # Linux :: Python :: 3.6                                                           #
     ####################################################################################
     - os: linux
-      addons:
-        apt:
-          packages:
-            - doxygen
+      addons: *linux_apt
       language: python
       python: "3.6"
-      install:
-        - pip install -U tox codecov
+      install: *linux_install
       script:
         - doxygen --version
         - tox -e py -- --cov=exhale
