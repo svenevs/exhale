@@ -162,9 +162,7 @@ Yes and no.  Partial and full template specialization are supported, but not ele
    **Full Specialization** ``template <> DerivedClass<bool, 2>``
        Produces ``template <> template<> DerivedClass<bool, 2>``
 
-4. See the :ref:`usage_external_linkage_templates`.
-
-5. Where metaprogramming is concerned, it is more likely that Doxygen's preprocessor
+4. Where metaprogramming is concerned, it is more likely that Doxygen's preprocessor
    needs to have everything ``PREDEFINED``.  YMMV.
 
 .. tip::
