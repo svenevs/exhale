@@ -33,7 +33,7 @@ matrix:
       install: *linux_install
       script:
         - doxygen --version
-        - tox -e py -- --cov=exhale
+        - tox -e py -- --cov=exhale --cov=testing
       after_success:
         - codecov --name linux_py2.7
     ####################################################################################
@@ -46,7 +46,7 @@ matrix:
       install: *linux_install
       script:
         - doxygen --version
-        - tox -e py -- --cov=exhale
+        - tox -e py -- --cov=exhale --cov=testing
       after_success:
         - codecov --name linux_py3.6
     ####################################################################################
@@ -65,7 +65,7 @@ matrix:
       script:
         - doxygen --version
         - /usr/local/bin/python2 --version
-        - /usr/local/bin/python2 -m tox -e py -- --cov=exhale
+        - /usr/local/bin/python2 -m tox -e py -- --cov=exhale --cov=testing
       after_success:
         - codecov --name osx_py2.7
     ####################################################################################
@@ -82,7 +82,7 @@ matrix:
       script:
         - doxygen --version
         - /usr/local/bin/python3 --version
-        - /usr/local/bin/python3 -m tox -e py -- --cov=exhale
+        - /usr/local/bin/python3 -m tox -e py -- --cov=exhale --cov=testing
       after_success:
         - codecov --name osx_py3.6
     ####################################################################################

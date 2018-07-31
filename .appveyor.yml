@@ -9,7 +9,7 @@ install:
   # doxygen.portable is not updated, use newer doxygen
   - choco install doxygen.install
   - set PATH=C:\Program Files\doxygen\bin;%PATH%
-  - "%PYTHON%\\python.exe -m pip install -U pip setuptools tox"
+  - "%PYTHON%\\python.exe -m pip install -U pip setuptools tox codecov"
 
 build: off
 
@@ -18,4 +18,7 @@ test_script:
   - easy_install --version
   - doxygen --version
   # Installs dependencies and runs the tests.
-  - "%PYTHON%\\Scripts\\tox -e py"
+  - "%PYTHON%\\Scripts\\tox -e py -- --cov=exhale --cov=testing"
+
+after_test:
+  - "%PYTHON%\\python.exe -m codecov --name %PYTHON%"
