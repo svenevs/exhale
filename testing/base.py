@@ -24,7 +24,7 @@ import six
 from six import add_metaclass
 from sphinx.testing.path import path
 
-from . import TEST_PROJECTS_ROOT
+from . import TEST_PROJECTS_ROOT, get_exhale_root
 from .decorators import default_confoverrides
 
 
@@ -211,6 +211,16 @@ class ExhaleTestCaseMetaclass(type):
             attrs["_rootdir"] = pytest.fixture(autouse=True)(_rootdir)
             attrs["_set_app"] = pytest.fixture(autouse=True)(_set_app)
 
+            # Create a default test that will validate some common tests
+            def test_common(self):
+                marks  = getattr(self, "pytestmark", False)
+                no_run = marks and any('no_run' in m.args for m in marks)
+                if not no_run:
+                    self.checkRequiredConfigs()
+                    self.checkAllFilesGenerated()
+
+            attrs["test_common"] = test_common
+
         # applying the default configuration override, which is overridden using the
         # @confoverride decorator at class or method level
         return default_confoverrides(
@@ -349,6 +359,21 @@ class ExhaleTestCase(unittest.TestCase):
             exhale.utils.heading_mark(rootFileTitle, exhale.configs.SECTION_HEADING_CHAR)
         )
         assert root_heading in root_contents
+
         # TODO: validate doxygenStripFromPath
         if doxygenStripFromPath:  # this is only here to avoid a flake8 fail on a todo
             pass
+
+    def checkAllFilesGenerated(self):
+        """Validate that all files are actually generated and included."""
+        root = get_exhale_root(self)
+        containmentFolder = self.getAbsContainmentFolder()
+        for node in root.all_nodes:
+            if node.kind not in ["enumvalue", "group"]:
+                gen_file_path = os.path.join(containmentFolder, node.file_name)
+                self.assertTrue(
+                    os.path.isfile(gen_file_path),
+                    "File for {kind} node with refid=[{refid}] not generated to [{gen_file_path}]!".format(
+                        kind=node.kind, refid=node.refid, gen_file_path=gen_file_path
+                    )
+                )

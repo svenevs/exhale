@@ -115,10 +115,6 @@ class CPPNesting(ExhaleTestCase):
         }
     }
 
-    def test_app(self):
-        """Simply checks :func:`testing.base.ExhaleTestCase.checkRequiredConfigs`."""
-        self.checkRequiredConfigs()
-
     def test_hierarchies(self):
         """Verify the class and file hierarchies."""
         compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict))
