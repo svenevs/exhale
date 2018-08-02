@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 import os
 
 from exhale.graph import ExhaleNode
+from testing import get_exhale_root
 from testing.base import ExhaleTestCase
 
 __all__ = [
@@ -783,17 +784,6 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
         _compare_children(hierarchy_type, test, test_grand_child, exhale_grand_child)
 
 
-def _get_exhale_root(test):
-    # Get the finalized exhale.graph.ExhaleRoot object
-    # TODO: in future this app.exhale_root will *NOT* be set, but instead it will be
-    # something else depending on how the multi-project setup works, AKA if you are
-    # reading this `app.exhale_root` is *NOT* a feature you can rely on!!!
-    app = getattr(test, "app", None)
-    if app is None:
-        raise RuntimeError("Critical failure: the test_root.app was 'None'.")
-    return app.exhale_root
-
-
 def compare_class_hierarchy(test, test_root):
     """
     Compare the parsed and expected class hierarchy for the specified test.
@@ -827,7 +817,7 @@ def compare_class_hierarchy(test, test_root):
         raise ValueError("test_root parameter must be an instance of `class_hierarchy`.")
 
     # Run some preliminary tests
-    exhale_root = _get_exhale_root(test)
+    exhale_root = get_exhale_root(test)
     test.assertEqual(len(test_root.class_like), len(exhale_root.class_like))
     test.assertEqual(len(test_root.enums), len(exhale_root.enums))
     test.assertEqual(len(test_root.namespaces), len(exhale_root.namespaces))
@@ -897,7 +887,7 @@ def compare_file_hierarchy(test, test_root):
         raise ValueError("test_root parameter must be an instance of `file_hierarchy`.")
 
     # Run some preliminary tests
-    exhale_root = _get_exhale_root(test)
+    exhale_root = get_exhale_root(test)
     test.assertEqual(len(test_root.dirs), len(exhale_root.dirs))
     test.assertEqual(len(test_root.files), len(exhale_root.files))
     for test_obj in test_root.top_level:

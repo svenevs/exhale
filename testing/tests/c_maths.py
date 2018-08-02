@@ -13,7 +13,7 @@ from __future__ import unicode_literals
 import os
 
 from testing.base import ExhaleTestCase
-from testing.decorators import confoverrides, no_cleanup, no_run
+from testing.decorators import confoverrides, no_run
 from testing.hierarchies import                                       \
     class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, \
     directory, file, file_hierarchy, function, signature
@@ -27,10 +27,6 @@ class CMathsTests(ExhaleTestCase):
     test_project = "c_maths"
     """.. testproject:: c_maths"""
 
-    def test_app(self):
-        """Simply checks :func:`testing.base.ExhaleTestCase.checkRequiredConfigs`."""
-        self.checkRequiredConfigs()
-
     @confoverrides(exhale_args={"containmentFolder": "./alt_api"})
     def test_alt_out(self):
         """
@@ -38,8 +34,6 @@ class CMathsTests(ExhaleTestCase):
         """
         self.checkRequiredConfigs()
 
-    @confoverrides(exhale_args={"verboseBuild": True})  # CI testing is breaking :/
-    @no_cleanup
     def test_hierarchies(self):
         """Verify the class and file hierarchies."""
         # verify the file hierarchy and file declaration relationships
@@ -76,4 +70,9 @@ class CMathsTestsNoRun(ExhaleTestCase):
 
         # check that nothing has been generated
         containmentFolder = self.getAbsContainmentFolder()
-        self.assertFalse(os.path.exists(containmentFolder))
+        self.assertFalse(
+            os.path.exists(containmentFolder),
+            "Folder [{containmentFolder}] should not exist!".format(
+                containmentFolder=containmentFolder
+            )
+        )

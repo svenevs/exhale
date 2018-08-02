@@ -300,12 +300,8 @@ class CPPLongNames(ExhaleTestCase):
     file_hierarchy_dict = make_file_hierarchy_dict()
     """The (potentially absurd) file hierarchy for this project."""
 
-    def test_app(self):
-        """
-        Check required configurations, that the app builds, and that long names get hashed correctly.
-        """
-        self.checkRequiredConfigs()
-
+    def test_hashes(self):
+        """Verify the long names get hashed to the expected values."""
         # Make sure that the generated files and such _actually_ work via Sphinx.
         # NOTE: Sphinx actually crashes for the same reasons Exhale was on Windows
         #       because they do not prefix with \\?\ for >= 260 length paths x0
