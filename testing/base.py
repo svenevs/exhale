@@ -14,6 +14,7 @@ All project based test cases should inherit from :class:`testing.base.ExhaleTest
 from __future__ import unicode_literals
 import os
 import platform
+import re
 import shutil
 import textwrap
 import unittest
@@ -218,6 +219,7 @@ class ExhaleTestCaseMetaclass(type):
                 if not no_run:
                     self.checkRequiredConfigs()
                     self.checkAllFilesGenerated()
+                    self.checkAllFilesIncluded()
 
             attrs["test_common"] = test_common
 
@@ -341,6 +343,8 @@ class ExhaleTestCase(unittest.TestCase):
 
            4. identify via a ``file_*`` method that ``{doxygenStripFromPath}``
               was correctly removed / wielded.
+
+        .. autotested::
         """
         containmentFolder    = self.getAbsContainmentFolder()
         rootFileName         = self.app.config.exhale_args["rootFileName"]
@@ -365,7 +369,11 @@ class ExhaleTestCase(unittest.TestCase):
             pass
 
     def checkAllFilesGenerated(self):
-        """Validate that all files are actually generated and included."""
+        """
+        Validate that all files are actually generated.
+
+        .. autotested::
+        """
         root = get_exhale_root(self)
         containmentFolder = self.getAbsContainmentFolder()
         for node in root.all_nodes:
@@ -375,5 +383,41 @@ class ExhaleTestCase(unittest.TestCase):
                     os.path.isfile(gen_file_path),
                     "File for {kind} node with refid=[{refid}] not generated to [{gen_file_path}]!".format(
                         kind=node.kind, refid=node.refid, gen_file_path=gen_file_path
+                    )
+                )
+
+    def checkAllFilesIncluded(self):
+        """
+        Validate that all files are actually included in the library root.
+
+        .. autotested::
+        """
+        # build path to unabridged api document that adds all toctree directives
+        root = get_exhale_root(self)
+        containmentFolder = self.getAbsContainmentFolder()
+        unabridged_api_path = os.path.join(containmentFolder, "unabridged_api.rst")
+
+        # gather lines that match the indented part of the toctree
+        #
+        # .. toctree::
+        #    :maxdepth: {toctreeMaxDepth}
+        #
+        #    some_node.file_name.rst
+        #
+        # so just lazily look for the leading three spaces and ending with .rst
+        toctrees = []
+        under_toctree_re = re.compile(r"^   .+\.rst$")
+        with open(unabridged_api_path) as unabridged_api:
+            for line in unabridged_api:
+                if under_toctree_re.match(line):
+                    toctrees.append(line.strip())
+
+        # scal all nodes and make sure they were found in the toctrees above
+        for node in root.all_nodes:
+            if node.kind not in ["enumvalue", "group"]:
+                self.assertTrue(
+                    node.file_name in toctrees,
+                    "Node refid=[{refid}] and basename=[{file_name}] not found in [{unabridged_api}]!".format(
+                        refid=node.refid, file_name=node.file_name, unabridged_api=unabridged_api_path
                     )
                 )

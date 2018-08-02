@@ -1,3 +1,6 @@
+# If branch from same repo is on a PR, don't build both :)
+skip_branch_with_pr: true
+
 # See: https://packaging.python.org/guides/supporting-windows-using-appveyor/
 environment:
   matrix:

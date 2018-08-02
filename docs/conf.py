@@ -226,6 +226,11 @@ def setup(app):
     from testproject import testproject, visit_testproject_node, depart_testproject_node, TestProjectDirective
     app.add_node(testproject, html=(visit_testproject_node, depart_testproject_node))
     app.add_directive('testproject', TestProjectDirective)
+
+    sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), "_extensions"))
+    from autotested import autotested, visit_autotested_node, depart_autotested_node, AutoTestedDirective
+    app.add_node(autotested, html=(visit_autotested_node, depart_autotested_node))
+    app.add_directive('autotested', AutoTestedDirective)
     ####################################################################################
     # Multiline string documentation                                                   #
     ####################################################################################
