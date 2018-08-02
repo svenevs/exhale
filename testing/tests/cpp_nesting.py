@@ -50,7 +50,8 @@ class CPPNesting(ExhaleTestCase):
                                 clike("struct", "params"): {
                                     union("four_bytes"): {}
                                 }
-                            }
+                            },
+                            union("four_bytes"): {}
                         }
                     }
                 },
@@ -100,6 +101,7 @@ class CPPNesting(ExhaleTestCase):
                     union("four_bytes"): {}
                 }
             },
+            union("four_bytes"): {},
             namespace("dual_nested"): {
                 clike("struct", "one"): {
                     clike("struct", "params"): {

@@ -469,7 +469,7 @@ class root(object):  # noqa: N801
 
         union_removals = []
         for u in self.unions:
-            if u.parent and u.parent.kind in ["class", "struct", "union"]:
+            if u.parent and u.parent.kind in ["class", "struct", "namespace", "union"]:
                 union_removals.append(u)
 
         for u in union_removals:
