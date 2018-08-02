@@ -5,6 +5,8 @@ Exhale Utils Module
 
 .. autodata:: exhale.utils.AVAILABLE_KINDS
 
+.. autodata:: exhale.utils.LEAF_LIKE_KINDS
+
 .. autofunction:: exhale.utils.contentsDirectiveOrNone
 
 Breathe Customization Support

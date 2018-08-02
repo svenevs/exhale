@@ -106,20 +106,46 @@ def get_time():
 
 AVAILABLE_KINDS = [
     "class",
-    "struct",
-    "function",
+    "define",
+    "dir",
     "enum",
     "enumvalue",  # unused
-    "namespace",
-    "define",
-    "typedef",
-    "variable",
     "file",
-    "dir",
+    "function",
     "group",  # unused
-    "union"
+    "namespace",
+    "struct",
+    "typedef",
+    "union",
+    "variable"
 ]
-''' A list of all potential input ``kind`` values coming from Doxygen. '''
+'''
+All potential input ``kind`` values coming from Doxygen.
+
+The ``"group"`` and ``"enumvalue"`` kinds are currently detected, but unused.
+'''
+
+LEAF_LIKE_KINDS = [
+    "define",
+    "enum",
+    "function",
+    "class",
+    "struct",
+    "typedef",
+    "union",
+    "variable"
+]
+'''
+All kinds that can be generated using |generateSingleNodeRST|.
+
+This more or less corresponds to the kinds that Exhale uses a Breathe directive.  This
+is everything in :data:`AVAILABLE_KINDS`, except for
+
+- ``"enumvalue"`` and ``"group"`` (unused in framework), and
+- ``"dir"``, ``"file"``, and ``"namespace"`` since they require special treatment.
+
+.. |generateSingleNodeRST| replace:: :class:`ExhaleRoot.generateSingleNodeRST <exhale.graph.ExhaleRoot.generateSingleNodeRST>`
+'''
 
 
 def contentsDirectiveOrNone(kind):
