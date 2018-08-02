@@ -1,5 +1,10 @@
 sudo: false
 
+branches:
+  except:
+    # Ignore fix/* branches since they'll also have a Pull Request build
+    - /^fix.*$/
+
 linux_apt: &linux_apt
   apt:
     packages:
