@@ -1919,24 +1919,15 @@ class ExhaleRoot(object):
         from ``self.class_like``, as well as everything in ``self.enums`` and
         ``self.unions``.
         '''
-        # initialize all of the nodes
+        # initialize all of the nodes first
         for node in self.all_nodes:
             self.initializeNodeFilenameAndLink(node)
 
-        # find the potentially nested items that were reparented
-        nested_enums      = []
-        nested_unions     = []
-        nested_class_like = []
-        for cl in self.class_like:
-            cl.findNestedEnums(nested_enums)
-            cl.findNestedUnions(nested_unions)
-            cl.findNestedClassLike(nested_class_like)
-
-        # generate all of the leaf-like documents
-        for node in itertools.chain(nested_class_like, self.enums, nested_enums,
-                                    self.unions, nested_unions, self.functions,
-                                    self.typedefs, self.variables, self.defines):
-            self.generateSingleNodeRST(node)
+        # now that all potential ``node.link_name`` members are initialized, generate
+        # the leaf-like documents
+        for node in self.all_nodes:
+            if node.kind in utils.LEAF_LIKE_KINDS:
+                self.generateSingleNodeRST(node)
 
         # generate the remaining parent-like documents
         self.generateNamespaceNodeDocuments()
@@ -2100,18 +2091,11 @@ class ExhaleRoot(object):
 
     def generateSingleNodeRST(self, node):
         '''
-        Creates the reStructuredText document for the leaf like node object.  This
-        method should only be used with nodes in the following member lists:
+        Creates the reStructuredText document for the leaf like node object.
 
-        - ``self.class_like``
-        - ``self.enums``
-        - ``self.functions``
-        - ``self.typedefs``
-        - ``self.unions``
-        - ``self.variables``
-        - ``self.defines``
-
-        File, directory, and namespace nodes are treated separately.
+        It is **assumed** that the specified ``node.kind`` is in
+        :data:`~exhale.utils.LEAF_LIKE_KINDS`.  File, directory, and namespace nodes are
+        treated separately.
 
         :Parameters:
             ``node`` (ExhaleNode)
