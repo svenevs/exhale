@@ -161,13 +161,15 @@ class CPPFortranMixed(ExhaleTestCase):
                 ``include/convert/convert.hpp`` and ``src/conversions.f90``,
                 respectively.
         """
-        convert_hpp     = None
-        conversions_f90 = None
+        convert_hpp          = None
+        convert_hpp_path     = os.path.join("include", "convert", "convert.hpp")
+        conversions_f90      = None
+        conversions_f90_path = os.path.join("src", "conversions.f90")
         for f in exhale_root.files:
-            if f.location == "include/convert/convert.hpp":
+            if f.location == convert_hpp_path:
                 convert_hpp = f
                 continue
-            elif f.location == "src/conversions.f90":
+            elif f.location == conversions_f90_path:
                 conversions_f90 = f
                 continue
 
