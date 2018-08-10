@@ -272,10 +272,10 @@ LANG_TO_LEX = {
     "Markdown":     "markdown"
 }
 '''
-.. include:: LANG_TO_LEX_value.rst
+.. include:: ../LANG_TO_LEX_value.rst
 
 Mapping of ``language="xxx"`` from the Doxygen programlisting to Pygments Lexers.  This
-mapping is used in :func:`doxygenLanguageToSphinxLexer`.
+mapping is used in :func:`doxygenLanguageToPygmentsLexer`.
 
 From the Doxygen documentation on `EXTENSION_MAPPING <ext_map>`_:
 
