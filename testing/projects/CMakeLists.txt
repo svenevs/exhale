@@ -82,8 +82,8 @@ target_link_libraries(exhale-projects-unit-tests
 if (NOT WIN32)
   # See ${CMAKE_BINARY_DIR}/cmake/CodeCoverage.cmake, this trims the local genhtml report
   set(COVERAGE_GCOVR_EXCLUDES
-    "/usr/*"
-    "${CMAKE_BINARY_DIR}/.*"
+    "'/usr/*'"
+    "'${CMAKE_BINARY_DIR}/*'"
   )
   include(CodeCoverage)
   append_coverage_compiler_flags()
