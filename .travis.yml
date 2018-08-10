@@ -118,3 +118,35 @@ matrix:
         - pip install -U tox
       script:
         - tox -e docs,linkcheck
+    ####################################################################################
+    # testing/projects Code Validation                                                 #
+    ####################################################################################
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - cmake
+      language: cpp  # mostly ;)
+      env: TEST=testing/projects
+      before_install:
+        - export CC=gcc-7
+        - export CXX=g++-7
+      install:
+        # I don't want to require sudo because I don't want to wait ;)
+        - pip install virtualenv
+        - virtualenv venv
+        - source venv/bin/activate
+        - pip install -U pip codecov gcovr
+      script:
+        - cd testing/projects
+        - mkdir build && cd build
+        - cmake --version
+        - cmake ..
+        - make -j
+        - make coverage-xml
+      after_success:
+        - codecov --name linux_testing_projects
+
