@@ -16,7 +16,7 @@ Exhale
    :alt: Travis CI Build Status (Unix, Flake8 and Docs Tests)
    :target: https://travis-ci.com/svenevs/exhale
 
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/m7u8vkbelui57b1j?svg=true
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/g6ja670b5dgkej7u/branch/master
    :alt: AppVeyor CI Build Satus (Windows Tests)
    :target: https://ci.appveyor.com/project/svenevs/exhale
 
