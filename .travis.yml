@@ -127,13 +127,16 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - gcc-7
             - g++-7
+            - gfortran-7
             - cmake
       language: cpp  # mostly ;)
       env: TEST=testing/projects
       before_install:
         - export CC=gcc-7
         - export CXX=g++-7
+        - export FC=gfortran-7
       install:
         # I don't want to require sudo because I don't want to wait ;)
         - pip install virtualenv
