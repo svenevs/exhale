@@ -39,9 +39,9 @@ class CMathsTests(ExhaleTestCase):
         # verify the file hierarchy and file declaration relationships
         file_hierarchy_dict = {
             directory("include"): {
-                file("main.h"): {
-                    function("int", "add"): signature("int a", "int b"),
-                    function("int", "sub"): signature("int a", "int b")
+                file("c_maths.h"): {
+                    function("int", "cm_add"): signature("int a", "int b"),
+                    function("int", "cm_sub"): signature("int a", "int b")
                 }
             }
         }
