@@ -7,16 +7,29 @@
 # License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode            #
 ########################################################################################
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
-project(cpp-nesting LANGUAGES CXX)
+project(c-maths LANGUAGES C)
 
-# "Header only library": add tests and include the directory
+# Add the c-maths library
+add_library(c-maths "")
+target_sources(c-maths
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/c_maths.h
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/c_maths.c
+)
+target_include_directories(c-maths
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# Add the tests and link against the c-maths library.
 target_sources(exhale-projects-unit-tests
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tests.cpp
 )
-target_include_directories(exhale-projects-tests-interface
+target_link_libraries(exhale-projects-tests-interface
   INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    c-maths
 )
 
 add_open_cpp_coverage_source_dirs(include src)

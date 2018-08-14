@@ -7,7 +7,7 @@
 # License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode            #
 ########################################################################################
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
-project(cpp-long-names)
+project(cpp-long-names LANGUAGES CXX)
 
 # Windows cannot handle the full test case because of its antiquated filesystem.
 if (NOT WIN32)
