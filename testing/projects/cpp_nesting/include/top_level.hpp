@@ -11,6 +11,9 @@
  *
  * \brief This file should be at the top of the file hierarchy.
  */
+#pragma once
+
+#include <string>
 
 /// A top level structure that should be at the root of the class hierarchy.
 struct top_level {

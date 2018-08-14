@@ -93,6 +93,9 @@ endif()
 set(EXHALE_PROJECTS
   cpp_nesting
 )
+if (MSVC)
+  set(OPEN_CPP_COVERAGE_SOURCE_LIST ) # Create empty list, modified in child projects
+endif()
 foreach (proj ${EXHALE_PROJECTS})
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/${proj})
 endforeach()
@@ -109,5 +112,47 @@ if (UNIX)
     NAME coverage-html
     EXECUTABLE $<TARGET_FILE:exhale-projects-unit-tests>
     DEPENDENCIES exhale-projects-unit-tests cpp-fortran-mixed
+  )
+elseif (MSVC)
+  # Require user (or AppVeyor script) have already installed OpenCppCoverage.exe.
+  find_program(OPEN_CPP_COVERAGE_EXE OpenCppCoverage.exe)
+  if (OPEN_CPP_COVERAGE_EXE STREQUAL "OPEN_CPP_COVERAGE_EXE-NOTFOUND")
+    message(FATAL_ERROR
+      "OpenCppCoverage.exe not found, is it in your $PATH?  You can install it "
+      "with Chocolatey: `choco install opencppcoverage`.  Alternatively, follow "
+      "the instructions here: https://github.com/OpenCppCoverage/OpenCppCoverage"
+    )
+  endif()
+
+  # Populate a list of --sources to supply to OpenCppCoverage.
+  foreach (dir ${OPEN_CPP_COVERAGE_SOURCE_LIST})
+    file(TO_NATIVE_PATH "${dir}" native_path)
+    list(APPEND OPEN_CPP_COVERAGE_SOURCES "--sources \"${native_path}\"")
+  endforeach()
+
+  # Add a custom target that launches OpenCppCoverage exporting to cobertura format
+  # which codecov.io can understand.  Invoke from command-line using:
+  #     cmake --build . --target coverage-xml
+  add_custom_target(
+    coverage-xml
+    COMMAND ${OPEN_CPP_COVERAGE_EXE} ${OPEN_CPP_COVERAGE_SOURCES}
+      --working_dir "\"${PROJECT_BINARY_DIR}\""
+      --export_type cobertura:coverage.xml
+      -- $<TARGET_FILE:exhale-projects-unit-tests>
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    DEPENDS exhale-projects-unit-tests
+  )
+
+  # Add a custom target that launches OpenCppCoverage generating HTML coverage for
+  # local viewing.  Invoke from command-line using:
+  #     cmake --build . --target coverage-html
+  add_custom_target(
+    coverage-html
+    COMMAND ${OPEN_CPP_COVERAGE_EXE} ${OPEN_CPP_COVERAGE_SOURCES}
+      --working_dir "\"${PROJECT_BINARY_DIR}\""
+      --export_type html:coverage_html
+      -- $<TARGET_FILE:exhale-projects-unit-tests>
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    DEPENDS exhale-projects-unit-tests
   )
 endif()
