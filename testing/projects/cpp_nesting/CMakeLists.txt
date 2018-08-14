@@ -18,3 +18,11 @@ target_include_directories(exhale-projects-tests-interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+# Add to explicit list of sources for OpenCppCoverage
+if (MSVC)
+  foreach (dir include src)
+    list(APPEND OPEN_CPP_COVERAGE_SOURCE_LIST ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
+  endforeach()
+  set(OPEN_CPP_COVERAGE_SOURCE_LIST "${OPEN_CPP_COVERAGE_SOURCE_LIST}" PARENT_SCOPE)
+endif()

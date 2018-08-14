@@ -148,5 +148,5 @@ matrix:
         - make -j
         - make coverage-xml
       after_success:
-        - codecov --name linux_testing_projects
+        - codecov --name linux_cxx
 
