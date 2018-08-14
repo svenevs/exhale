@@ -224,11 +224,23 @@ def create_absurd_directory_structure():
                 os.makedirs(absurd_dir)
             with open(os.path.join(absurd_dir, "a_file.hpp"), "w") as a_file:
                 a_file.write(textwrap.dedent(r'''
+                    /***************************************************************************************
+                     * This file is dedicated to the public domain.  If your jurisdiction requires a       *
+                     * specific license:                                                                   *
+                     *                                                                                     *
+                     * Copyright (c) Stephen McDowell, 2017-2018                                           *
+                     * License:      CC0 1.0 Universal                                                     *
+                     * License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode           *
+                     **************************************************************************************/
                     /** \file */
                     #pragma once
 
+                    #include <string>
+
                     /// A function from an extremely nested file path.
-                    inline std::string extremely_nested() { return "Extremely nested works!!!"; }
+                    inline std::string extremely_nested() {
+                        return "Extremely nested works!!!";
+                    }
                 '''))
         except Exception as e:
             raise RuntimeError(

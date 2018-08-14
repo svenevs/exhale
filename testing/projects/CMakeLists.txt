@@ -89,13 +89,36 @@ if (NOT WIN32)
   append_coverage_compiler_flags()
 endif()
 
-# List of projects to validate have code that actually compiles xD
-set(EXHALE_PROJECTS
-  cpp_nesting
-)
+# Convenience definitions / macro for OpenCppCoverage --sources coordination.
 if (MSVC)
   set(OPEN_CPP_COVERAGE_SOURCE_LIST ) # Create empty list, modified in child projects
 endif()
+
+# Call in subdirectories, it's a macro and expands using CMAKE_CURRENT_SOURCE_DIR, so
+# for example just do
+#
+#                                space delimits new arguments
+#                                              v
+#     add_open_cpp_coverage_source_dirs(include src)
+#
+# Then `${CMAKE_CURRENT_SOURCE_DIR}/include` and `${CMAKE_CURRENT_SOURCE_DIR}/src`
+# will be appended to OPEN_CPP_COVERAGE_SOURCE_LIST which will then be set in
+# PARENT_SCOPE so that it updates across all projects.
+macro(add_open_cpp_coverage_source_dirs)
+  if (MSVC)
+    foreach (dir ${ARGV})
+      list(APPEND OPEN_CPP_COVERAGE_SOURCE_LIST ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
+    endforeach()
+    set(OPEN_CPP_COVERAGE_SOURCE_LIST "${OPEN_CPP_COVERAGE_SOURCE_LIST}" PARENT_SCOPE)
+  endif()
+endmacro()
+
+# List of projects to validate have code that actually compiles xD
+set(EXHALE_PROJECTS
+  cpp_long_names
+  cpp_nesting
+)
+
 foreach (proj ${EXHALE_PROJECTS})
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/${proj})
 endforeach()
@@ -111,7 +134,7 @@ if (UNIX)
   setup_target_for_coverage_gcovr_html(
     NAME coverage-html
     EXECUTABLE $<TARGET_FILE:exhale-projects-unit-tests>
-    DEPENDENCIES exhale-projects-unit-tests cpp-fortran-mixed
+    DEPENDENCIES exhale-projects-unit-tests
   )
 elseif (MSVC)
   # Require user (or AppVeyor script) have already installed OpenCppCoverage.exe.

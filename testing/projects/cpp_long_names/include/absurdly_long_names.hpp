@@ -1,3 +1,11 @@
+/***************************************************************************************
+ * This file is dedicated to the public domain.  If your jurisdiction requires a       *
+ * specific license:                                                                   *
+ *                                                                                     *
+ * Copyright (c) Stephen McDowell, 2017-2018                                           *
+ * License:      CC0 1.0 Universal                                                     *
+ * License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode           *
+ **************************************************************************************/
 /**
  * \file
  *
@@ -24,7 +32,7 @@
  */
 #pragma once
 
-#include <random>
+#include <string>
 
 /// A macro for making the absurdly long names.
 #define MAKE_IT_BIG(prefix) prefix##_that_is_longer_than_two_hundred_and_fifty_five_characters_long_which_is_an_absolutely_and_completely_ridiculous_thing_to_do_and_if_you_did_this_in_the_real_world_you_put_yourself_comfortably_in_a_position_to_be_downsized_and_outta_here_as_soul_position_would_explain_to_you
@@ -42,12 +50,7 @@ struct MAKE_IT_BIG(struct) {
 
 /// A function with an absurdly long name.  Returns a string describing the divergence number of the current world line.
 inline std::string MAKE_IT_BIG(function)() {
-    // copy + paste = <3
-    // https://stackoverflow.com/a/19666713/3814202
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(0.0, 0.999999999);// poor Mayuri...
-    return "The divergence number: " + std::to_string(dist(mt));
+    return "The divergence number: 0.999999999";// poor Mayuri...
 }
 
 /// An enum with an absurdly long name.

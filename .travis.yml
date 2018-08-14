@@ -140,6 +140,9 @@ matrix:
         - virtualenv venv
         - source venv/bin/activate
         - pip install -U pip codecov gcovr
+        # cpp_long_names test runs code from testing/tests/cpp_long_names.py, so we need
+        # to install the runtime dependencies of Exhale's Python tests.
+        - pip install -r requirements.txt -r requirements-dev.txt
       script:
         - cd testing/projects
         - mkdir build && cd build
