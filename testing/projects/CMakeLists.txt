@@ -118,6 +118,12 @@ set(EXHALE_PROJECTS
   cpp_long_names
   cpp_nesting
 )
+# At this time I care not to figure out how to actually get a functioning fortran
+# compiler setup to work with Visual Studio.  Maybe if Microsoft ever cares enough to
+# provide legitimate support for this, I may decide to actually test this.
+if (NOT WIN32 AND NOT MSVC)
+  list(APPEND EXHALE_PROJECTS cpp_fortran_mixed)
+endif()
 
 foreach (proj ${EXHALE_PROJECTS})
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/${proj})
