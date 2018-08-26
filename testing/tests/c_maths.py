@@ -16,7 +16,7 @@ from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides, no_run
 from testing.hierarchies import                                       \
     class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, \
-    directory, file, file_hierarchy, function, signature
+    directory, file, file_hierarchy, function, parameters
 
 
 class CMathsTests(ExhaleTestCase):
@@ -40,8 +40,8 @@ class CMathsTests(ExhaleTestCase):
         file_hierarchy_dict = {
             directory("include"): {
                 file("c_maths.h"): {
-                    function("int", "cm_add"): signature("int", "int"),
-                    function("int", "cm_sub"): signature("int", "int")
+                    function("int", "cm_add"): parameters("int", "int"),
+                    function("int", "cm_sub"): parameters("int", "int")
                 }
             }
         }

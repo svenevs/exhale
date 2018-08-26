@@ -195,7 +195,7 @@ class ExhaleNode(object):
 
         if self.kind == "function":
             self.return_type = None # string (void, int, etc)
-            self.signature = [] # list of strings: ["int", "int"] for foo(int x, int y)
+            self.parameters = [] # list of strings: ["int", "int"] for foo(int x, int y)
             self.template = None # list of strings
 
     def __lt__(self, other):
@@ -246,9 +246,9 @@ class ExhaleNode(object):
         """
         if self.kind == "function":
             # TODO: breathe bug with templates and overloads, don't know what to do...
-            return "{name}({signature})".format(
+            return "{name}({parameters})".format(
                 name=self.name,
-                signature=", ".join(self.signature)
+                parameters=", ".join(self.parameters)
             )
 
         return self.name
@@ -267,11 +267,11 @@ class ExhaleNode(object):
                 If ``self.kind != "function"``.
         """
         if self.kind == "function":
-            return "{template}{return_type} {name}({signature})".format(
+            return "{template}{return_type} {name}({parameters})".format(
                 template="template <{0}> ".format(", ".join(self.template)) if self.template else "",
                 return_type=self.return_type,
                 name=self.name,
-                signature=", ".join(self.signature)
+                parameters=", ".join(self.parameters)
             )
         raise RuntimeError(
             "full_signature may only be called for a 'function', but {name} is a '{kind}' node.".format(
@@ -1930,10 +1930,10 @@ class ExhaleRoot(object):
                     memberdef.find("type", recursive=False).text
                 )
                 # 2. The function parameter list.
-                signature = []
+                parameters = []
                 for param in memberdef.find_all("param", recursive=False):
-                    signature.append(param.type.text)
-                func.signature = utils.sanitize_all(signature)
+                    parameters.append(param.type.text)
+                func.parameters = utils.sanitize_all(parameters)
                 # 3. The template parameter list.
                 templateparamlist = memberdef.templateparamlist
                 if templateparamlist:
@@ -2262,12 +2262,14 @@ class ExhaleRoot(object):
             else:
                 overloads[func.name].append(func)
 
-        # Now that we know what is / is not overloaded, only include the signature
+        # Now that we know what is / is not overloaded, only include the parameters
         # when actually needed in the title.
         # TODO: should this be exclusive to functions?  What about classes etc?
+        # TODO: include full signature instead of just parameters????
+        # TODO: this is making me so sad
         for name in overloads:
             functions = overloads[name]
-            needs_signature = len(functions) > 1
+            needs_parameters = len(functions) > 1
 
             # Problems with Breathe and template overloads, best I can do right now is warn.
             # Keys: strings, ", " joined with parameter list of current function
@@ -2284,7 +2286,7 @@ class ExhaleRoot(object):
                 else:
                     prefix = "Function"
 
-                if needs_signature:
+                if needs_parameters:
                     # Must escape asterisks in heading else they get treated as refs:
                     # http://docutils.sourceforge.net/docs/user/rst/quickstart.html#text-styles
                     suffix = func.breathe_identifier().replace("*", r"\*")
@@ -2294,15 +2296,15 @@ class ExhaleRoot(object):
                 func.title = "{prefix} {suffix}".format(prefix=prefix, suffix=suffix)
 
                 # Build the warning set in a way that can recover things in the outer loop.
-                parameters = ", ".join(func.signature)
-                if parameters in parameter_warning_map:
-                    parameter_warning_map[parameters].append(func)
+                parameters_str = ", ".join(func.parameters)
+                if parameters_str in parameter_warning_map:
+                    parameter_warning_map[parameters_str].append(func)
                 else:
-                    parameter_warning_map[parameters] = [func]
+                    parameter_warning_map[parameters_str] = [func]
 
             # Inform user when specified breathe directive will create problems
-            for parameters in parameter_warning_map:
-                warn_functions = parameter_warning_map[parameters]
+            for parameters_str in parameter_warning_map:
+                warn_functions = parameter_warning_map[parameters_str]
                 if len(warn_functions) > 1:
                     sys.stderr.write(utils.critical(
                         textwrap.dedent('''

@@ -154,7 +154,7 @@ value, with some exceptions:
          v_directory [label="dict"];
          v_enum      [label="????"];
          v_file      [label="dict"];
-         v_function  [label="signature"];
+         v_function  [label="parameters"];
          v_namespace [label="dict"];
          v_typedef   [label="????"];
          v_union     [label="dict"];
@@ -273,7 +273,7 @@ Functions
    :special-members:
    :exclude-members: __init__, __weakref__, __dict__
 
-.. autoclass:: testing.hierarchies.signature
+.. autoclass:: testing.hierarchies.parameters
    :members:
    :special-members:
    :exclude-members: __init__, __weakref__, __dict__

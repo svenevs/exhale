@@ -33,7 +33,7 @@ __all__ = [
     "root", "file_hierarchy", "class_hierarchy",
     "node",
     "clike",
-    "function", "signature",
+    "function", "parameters",
     "enum",
     "namespace",
     "define",
@@ -194,17 +194,20 @@ class function(node):  # noqa: N801
     .. note::
 
        This key must always map to a value of
-       :class:`hierarchies.signature <testing.hierarchies.signature>`.
+       :class:`hierarchies.parameters <testing.hierarchies.parameters>`.
 
        .. code-block:: py
 
-          function("int", "add"): signature("int a", "int b")
+          function("int", "add"): parameters("int", "int")
 
        represents the function declaration
 
        .. code-block:: cpp
 
           int add(int a, int b);
+
+       Note that parameter names (``a`` and ``b`` in this example) are not to be
+       included, only parameter types.
 
     **Parameters**
         ``return_type`` (:class:`python:str`)
@@ -220,45 +223,37 @@ class function(node):  # noqa: N801
     def __init__(self, return_type, name, template=[]):
         super(function, self).__init__(name, "function")
         self.return_type = return_type
-        self.signature = []  # set later, required to let functions be keys in dict
+        self.parameters = []  # set later, required to let functions be keys in dict
         self.template = template
 
     def __str__(self):
         """
-        Return the full declaration and signature of this function.
+        Pass-through method that will return |f_signature|.
 
-        **Raises**
-            :class:`python:RuntimeError`
-                If ``self.signature`` is ``None``, meaning the hierarchy was not
-                correctly parsed from the json-like dictionary.
+        .. |f_signature| replace:: :func:`ExhaleNode.full_signature <exhale.graph.ExhaleNode.full_signature>`
         """
-        if not self.signature:
-            raise RuntimeError("{0}: no function signature!".format(self.name))
-        return "{0} {1}({2})".format(
-            self.return_type, self.name, ", ".join(self.signature)
-        )
+        return self.full_signature()
 
-    def setSignature(self, signature):
+    def setParameters(self, parameters):
         """
-        Set the signature of this function.
+        Set the parameters of this function.
 
         Since this class is to map to a value of type
-        :class:`hierarchies.signature <testing.hierarchies.signature>`, when the
+        :class:`hierarchies.parameters <testing.hierarchies.parameters>`, when the
         dictionary is being parsed this method will be called.
         """
-        self.signature = signature.args
+        self.parameters = parameters.args
 
 
-class signature(object):  # noqa: N801
+class parameters(object):  # noqa: N801
     """
-    Represent a |function| signature.
+    Represent a |function| parameters.
 
     .. |function| replace:: :class:`hierarchies.function <testing.hierarchies.function>`
 
     **Parameters**
         ``*args`` (Parameter Pack)
-            Arbitrary list, **assumed** to be all strings.  Must also include types.
-            For example,
+            Arbitrary list, **assumed** to be all strings.  For example,
 
             .. code-block:: cpp
 
@@ -268,7 +263,7 @@ class signature(object):  # noqa: N801
 
             .. code-block:: py
 
-               function("int", "add"): signature("int a", "int b")
+               function("int", "add"): parameters("int", "int")
 
             whereas
 
@@ -280,11 +275,14 @@ class signature(object):  # noqa: N801
 
             .. code-block:: py
 
-               function("void", "serialize"): signature(
-                   "Serializer &s",
-                   "const std::string &name",
-                   "int id"
+               function("void", "serialize"): parameters(
+                   "Serializer&",
+                   "const std::string&",
+                   "int"
                )
+
+            Only parameter *types* are to be included, not declared names (``int, int``
+            not ``int a, int b``).
 
     **Attributes**
         ``self.args`` (:class:`python:list` of :class:`python:str`)
@@ -510,12 +508,12 @@ class root(object):  # noqa: N801
 
         if not isinstance(child_spec, dict):
             if isinstance(parent, function):
-                if not isinstance(child_spec, signature):
+                if not isinstance(child_spec, parameters):
                     raise ValueError(
-                        "Specification of 'function' [{0}] must be of type 'signature'".format(parent.name)
+                        "Specification of 'function' [{0}] must be of type 'parameters'".format(parent.name)
                     )
                 else:
-                    parent.setSignature(child_spec)
+                    parent.setParameters(child_spec)
                     return
             else:
                 raise ValueError(
