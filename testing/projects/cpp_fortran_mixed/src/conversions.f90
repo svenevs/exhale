@@ -91,8 +91,8 @@ contains
   !>     The input ``radians_d`` converted to degrees.  Return type is double precision.
   !-------------------------------------------------------------------------------------
   function radians_to_degrees_d(radians_d) result(degrees_d)
-    real(kind=c_double), intent(in) :: radians_d
-    real(kind=c_double)             :: degrees_d
+    real(c_double), intent(in) :: radians_d
+    real(c_double)             :: degrees_d
     degrees_d = radians_d * d_180 / pi_d
   end function radians_to_degrees_d
 end module conversions

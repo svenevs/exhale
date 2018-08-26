@@ -61,8 +61,8 @@ class CPPFortranMixed(ExhaleTestCase):
             directory("convert"): {
                 file("convert.hpp"): {
                     namespace("convert"): {
-                        function("T", "to_degrees", template="typename T"): signature("T radians"),
-                        function("T", "to_radians", template="typename T"): signature("T degrees")
+                        function("T", "to_degrees", template=["typename T"]): signature("T"),
+                        function("T", "to_radians", template=["typename T"]): signature("T")
                     }
                 }
             }
@@ -74,10 +74,13 @@ class CPPFortranMixed(ExhaleTestCase):
                     variable("real(c_double)", "pi_d"): {},
                     variable("real(c_float)", "s_180"): {},
                     variable("real(c_double)", "d_180"): {},
-                    function("real(c_float)", "degrees_to_radians_s"): signature("real(c_float) degrees_s"),
-                    function("real(c_double)", "degrees_to_radians_d"): signature("real(c_double) degrees_d"),
-                    function("real(c_float)", "radians_to_degrees_s"): signature("real(c_float) radians_s"),
-                    function("real(c_double)", "radians_to_degrees_d"): signature("real(c_double) radians_d")
+                    # NOTE: function signatures in fortran are a little weird.
+                    # 1. <type> has 'function', e.g. 'real(c_float) function'
+                    # 2. Parameters are names, not types?
+                    function("real(c_float) function", "degrees_to_radians_s"): signature("degrees_s"),
+                    function("real(c_double) function", "degrees_to_radians_d"): signature("degrees_d"),
+                    function("real(c_float) function", "radians_to_degrees_s"): signature("radians_s"),
+                    function("real(c_double) function", "radians_to_degrees_d"): signature("radians_d")
                 }
             }
         }

@@ -40,8 +40,8 @@ class CMathsTests(ExhaleTestCase):
         file_hierarchy_dict = {
             directory("include"): {
                 file("c_maths.h"): {
-                    function("int", "cm_add"): signature("int a", "int b"),
-                    function("int", "cm_sub"): signature("int a", "int b")
+                    function("int", "cm_add"): signature("int", "int"),
+                    function("int", "cm_sub"): signature("int", "int")
                 }
             }
         }
