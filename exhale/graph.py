@@ -193,6 +193,11 @@ class ExhaleNode(object):
             self.program_file      = ""
             self.program_link_name = ""
 
+        if self.kind == "function":
+            self.return_type = None # string (void, int, etc)
+            self.signature = [] # list of strings: ["int", "int"] for foo(int x, int y)
+            self.template = None # list of strings
+
     def __lt__(self, other):
         '''
         The ``ExhaleRoot`` class stores a bunch of lists of ``ExhaleNode`` objects.
@@ -222,6 +227,58 @@ class ExhaleNode(object):
         # otherwise, sort based off the kind
         else:
             return self.kind < other.kind
+
+    def breathe_identifier(self):
+        """
+        The unique identifier for breathe directives.
+
+        .. note::
+
+            This method is currently assumed to only be called for nodes that are
+            in :data:`exhale.utils.LEAF_LIKE_KINDS` (see also
+            :func:`exhale.graph.ExhaleRoot.generateSingleNodeRST` where it is used).
+
+        **Return**
+
+            :class:`python:str`
+                Usually, this will just be ``self.name``.  However, for functions in
+                particular the signature must be included to distinguish overloads.
+        """
+        if self.kind == "function":
+            # TODO: breathe bug with templates and overloads, don't know what to do...
+            return "{name}({signature})".format(
+                name=self.name,
+                signature=", ".join(self.signature)
+            )
+
+        return self.name
+
+    def full_signature(self):
+        """
+        The full signature of a ``"function"`` node.
+
+        **Return**
+            :class:`python:str`
+                The full signature of the function, including template, return type,
+                name, and parameter types.
+
+        **Raises**
+            :class:`python:RuntimeError`
+                If ``self.kind != "function"``.
+        """
+        if self.kind == "function":
+            return "{template}{return_type} {name}({signature})".format(
+                template="template <{0}> ".format(", ".join(self.template)) if self.template else "",
+                return_type=self.return_type,
+                name=self.name,
+                signature=", ".join(self.signature)
+            )
+        raise RuntimeError(
+            "full_signature may only be called for a 'function', but {name} is a '{kind}' node.".format(
+                name=self.name, kind=self.kind
+            )
+        )
+
 
     def templateParametersStringAsRestList(self, nodeByRefid):
         '''
@@ -978,7 +1035,8 @@ class ExhaleRoot(object):
         3. Populate ``self.node_by_refid`` using ``self.all_nodes``.
         4. :func:`~exhale.graph.ExhaleRoot.fileRefDiscovery`
         5. :func:`~exhale.graph.ExhaleRoot.filePostProcess`
-        6. :func:`~exhale.graph.ExhaleRoot.sortInternals`
+        6. :func:`~exhale.graph.ExhaleRoot.parseFunctionSignatures`.
+        7. :func:`~exhale.graph.ExhaleRoot.sortInternals`
         '''
         self.discoverAllNodes()
         # now reparent everything we can
@@ -994,6 +1052,9 @@ class ExhaleRoot(object):
         # find missing relationships using the Doxygen xml files
         self.fileRefDiscovery()
         self.filePostProcess()
+
+        # gather the function signatures
+        self.parseFunctionSignatures()
 
         # sort all of the lists we just built
         self.sortInternals()
@@ -1035,7 +1096,7 @@ class ExhaleRoot(object):
                 # things like defines, enums, etc.  For classes and structs, we don't
                 # need to pay attention because the members are the various methods or
                 # data members by the class
-                if curr_kind == "namespace" or curr_kind == "file":
+                if curr_kind in ["file", "namespace"]:
                     for member in compound.find_all("member"):
                         if member.find("name") and "kind" in member.attrs and "refid" in member.attrs:
                             child_name  = member.find("name").get_text()
@@ -1787,6 +1848,101 @@ class ExhaleRoot(object):
                     )
                 ))
 
+    def parseFunctionSignatures(self):
+        """Search file and namespace node XML contents for function signatures."""
+        # Keys: string refid of either namespace or file nodes
+        # Values: list of function objects that should be defined there
+        parent_to_func = {}
+        for func in self.functions:
+            # Case 1: it is a function inside a namespace, the function information
+            # is in the namespace's XML file.
+            if func.parent:
+                parent_refid = None
+                if func.parent.kind == "namespace":
+                    parent_refid = func.parent.refid
+                else:
+                    raise RuntimeError(textwrap.dedent('''
+                        Function [{0}] with refid=[{1}] had a parent of kind '{2}':
+                        Parent name=[{3}], refid=[{4}].
+
+                        Functions may only have namespace parents.  Please report this
+                        issue online, Exhale has a parsing error.
+                    '''.format(func.name, func.refid, func.parent.name, func.parent.refid)))
+            # Case 2: top-level function, it's information is in the file node's XML.
+            elif func.def_in_file:
+                parent_refid = func.def_in_file.refid
+            else:
+                utils.verbose_log(utils.critical(
+                    "Cannot parse function [{0}] signature, refid=[{2}], no parent/def_in_file found!".format(
+                        func.name, func.refid
+                    )
+                ))
+
+            # If we found a suitable parent refid, gather in parent_to_func.
+            if parent_refid:
+                if parent_refid not in parent_to_func:
+                    parent_to_func[parent_refid] = []
+                parent_to_func[parent_refid].append(func)
+
+        # Now we have a mapping of all defining elements to where the function
+        # signatures _should_ live.
+        # TODO: setwise comparison / report when children vs parent_to_func[refid] differ?
+        for refid in parent_to_func:
+            parent = self.node_by_refid[refid]
+            parent_contents = utils.nodeCompoundXMLContents(parent)
+            if not parent_contents:
+                continue  ############flake8efphase: TODO: error, log?
+
+            try:
+                parent_soup = BeautifulSoup(parent_contents, "lxml-xml")
+            except:
+                continue
+
+            cdef = parent_soup.doxygen.compounddef
+            func_section = None
+            for section in cdef.find_all("sectiondef", recursive=False):
+                if "kind" in section.attrs and section.attrs["kind"] == "func":
+                    func_section = section
+                    break
+
+            if not func_section:
+                continue############flake8efphase: TODO: error, log?
+
+            functions = parent_to_func[refid]
+            for memberdef in func_section.find_all("memberdef", recursive=False):
+                if "kind" not in memberdef.attrs or memberdef.attrs["kind"] != "function":
+                    continue
+
+                func_refid = memberdef.attrs["id"]
+                func = None
+                for candidate in functions:
+                    if candidate.refid == func_refid:
+                        func = candidate
+                        break
+
+                if not func:
+                    continue ############flake8efphase: TODO: error, log?
+                functions.remove(func)
+
+                # At last, we can actually parse the function signature
+                # 1. The function return type.
+                func.return_type = utils.sanitize(
+                    memberdef.find("type", recursive=False).text
+                )
+                # 2. The function parameter list.
+                signature = []
+                for param in memberdef.find_all("param", recursive=False):
+                    signature.append(param.type.text)
+                func.signature = utils.sanitize_all(signature)
+                # 3. The template parameter list.
+                templateparamlist = memberdef.templateparamlist
+                if templateparamlist:
+                    template = []
+                    for param in templateparamlist.find_all("param", recursive=False):
+                        template.append(param.type.text)
+                    func.template = utils.sanitize_all(template)
+
+
     def sortInternals(self):
         '''
         Sort all internal lists (``class_like``, ``namespaces``, ``variables``, etc)
@@ -1927,6 +2083,8 @@ class ExhaleRoot(object):
         # initialize all of the nodes first
         for node in self.all_nodes:
             self.initializeNodeFilenameAndLink(node)
+
+        self.adjustFunctionTitles()
 
         # now that all potential ``node.link_name`` members are initialized, generate
         # the leaf-like documents
@@ -2093,6 +2251,100 @@ class ExhaleRoot(object):
         )
         if node.template_params or template_special:
             node.title = "Template {title}".format(title=node.title)
+
+    def adjustFunctionTitles(self):
+        # keys: string (func.name)
+        # values: list of nodes (length 2 or larger indicates overload)
+        overloads = {}
+        for func in self.functions:
+            if func.name not in overloads:
+                overloads[func.name] = [func]
+            else:
+                overloads[func.name].append(func)
+
+        # Now that we know what is / is not overloaded, only include the signature
+        # when actually needed in the title.
+        # TODO: should this be exclusive to functions?  What about classes etc?
+        for name in overloads:
+            functions = overloads[name]
+            needs_signature = len(functions) > 1
+
+            # Problems with Breathe and template overloads, best I can do right now is warn.
+            # Keys: strings, ", " joined with parameter list of current function
+            # Values: list of function objects, len > 1 indicates problem to print to console.
+            parameter_warning_map = {}
+
+            for func in functions:
+                # TODO: make this more like classes and include the templates?
+                #       problem: SFINAE -> death of readability
+                #
+                # SOLUTION? only include when overloads found?
+                if func.template:
+                    prefix = "Template Function"
+                else:
+                    prefix = "Function"
+
+                if needs_signature:
+                    # Must escape asterisks in heading else they get treated as refs:
+                    # http://docutils.sourceforge.net/docs/user/rst/quickstart.html#text-styles
+                    suffix = func.breathe_identifier().replace("*", r"\*")
+                else:
+                    suffix = func.name
+
+                func.title = "{prefix} {suffix}".format(prefix=prefix, suffix=suffix)
+
+                # Build the warning set in a way that can recover things in the outer loop.
+                parameters = ", ".join(func.signature)
+                if parameters in parameter_warning_map:
+                    parameter_warning_map[parameters].append(func)
+                else:
+                    parameter_warning_map[parameters] = [func]
+
+            # Inform user when specified breathe directive will create problems
+            for parameters in parameter_warning_map:
+                warn_functions = parameter_warning_map[parameters]
+                if len(warn_functions) > 1:
+                    sys.stderr.write(utils.critical(
+                        textwrap.dedent('''
+                            Current limitations in .. doxygenfunction:: directive affect your code!
+
+                            Right now there are {num} functions that will all be generating the
+                            *SAME* directive on different pages:
+
+                                .. doxygenfunction:: {breathe_identifier}
+
+                            This will result in all {num} pages documenting the same function, however
+                            which function is not known (possibly dependent upon order of Doxygen's
+                            index.xml?).  We hope to resolve this issue soon, and appreciate your
+                            understanding.
+
+                            The full function signatures as parsed by Exhale that will point to the
+                            same function:
+                        '''.format(
+                            num=len(warn_functions), breathe_identifier=warn_functions[0].breathe_identifier()
+                        ))                                                                        + \
+                        "".join(["\n- {0}".format(wf.full_signature()) for wf in warn_functions]) + \
+                        textwrap.dedent('''
+
+                            Unfortunately, there are no known workarounds at this time.  Your only options
+
+                            1. Ignore it, hopefully this will be resolved sooner rather than later.
+                            2. Only let Doxygen document *ONE* of these functions, e.g., by doing
+
+                                   #if !defined(DOXYGEN_SHOULD_SKIP_THIS)
+                                       // function declaration and/or implementation
+                                   #endif // DOXYGEN_SHOULD_SKIP_THIS
+
+                               Making sure that your Doxygen configuration has
+
+                                   PREDEFINED += DOXYGEN_SHOULD_SKIP_THIS
+
+                               (added by default when using "exhaleDoxygenStdin").
+
+                            Sorry :(
+
+                        ''')
+                    ))
 
     def generateSingleNodeRST(self, node):
         '''
@@ -2318,9 +2570,9 @@ class ExhaleRoot(object):
                     )
                 )))
                 # inject the appropriate doxygen directive and name of this node
-                directive = ".. {directive}:: {name}".format(
+                directive = ".. {directive}:: {breathe_identifier}".format(
                     directive=utils.kindAsBreatheDirective(node.kind),
-                    name=node.name
+                    breathe_identifier=node.breathe_identifier()
                 )
                 gen_file.write("\n{directive}\n".format(directive=directive))
                 # include any specific directives for this doxygen directive

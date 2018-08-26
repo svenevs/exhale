@@ -251,6 +251,56 @@ def nodeCompoundXMLContents(node):
             return None
     return None
 
+
+def sanitize(name):
+    """
+    Sanitize the specified ``name`` for use with breathe directives.
+
+    **Parameters**
+
+    ``name`` (:class:`python:str`)
+        The name to be sanitized.
+
+    **Return**
+
+    :class:`python:str`
+        The input ``name`` sanitized to use with breathe directives (primarily for use
+        with ``.. doxygenfunction::``).  Replacements such as ``"&lt;" -> "<"`` are
+        performed, as well as removing spaces ``"< " -> "<"`` must be done.  Breathe is
+        particularly sensitive with respect to whitespace.
+    """
+    return name.replace(
+        "&lt;", "<"
+    ).replace(
+        "&gt;", ">"
+    ).replace(
+        "&amp;", "&"
+    ).replace(
+        "< ", "<"
+    ).replace(
+        " >", ">"
+    ).replace(
+        " &", "&"
+    ).replace(
+        "& ", "&"
+    )
+
+
+def sanitize_all(names):
+    """
+    Convenience function to :func:`~exhale.utils.sanitize` all provided names.
+
+    **Parameters**
+        ``names`` (:class:`python:list` of :class:`python:str`)
+            A list of strings to sanitize.
+
+    **Return**
+        :class:`python:list` of :class:`python:str`
+            Each name in ``names`` sanitized: ``[sanitize(n) for n in names]``.
+    """
+    return [sanitize(n) for n in names]
+
+
 LANG_TO_LEX = {
     # Default Doxygen languages
     "IDL":          "idl",
