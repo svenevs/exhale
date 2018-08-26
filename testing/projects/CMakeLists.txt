@@ -116,6 +116,7 @@ endmacro()
 # List of projects to validate have code that actually compiles xD
 set(EXHALE_PROJECTS
   c_maths
+  cpp_func_overloads
   cpp_long_names
   cpp_nesting
 )
