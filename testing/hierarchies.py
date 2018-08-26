@@ -106,7 +106,7 @@ class clike(node):  # noqa: N801
             .. todo:: template specification / creation TBD for classes / structs.
     """
 
-    def __init__(self, kind, name, template=None):
+    def __init__(self, kind, name, template=[]):
         super(clike, self).__init__(name, kind)
         self.template = template
 
@@ -217,11 +217,11 @@ class function(node):  # noqa: N801
             .. todo:: template specification / creation TBD for functions.
     """
 
-    def __init__(self, return_type, name, template=None):
+    def __init__(self, return_type, name, template=[]):
         super(function, self).__init__(name, "function")
         self.return_type = return_type
-        self.signature = None  # set later, required to let functions be keys in dict
-        self.template = None
+        self.signature = []  # set later, required to let functions be keys in dict
+        self.template = template
 
     def __str__(self):
         """
@@ -235,7 +235,7 @@ class function(node):  # noqa: N801
         if not self.signature:
             raise RuntimeError("{0}: no function signature!".format(self.name))
         return "{0} {1}({2})".format(
-            self.return_type, self.name, self.signature
+            self.return_type, self.name, ", ".join(self.signature)
         )
 
     def setSignature(self, signature):
@@ -246,7 +246,7 @@ class function(node):  # noqa: N801
         :class:`hierarchies.signature <testing.hierarchies.signature>`, when the
         dictionary is being parsed this method will be called.
         """
-        self.signature = signature
+        self.signature = signature.args
 
 
 class signature(object):  # noqa: N801
@@ -762,9 +762,12 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
         len(test_child.children),
         num_exhale_children,
         "\ntest_child.children names:\n\n{tc_names}\n\nexhale_child.children names:\n\n{ec_names}\n".format(
-            tc_names="\n- ".join(["{name}".format(name=child.name) for child in test_child.children]),
+            tc_names="\n- ".join([
+                "{breathe_identifier}".format(breathe_identifier=child.breathe_identifier())
+                for child in test_child.children
+            ]),
             ec_names="\n- ".join([
-                "{name}".format(name=child.name)
+                "{breathe_identifier}".format(breathe_identifier=child.breathe_identifier())
                 for child in exhale_child.children if child.kind not in CHILD_COUNT_IGNORE_KINDS
             ])
         )
@@ -772,11 +775,16 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
 
     for test_grand_child in test_child.children:
         exhale_grand_child = None
-        for grand_child in exhale_child.children:
-            if grand_child.name == test_grand_child.name and \
-                    grand_child.kind == test_grand_child.kind:
-                exhale_grand_child = grand_child
-                break
+        if test_grand_child.kind == "function":
+            test_signature = test_grand_child.full_signature()
+            for candidate in exhale_child.children:
+                if candidate.kind == "function" and candidate.full_signature() == test_signature:
+                    exhale_grand_child = candidate
+                    break
+        else:
+            for candidate in exhale_child.children:
+                if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:
+                    exhale_grand_child = candidate
         if not exhale_grand_child:
             raise RuntimeError("Matching child for [{0}] '{1}' not found!".format(
                 test_grand_child.kind, test_grand_child.name
@@ -908,3 +916,50 @@ def compare_file_hierarchy(test, test_root):
                 test_obj.kind, test_obj.name
             ))
         _compare_children("file", test, test_obj, exhale_obj)
+
+    # Functions needs to be checked explicitly (overloaded function names are same...)
+    test.assertEqual(len(test_root.functions), len(exhale_root.functions))
+
+    def find_overloads(root):
+        # keys: string function names
+        # values: list of nodes (length 2 or larger indicates overload)
+        overloads = {}
+        for func in root.functions:
+            if func.name not in overloads:
+                overloads[func.name] = [func]
+            else:
+                overloads[func.name].append(func)
+
+        return overloads
+
+    test_overloads = find_overloads(test_root)
+    exhale_overloads = find_overloads(exhale_root)
+
+    # Make sure the same overload groups were all found.
+    test.assertEqual(
+        test_overloads.keys(),
+        exhale_overloads.keys(),
+        "Functions grouped by overload name not equivalent!"
+    )
+
+    for key in test_overloads:
+        # Surface-level test: must be the same length.
+        test.assertEqual(
+            len(test_overloads[key]),
+            len(exhale_overloads[key]),
+            "Function overload group [{group}]:\nTest:\n{test_ids}\n\nExhale:\n{exhale_ids}\n".format(
+                group=key,
+                test_ids="".join(
+                    "\n - {0}".format(f.full_signature()) for f in test_overloads[key]
+                ),
+                exhale_ids="".join(
+                    "\n - {0}".format(f.full_signature()) for f in exhale_overloads[key]
+                )
+            )
+        )
+
+        # Validate the return type, name, and signatures.
+        test_functions = set(f.full_signature() for f in test_overloads[key])
+        exhale_functions = set(f.full_signature() for f in exhale_overloads[key])
+        # The error message when not equal is _beautiful_ <3
+        test.assertEqual(test_functions, exhale_functions)
