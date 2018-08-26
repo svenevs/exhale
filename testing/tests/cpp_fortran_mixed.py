@@ -19,7 +19,7 @@ from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
 from testing.hierarchies import                                                   \
     compare_file_hierarchy, directory, file, file_hierarchy, function, namespace, \
-    signature, variable
+    parameters, variable
 
 
 @confoverrides(exhale_args={
@@ -61,8 +61,8 @@ class CPPFortranMixed(ExhaleTestCase):
             directory("convert"): {
                 file("convert.hpp"): {
                     namespace("convert"): {
-                        function("T", "to_degrees", template=["typename T"]): signature("T"),
-                        function("T", "to_radians", template=["typename T"]): signature("T")
+                        function("T", "to_degrees", template=["typename T"]): parameters("T"),
+                        function("T", "to_radians", template=["typename T"]): parameters("T")
                     }
                 }
             }
@@ -74,13 +74,13 @@ class CPPFortranMixed(ExhaleTestCase):
                     variable("real(c_double)", "pi_d"): {},
                     variable("real(c_float)", "s_180"): {},
                     variable("real(c_double)", "d_180"): {},
-                    # NOTE: function signatures in fortran are a little weird.
+                    # NOTE: function parameters in fortran are a little weird.
                     # 1. <type> has 'function', e.g. 'real(c_float) function'
                     # 2. Parameters are names, not types?
-                    function("real(c_float) function", "degrees_to_radians_s"): signature("degrees_s"),
-                    function("real(c_double) function", "degrees_to_radians_d"): signature("degrees_d"),
-                    function("real(c_float) function", "radians_to_degrees_s"): signature("radians_s"),
-                    function("real(c_double) function", "radians_to_degrees_d"): signature("radians_d")
+                    function("real(c_float) function", "degrees_to_radians_s"): parameters("degrees_s"),
+                    function("real(c_double) function", "degrees_to_radians_d"): parameters("degrees_d"),
+                    function("real(c_float) function", "radians_to_degrees_s"): parameters("radians_s"),
+                    function("real(c_double) function", "radians_to_degrees_d"): parameters("radians_d")
                 }
             }
         }
