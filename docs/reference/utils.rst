@@ -59,3 +59,6 @@ Unsorted Misc
 
 .. autofunction:: exhale.utils.doxygenLanguageToPygmentsLexer
 
+.. autofunction:: exhale.utils.sanitize
+
+.. autofunction:: exhale.utils.sanitize_all
