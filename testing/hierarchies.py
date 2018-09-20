@@ -24,6 +24,7 @@ do not need to be validated in the same method.  In both cases, the recipe is:
 
 from __future__ import unicode_literals
 import os
+import textwrap
 
 from exhale.graph import ExhaleNode
 from testing import get_exhale_root
@@ -930,14 +931,57 @@ def compare_file_hierarchy(test, test_root):
 
         return overloads
 
-    test_overloads = find_overloads(test_root)
+    test_overloads   = find_overloads(test_root)
     exhale_overloads = find_overloads(exhale_root)
 
-    # Make sure the same overload groups were all found.
+    # Create explicit sets to be able to use in error message.
+    test_overloads_keys   = set(test_overloads.keys())
+    exhale_overloads_keys = set(exhale_overloads.keys())
+
+    # enumerate items in set on their own lines
+    def set_error_string(s):
+        if not s:
+            return "{ /* empty */ }"
+        ret = "{\n"
+        for item in s:
+            ret += "  {item}\n".format(item=item)
+        ret += "}"
+        return ret
+
     test.assertEqual(
-        test_overloads.keys(),
-        exhale_overloads.keys(),
-        "Functions grouped by overload name not equivalent!"
+        test_overloads_keys,
+        exhale_overloads_keys,
+        # Error messages for sets are quite nice locally, but on CI they are not as
+        # helpful.  Probably a python 2 vs 3 thing?  The below information is enough to
+        # figure out where the problem is.
+        textwrap.dedent('''\
+            Functions grouped by overload name not equivalent!
+
+            ==> e (expected, as enumerated by test):
+            {expected}
+
+            ==> d (discovered by exhale):
+            {discovered}
+
+            ==> Intersection [ e & d ]:
+            {intersection}
+
+            ==> Difference [ e - d ]:
+            {difference_e_min_d}
+
+            ==> Difference [ d - e ]:
+            {difference_d_min_e}
+
+            ==> Symmetric Difference [ e ^ d ]:
+            {symmetric_difference}
+        ''').format(
+            expected=set_error_string(test_overloads_keys),
+            discovered=set_error_string(exhale_overloads_keys),
+            intersection=set_error_string(test_overloads_keys & exhale_overloads_keys),
+            difference_e_min_d=set_error_string(test_overloads_keys - exhale_overloads_keys),
+            difference_d_min_e=set_error_string(exhale_overloads_keys - test_overloads_keys),
+            symmetric_difference=set_error_string(test_overloads_keys ^ exhale_overloads_keys)
+        )
     )
 
     for key in test_overloads:
