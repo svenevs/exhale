@@ -2,6 +2,9 @@
 docs/DEFAULT_DOXYGEN_STDIN_BASE_value.rst
 docs/LANG_TO_LEX_value.rst
 
+# Visual Studio Code settings
+.vscode/
+
 # cpp_long_names python / cxx tests generate this on *nix
 testing/projects/cpp_long_names/include/directory/**
 

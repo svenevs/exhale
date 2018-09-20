@@ -7,24 +7,37 @@ branches:
     # Ignore feature/* branches since they'll also have a Pull Request build
     - /^feature.*$/
 
-linux_apt: &linux_apt
-  apt:
-    packages:
-      # The dependencies for compiling doxygen from source.
-      - flex
-      - bison
-
-linux_install_script: &linux_install
-  - curl -LO http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.src.tar.gz
-  - tar -xf doxygen-1.8.14.src.tar.gz
-  - cd doxygen-1.8.14/
-  - mkdir build && cd build/
-  - cmake ..
-  - make -j
-  - export PATH="$PWD/bin:$PATH"
-  # Go back to repository root for the rest
-  - cd $(git rev-parse --show-toplevel)
-  - pip install -U pip setuptools tox codecov
+# Sphinx version testing done only on Linux (fastest boot / install times).
+# Each test must specify `python: X.Y` and `env: PY=X.Y SPHINX_VERSION=X.Y.Z`.
+# The `tox.ini` file checks the environment variable `SPHINX_VERSION` as an override
+# available to test against a specific version of Sphinx rather than the latest version.
+# The PY environment variable is just to make the Travis CI user interface a little more
+# straightforward which test is which.  See examples below under matrix:include:.
+linux_specifications: &linux_specs
+  os: linux
+  language: python
+  addons:
+    apt:
+      packages:
+        # The dependencies for compiling doxygen from source.
+        - flex
+        - bison
+  install:
+    - curl -LO http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.src.tar.gz
+    - tar -xf doxygen-1.8.14.src.tar.gz
+    - cd doxygen-1.8.14/
+    - mkdir build && cd build/
+    - cmake ..
+    - make -j
+    - export PATH="$PWD/bin:$PATH"
+    # Go back to repository root for the rest
+    - cd $(git rev-parse --show-toplevel)
+    - pip install -U pip setuptools tox codecov
+  script:
+    - doxygen --version
+    - tox -e py -- --cov=exhale --cov=testing
+  after_success:
+    - codecov --name "$(echo "linux-py@$PY-sphinx@$SPHINX_VERSION")"
 
 matrix:
   allow_failures:
@@ -33,29 +46,27 @@ matrix:
     ####################################################################################
     # Linux :: Python :: 2.7                                                           #
     ####################################################################################
-    - os: linux
-      addons: *linux_apt
-      language: python
+    - <<: *linux_specs
       python: "2.7"
-      install: *linux_install
-      script:
-        - doxygen --version
-        - tox -e py -- --cov=exhale --cov=testing
-      after_success:
-        - codecov --name linux_py2.7
+      env: PY=2.7 SPHINX_VERSION=1.6.7
+    - <<: *linux_specs
+      python: "2.7"
+      env: PY=2.7 SPHINX_VERSION=1.7.9
+    - <<: *linux_specs
+      python: "2.7"
+      env: PY=2.7 SPHINX_VERSION=1.8.0
     ####################################################################################
     # Linux :: Python :: 3.6                                                           #
     ####################################################################################
-    - os: linux
-      addons: *linux_apt
-      language: python
+    - <<: *linux_specs
       python: "3.6"
-      install: *linux_install
-      script:
-        - doxygen --version
-        - tox -e py -- --cov=exhale --cov=testing
-      after_success:
-        - codecov --name linux_py3.6
+      env: PY=3.6 SPHINX_VERSION=1.6.7
+    - <<: *linux_specs
+      python: "3.6"
+      env: PY=3.6 SPHINX_VERSION=1.7.9
+    - <<: *linux_specs
+      python: "3.6"
+      env: PY=3.6 SPHINX_VERSION=1.8.0
     ####################################################################################
     # OSX :: Python :: 2.7                                                             #
     ####################################################################################
@@ -155,4 +166,3 @@ matrix:
         - make coverage-xml
       after_success:
         - codecov --name linux_cxx
-
