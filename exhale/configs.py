@@ -665,8 +665,9 @@ pageLevelConfigMeta = None
     make sure that you provide valid reStructuredText or *every* page will produce
     errors.
 
-    See the `Misc Markup <http://www.sphinx-doc.org/en/stable/markup/misc.html>`_ guide
-    for more information.
+    See the `Field Lists`__ guide for more information.
+
+    __ http://www.sphinx-doc.org/en/latest/usage/restructuredtext/field-lists.html
 '''
 
 repoRedirectURL = None

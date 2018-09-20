@@ -516,7 +516,7 @@ followed by **two** ``:``.  So it looks like this:
     ``toctree``
         Toctrees are "Table of Contents" trees.  See the `Sphinx Toctree Docs`__.
 
-        __ http://www.sphinx-doc.org/en/stable/markup/toctree.html
+        __ http://www.sphinx-doc.org/en/latest/usage/restructuredtext/directives.html#directive-toctree
 
     ``include``
         I learned of the ``include`` directive by way of writing Exhale, and call

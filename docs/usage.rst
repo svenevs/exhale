@@ -9,7 +9,7 @@ what you need is:
    read the :ref:`doxygen_documentaion_specifics` for common documentation pitfalls,
    as well as features previously unavailable in standard Doxygen.
 2. A sphinx documentation project ready to go.  See the
-   `First Steps With Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_
+   `Sphinx Getting Started <http://www.sphinx-doc.org/en/latest/usage/quickstart.html>`_
    tutorial for getting that off the ground.
 
 .. contents:: Contents
@@ -74,7 +74,7 @@ Assuming you have set ``primary_domain = 'cpp'`` (as shown in the
 `provided by Sphinx itself`__ *without* needing to prefix everything with ``cpp:``.
 Some examples:
 
-__ http://www.sphinx-doc.org/en/stable/domains.html#id2
+__ http://www.sphinx-doc.org/en/latest/usage/restructuredtext/domains.html#cpp-domain
 
 +--------------------------------+-----------------------------------------------------+
 | Action                         | Syntax                                              |
@@ -390,7 +390,7 @@ section.
    for some more examples.  There is also an `Intersphinx Guide <intersphinx_>`_
    available on the companion website with some examples of linking to macros.
 
-.. _cross: http://www.sphinx-doc.org/en/stable/domains.html#cross-referencing-syntax
+.. _cross: http://www.sphinx-doc.org/en/latest/usage/restructuredtext/domains.html#cross-referencing-syntax
 
 .. _intersphinx: http://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
 
