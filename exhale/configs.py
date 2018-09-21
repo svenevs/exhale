@@ -47,6 +47,7 @@ import six
 import textwrap
 
 from sphinx.errors import ConfigError, ExtensionError
+from sphinx.util import logging
 from types import FunctionType, ModuleType
 
 try:
@@ -55,6 +56,14 @@ try:
 except ImportError:
     # Python 3 StringIO
     from io import StringIO
+
+
+logger = logging.getLogger(__name__)
+"""
+The |SphinxLoggerAdapter| for communicating with the sphinx build process.
+
+.. |SphinxLoggerAdapter| replace:: :class:`sphinx:sphinx.util.SphinxLoggerAdapter`
+"""
 
 # __all__ = []
 
@@ -1415,11 +1424,12 @@ def apply_sphinx_configurations(app):
         val = configs_globals[key]
         # Ignore modules and functions
         if not isinstance(val, FunctionType) and not isinstance(val, ModuleType):
-            # Ignore specials like __name__ and internal variables like _the_app
-            if "_" not in key and len(key) > 0:  # don't think there can be zero length ones...
-                first = key[0]
-                if first.isalpha() and first.islower():
-                    keys_expected.append(key)
+            if key != "logger":  # band-aid for logging api with Sphinx prior to config objects
+                # Ignore specials like __name__ and internal variables like _the_app
+                if "_" not in key and len(key) > 0:  # don't think there can be zero length ones...
+                    first = key[0]
+                    if first.isalpha() and first.islower():
+                        keys_expected.append(key)
 
     keys_expected  = set(keys_expected)
     keys_available = set(keys_available)
@@ -1498,11 +1508,11 @@ def apply_sphinx_configurations(app):
     ####################################################################################
     # treeViewIsBootstrap only takes meaning when createTreeView is True
     if not createTreeView and treeViewIsBootstrap:
-        app.warn("Exhale: `treeViewIsBootstrap=True` ignored since `createTreeView=False`")
+        logger.warning("Exhale: `treeViewIsBootstrap=True` ignored since `createTreeView=False`")
 
     # fullToctreeMaxDepth > 5 may produce other sphinx issues unrelated to exhale
     if fullToctreeMaxDepth > 5:
-        app.warn(
+        logger.ingwarn(
             "Exhale: `fullToctreeMaxDepth={0}` is greater than 5 and may build errors for non-html.".format(
                 fullToctreeMaxDepth
             )
@@ -1564,15 +1574,15 @@ def apply_sphinx_configurations(app):
         # and then return back (where applicable) so sphinx can continue
         start = utils.get_time()
         if returnPath:
-            app.info(utils.info(
+            logger.info(utils.info(
                 "Exhale: changing directories to [{0}] to execute Doxygen.".format(app.confdir)
             ))
             os.chdir(app.confdir)
-        app.info(utils.info("Exhale: executing doxygen."))
+        logger.info(utils.info("Exhale: executing doxygen."))
         status = deploy.generateDoxygenXML()
         # Being overly-careful to put sphinx back where it was before potentially erroring out
         if returnPath:
-            app.info(utils.info(
+            logger.info(utils.info(
                 "Exhale: changing directories back to [{0}] after Doxygen.".format(returnPath)
             ))
             os.chdir(returnPath)
@@ -1580,16 +1590,16 @@ def apply_sphinx_configurations(app):
             raise ExtensionError(status)
         else:
             end = utils.get_time()
-            app.info(utils.progress(
+            logger.info(utils.progress(
                 "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
             ))
     else:
         if exhaleUseDoxyfile:
-            app.warn("Exhale: `exhaleUseDoxyfile` ignored since `exhaleExecutesDoxygen=False`")
+            logger.warning("Exhale: `exhaleUseDoxyfile` ignored since `exhaleExecutesDoxygen=False`")
         if exhaleDoxygenStdin is not None:
-            app.warn("Exhale: `exhaleDoxygenStdin` ignored since `exhaleExecutesDoxygen=False`")
+            logger.warning("Exhale: `exhaleDoxygenStdin` ignored since `exhaleExecutesDoxygen=False`")
         if exhaleSilentDoxygen:
-            app.warn("Exhale: `exhaleSilentDoxygen=True` ignored since `exhaleExecutesDoxygen=False`")
+            logger.warning("Exhale: `exhaleSilentDoxygen=True` ignored since `exhaleExecutesDoxygen=False`")
 
     # Either Doxygen was run prior to this being called, or we just finished running it.
     # Make sure that the files we need are actually there.
@@ -1603,7 +1613,7 @@ def apply_sphinx_configurations(app):
 
     # Legacy / debugging feature, warn of its purpose
     if generateBreatheFileDirectives:
-        app.warn("Exhale: `generateBreatheFileDirectives` is a debugging feature not intended for production.")
+        logger.warning("Exhale: `generateBreatheFileDirectives` is a debugging feature not intended for production.")
 
     ####################################################################################
     # If using a fancy treeView, add the necessary frontend files.                     #
@@ -1658,7 +1668,7 @@ def apply_sphinx_configurations(app):
         # We have all the files we need, the extra files will be copied automatically by
         # sphinx to the correct _static/ location, but stylesheets and javascript need
         # to be added explicitly
-        app.info(utils.info("Exhale: adding tree view css / javascript."))
+        logger.info(utils.info("Exhale: adding tree view css / javascript."))
         app.config.html_static_path.append(collapse_data)
 
         # Add the stylesheets
@@ -1669,4 +1679,4 @@ def apply_sphinx_configurations(app):
         for js in tree_data_js:
             app.add_javascript(js)
 
-        app.info(utils.progress("Exhale: added tree view css / javascript."))
+        logger.info(utils.progress("Exhale: added tree view css / javascript."))
