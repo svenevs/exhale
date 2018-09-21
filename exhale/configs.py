@@ -1671,12 +1671,25 @@ def apply_sphinx_configurations(app):
         logger.info(utils.info("Exhale: adding tree view css / javascript."))
         app.config.html_static_path.append(collapse_data)
 
+        # In Sphinx 1.8+ these have been renamed.
+        # - app.add_stylesheet -> app.add_css_file
+        # - app.add_javascript -> app.add_js_file
+        #
+        # RemovedInSphinx40Warning:
+        # - The app.add_stylesheet() is deprecated. Please use app.add_css_file() instead.
+        # - The app.add_javascript() is deprecated. Please use app.add_js_file() instead.
+        #
+        # So we'll need to keep this funky `getattr` chain for a little while ;)
+        # Or else pin min sphinx version to 1.8 or higher.  Probably when 2.0 is out?
+        add_css_file = getattr(app, "add_css_file", getattr(app, "add_stylesheet", None))
+        add_js_file  = getattr(app, "add_js_file",  getattr(app, "add_javascript", None))
+
         # Add the stylesheets
         for css in tree_data_css:
-            app.add_stylesheet(css)
+            add_css_file(css)
 
         # Add the javascript
         for js in tree_data_js:
-            app.add_javascript(js)
+            add_js_file(js)
 
         logger.info(utils.progress("Exhale: added tree view css / javascript."))
