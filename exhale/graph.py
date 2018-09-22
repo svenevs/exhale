@@ -3310,6 +3310,22 @@ class ExhaleRoot(object):
     def writeOutHierarchy(self, classView, data):
         # inject the raw html for the treeView unordered lists
         if configs.createTreeView:
+            # Cheap minification.  The `data` string is either
+            #
+            # 1. The interior of an HTML <ul> ... </ul> (collapsible lists)
+            # 2. A json array for returning from a javascript function (bootstrap)
+            #
+            # In either case, the data is currently well-formatted, no "suprise"
+            # newlines should appear, etc.  So we can just split the lines and strip
+            # the leading indentation.
+            if configs.minifyTreeView:
+                data = "".join([line.strip() for line in data.splitlines()])
+                # For the bootstrap version we can also further elminate some extra
+                # spaces between colons and their mapped value, and delete some
+                # erroneous commas that don't hurt but don't help ;)
+                if configs.treeViewIsBootstrap:
+                    data = data.replace(': ', ':').replace(",}", "}").replace(",,", ",").replace(",]", "]")
+
             # conveniently, both get indented to the same level.  a happy accident
             indent = " " * 9  # indent by 6 + 3 for being under .. raw:: html
             indented_data = re.sub(r'(.+)', r'{indent}\1'.format(indent=indent), data)

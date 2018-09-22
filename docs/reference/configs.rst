@@ -261,6 +261,8 @@ Neither library should produce any legal gray areas for you, but I'm not a lawye
 
 .. autodata:: exhale.configs.createTreeView
 
+.. autodata:: exhale.configs.minifyTreeView
+
 .. autodata:: exhale.configs.treeViewIsBootstrap
 
 .. _bootstrap_mods:

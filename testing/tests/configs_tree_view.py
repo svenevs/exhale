@@ -625,10 +625,14 @@ class TreeViewHierarchyTests(ExhaleTestCase):
             file_hierarchy_ground_truth["default_rst_list"] in file_view
         )
 
-    @confoverrides(exhale_args={"createTreeView": True, "treeViewIsBootstrap": False})
+    @confoverrides(exhale_args={
+        "createTreeView": True,
+        "minifyTreeView": False,
+        "treeViewIsBootstrap": False
+    })
     def test_collapsible_lists(self):
         """
-        Verify the collapsible lists html unordered list appears as expected.
+        Verify the *un-minified* collapsible lists html unordered list appears as expected.
         """
         class_view_lines, file_view_lines = self.html_hierarchies()
         class_ground_truth_lines = self.html_ground_truth_list("class", "collapsible_lists")
@@ -637,10 +641,14 @@ class TreeViewHierarchyTests(ExhaleTestCase):
         self.line_compare(class_ground_truth_lines, class_view_lines)
         self.line_compare(file_ground_truth_lines, file_view_lines)
 
-    @confoverrides(exhale_args={"createTreeView": True, "treeViewIsBootstrap": True})
+    @confoverrides(exhale_args={
+        "createTreeView": True,
+        "minifyTreeView": False,
+        "treeViewIsBootstrap": True
+    })
     def test_bootstrap(self):
         """
-        Verify the bootstrap json data list appears as expected.
+        Verify the *un-minified* bootstrap json data list appears as expected.
         """
         class_view_lines, file_view_lines = self.html_hierarchies()
         class_ground_truth_lines = self.html_ground_truth_list("class", "bootstrap")
