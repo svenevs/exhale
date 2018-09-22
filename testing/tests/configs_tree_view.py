@@ -489,12 +489,8 @@ class TreeViewHierarchyTests(ExhaleTestCase):
             The input ``lst`` in the same order, with empty strings and whitespace-only
             strings removed.
         """
-        empty = re.compile(r"^$")
-        only_whitespace = re.compile(r"^\s+$")
-        return [
-            line for line in lst
-            if not empty.match(line) and not only_whitespace.match(line)
-        ]
+        empty_or_whitespace = re.compile(r"^$|^\s+$")
+        return [line for line in lst if not empty_or_whitespace.match(line)]
 
     def html_hierarchies(self):
         """
@@ -581,6 +577,66 @@ class TreeViewHierarchyTests(ExhaleTestCase):
             )
         )
 
+    def line_compare_minified(self, expected_list, test_list, bootstrap=False):
+        """
+        Compare two lists of tree view strings.
+
+        This responsible expects the same input as :func:`line_compare`, but does some
+        additional processing on the ``expected_list``.  To explain, let's take a look
+        at the lines involved in the actual minified output:
+
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+        | Index | Collapsible Lists (HTML Unordered List)       | Bootstrap Version (JavaScript Function Returning JSON)           |
+        +=======+===============================================+==================================================================+
+        | 0     | ``<ul class="treeView" id="class-treeView">`` | ``<script type="text/javascript">``                              |
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+        | 1     | ``<li>``                                      | ``function getClassHierarchyTree() {``                           |
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+        | 2     | ``<ul class="collapsibleList">``              | ``return [``                                                     |
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+        | 3     | ``<<< really long >>>``                       | ``<<< really long >>>``                                          |
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+        | 4     | ``</ul>``                                     | ``]``                                                            |
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+        | 5     | ``</li><!-- only tree view element -->``      | ``}``                                                            |
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+        | 6     | ``</ul><!-- /treeView class-treeView -->``    | ``</script><!-- end getClassHierarchyTree() function --></div>`` |
+        +-------+-----------------------------------------------+------------------------------------------------------------------+
+
+        By convenience and design, line ``3`` is really the thing we want to test,
+        because that is the meat of the tree view.  For completeness indices ``[0,3)``
+        and ``[4,6]`` are also validated, but constructing line ``3`` from the provided
+        ``expected_list`` (the **non**-minified ground truth) is the focus of this
+        test function.
+
+        **Parameters**
+            ``expected_list`` (:class:`python:list` of :class:`python:str`)
+                The expected list of strings to compare with.
+
+            ``test_list`` (:class:`python:list` of :class:`python:str`)
+                The parsed list of strings to validate.
+
+            ``bootstrap`` (:class:`python:bool`)
+                If ``False``, test is a Collapsible Lists test.  If ``True``, test is
+                a Bootstrap test.
+        """  # noqa: E501
+        # First, compare the head / tail of the lists.
+        indices            = (0, 1, 2, -1, -2, -3)
+        expected_head_tail = [expected_list[idx] for idx in indices]
+        test_head_tail     = [test_list[idx] for idx in indices]
+        self.line_compare(expected_head_tail, test_head_tail)
+
+        # Join the remaining elements to make a comparison.
+        start    = max(indices) + 1 + int(bootstrap)  # TODO: uh. Why + int(bootstrap)?
+        end      = min(indices)
+        interior = "".join(expected_list[start:end])
+
+        if bootstrap:
+            # TODO: stop copy-pasting stuff from graph.py and clean this damn framework up.................
+            interior = interior.replace(': ', ':').replace(",}", "}").replace(",,", ",").replace(",]", "]")
+
+        self.assertEqual(interior, test_list[start])
+
     def html_ground_truth_list(self, hierarchy, key):
         """
         Ground truth data for html-based validation tests.
@@ -617,12 +673,12 @@ class TreeViewHierarchyTests(ExhaleTestCase):
         """
         Verify the default reStructuredText list appears as expected.
         """
-        class_view, file_view = self.raw_hierarchies()
+        test_class_view, test_file_view = self.raw_hierarchies()
         self.assertTrue(
-            class_hierarchy_ground_truth["default_rst_list"] in class_view
+            class_hierarchy_ground_truth["default_rst_list"] in test_class_view
         )
         self.assertTrue(
-            file_hierarchy_ground_truth["default_rst_list"] in file_view
+            file_hierarchy_ground_truth["default_rst_list"] in test_file_view
         )
 
     @confoverrides(exhale_args={
@@ -634,12 +690,28 @@ class TreeViewHierarchyTests(ExhaleTestCase):
         """
         Verify the *un-minified* collapsible lists html unordered list appears as expected.
         """
-        class_view_lines, file_view_lines = self.html_hierarchies()
-        class_ground_truth_lines = self.html_ground_truth_list("class", "collapsible_lists")
-        file_ground_truth_lines = self.html_ground_truth_list("file", "collapsible_lists")
+        test_class_view_lines, test_file_view_lines = self.html_hierarchies()
+        expected_class_view_lines = self.html_ground_truth_list("class", "collapsible_lists")
+        expected_file_view_lines = self.html_ground_truth_list("file", "collapsible_lists")
 
-        self.line_compare(class_ground_truth_lines, class_view_lines)
-        self.line_compare(file_ground_truth_lines, file_view_lines)
+        self.line_compare(expected_class_view_lines, test_class_view_lines)
+        self.line_compare(expected_file_view_lines, test_file_view_lines)
+
+    @confoverrides(exhale_args={
+        "createTreeView": True,
+        "minifyTreeView": True,
+        "treeViewIsBootstrap": False
+    })
+    def test_collapsible_lists_minified(self):
+        """
+        Verify the *minified* collapsible lists html unordered list appears as expected.
+        """
+        test_class_view_lines, test_file_view_lines = self.html_hierarchies()
+        expected_class_view_lines = self.html_ground_truth_list("class", "collapsible_lists")
+        expected_file_view_lines = self.html_ground_truth_list("file", "collapsible_lists")
+
+        self.line_compare_minified(expected_class_view_lines, test_class_view_lines, bootstrap=False)
+        self.line_compare_minified(expected_file_view_lines, test_file_view_lines, bootstrap=False)
 
     @confoverrides(exhale_args={
         "createTreeView": True,
@@ -650,9 +722,25 @@ class TreeViewHierarchyTests(ExhaleTestCase):
         """
         Verify the *un-minified* bootstrap json data list appears as expected.
         """
-        class_view_lines, file_view_lines = self.html_hierarchies()
-        class_ground_truth_lines = self.html_ground_truth_list("class", "bootstrap")
-        file_ground_truth_lines = self.html_ground_truth_list("file", "bootstrap")
+        test_class_view_lines, test_file_view_lines = self.html_hierarchies()
+        expected_class_view_lines = self.html_ground_truth_list("class", "bootstrap")
+        expected_file_view_lines = self.html_ground_truth_list("file", "bootstrap")
 
-        self.line_compare(class_ground_truth_lines, class_view_lines)
-        self.line_compare(file_ground_truth_lines, file_view_lines)
+        self.line_compare(expected_class_view_lines, test_class_view_lines)
+        self.line_compare(expected_file_view_lines, test_file_view_lines)
+
+    @confoverrides(exhale_args={
+        "createTreeView": True,
+        "treeViewIsBootstrap": True,
+        "minifyTreeView": True
+    })
+    def test_bootstrap_minified(self):
+        """
+        Verify the *minified* bootstrap json data list appears as expected.
+        """
+        test_class_view_lines, test_file_view_lines = self.html_hierarchies()
+        expected_class_view_lines = self.html_ground_truth_list("class", "bootstrap")
+        expected_file_view_lines = self.html_ground_truth_list("file", "bootstrap")
+
+        self.line_compare_minified(expected_class_view_lines, test_class_view_lines, bootstrap=True)
+        self.line_compare_minified(expected_file_view_lines, test_file_view_lines, bootstrap=True)
