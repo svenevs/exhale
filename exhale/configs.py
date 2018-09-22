@@ -404,6 +404,18 @@ createTreeView = False
     __ https://ryan-roemer.github.io/sphinx-bootstrap-theme/
 '''
 
+minifyTreeView = True
+'''
+**Optional**
+    When set to ``True``, the generated html and/or json for the class and file
+    hierarchy trees will be minified.
+
+**Value in** ``exhale_args`` (bool)
+    The default value is ``True``, which should help page load times for larger APIs.
+    Setting to ``False`` should only really be necessary if there is a problem -- the
+    minified version will be hard to parse as a human.
+'''
+
 treeViewIsBootstrap = False
 '''
 **Optional**
@@ -1314,6 +1326,7 @@ def apply_sphinx_configurations(app):
         ("fullToctreeMaxDepth",                          int),
         # Clickable Hierarchies <3
         ("createTreeView",                              bool),
+        ("minifyTreeView",                              bool),
         ("treeViewIsBootstrap",                         bool),
         ("treeViewBootstrapTextSpanClass",  six.string_types),
         ("treeViewBootstrapIconMimicColor", six.string_types),
