@@ -23,6 +23,7 @@ do not need to be validated in the same method.  In both cases, the recipe is:
 """
 
 from __future__ import unicode_literals
+import codecs
 import os
 import textwrap
 
@@ -737,6 +738,159 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
             test.assertEqual(test_child.def_in_file.location, exhale_child.def_in_file.location)
         else:
             test.assertTrue(exhale_child.def_in_file is None)
+
+        # Make sure parent references for directory and file pages are included.
+        if test_child.kind in {"dir", "file"}:
+            # Load in the generated file contents.
+            generated_rst_path = os.path.join(
+                test.getAbsContainmentFolder(), exhale_child.file_name
+            )
+            with codecs.open(generated_rst_path, "r", "utf-8") as gen_file:
+                generated_rst = gen_file.read()
+
+            if test_child.kind == "dir":
+                # Make sure full directory path is included (at least for now, may
+                # put it back in the title at some point).
+                path = "*Directory path:* ``{path}``".format(path=test_child.name)
+                test.assertTrue(
+                    path in generated_rst,
+                    textwrap.dedent('''
+                        The following full path listing:
+
+                        {vsep}
+                        {path}
+                        {vsep}
+
+                        was not found in '{generated_rst_path}' with full contents:
+
+                        {vsep}
+                        {generated_rst}
+                        {vsep}
+                    ''').format(
+                        vsep=("*" * 77),
+                        path=path,
+                        generated_rst_path=generated_rst_path,
+                        generated_rst=generated_rst
+                    )
+                )
+            else:  # test_child.kind == "file"
+                program_listing_path = os.path.join(
+                    os.path.dirname(generated_rst_path),
+                    exhale_child.program_file  # wtf did i do gerrymanderNodeFilenames for?!
+                )
+                program_listing_basename = os.path.basename(program_listing_path)
+
+                # 1. Make sure link to program_listing file is generated.
+                program_listing_toctree = textwrap.dedent('''
+                    .. toctree::
+                       :maxdepth: 1
+
+                       {program_listing_basename}
+                ''').format(
+                    program_listing_basename=program_listing_basename
+                )
+                test.assertTrue(
+                    program_listing_toctree in generated_rst,
+                    textwrap.dedent('''
+                        The following toctree directive:
+
+                        {vsep}
+                        {program_listing_toctree}
+                        {vsep}
+
+                        was not found in '{generated_rst_path}' with full contents:
+
+                        {vsep}
+                        {generated_rst}
+                        {vsep}
+                    ''').format(
+                        vsep=("*" * 77),
+                        program_listing_toctree=program_listing_toctree,
+                        generated_rst_path=generated_rst_path,
+                        generated_rst=generated_rst
+                    )
+                )
+
+                # 2. Make sure link back to file page from program_listing file is generated.
+                program_back_link = textwrap.dedent('''
+                    |exhale_lsh| :ref:`Return to documentation for file <{file_link}>` (``{file_location}``)
+
+                    .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+                ''').format(
+                    file_link=exhale_child.link_name,
+                    file_location=exhale_child.location
+                )
+                with codecs.open(program_listing_path, "r", "utf-8") as pl_file:
+                    desired_lines = []
+                    for line in pl_file:
+                        if line.startswith(".. code-block::"):
+                            break
+                        desired_lines.append(line)
+                    program_listing_header = "".join(desired_lines)
+
+                test.assertTrue(
+                    program_back_link in program_listing_header,
+                    textwrap.dedent('''
+                        The following back-link:
+
+                        {vsep}
+                        {program_back_link}
+                        {vsep}
+
+                        was not found in '{program_listing_path}' with header contents:
+
+                        {vsep}
+                        {program_listing_header}
+                        {vsep}
+                    ''').format(
+                        vsep=("*" * 77),
+                        program_back_link=program_back_link,
+                        program_listing_path=program_listing_path,
+                        program_listing_header=program_listing_header
+                    )
+                )
+
+            # If parent exists, verify that a link to the parent is created.
+            if test_child.parent:
+                # Reconstruct expected parent directory reference rst.
+                # TODO: un-copy-paste this from graph.py
+                if test_child.parent.kind == "file":
+                    parent_unique_id = test_child.parent.location
+                else:
+                    parent_unique_id = test_child.parent.name
+                parent_unique_id = parent_unique_id.replace(":", "_").replace(os.sep, "_").replace(" ", "_")
+                parent_link_name = "{kind}_{id}".format(kind=test_child.parent.kind, id=parent_unique_id)
+                parent_name = test_child.parent.name
+                parent_reference = textwrap.dedent('''
+                    |exhale_lsh| :ref:`Parent directory <{parent_link}>` (``{parent_name}``)
+
+                    .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+                '''.format(
+                    parent_link=parent_link_name, parent_name=parent_name
+                ))
+
+                # Verify that both files and directories link to their directory parent
+                test.assertTrue(
+                    parent_reference in generated_rst,
+                    textwrap.dedent('''
+                        The following parent directory reference:
+
+                        {vsep}
+                        {parent_reference}
+                        {vsep}
+
+                        was not found in '{generated_rst_path}' with full contents:
+
+                        {vsep}
+                        {generated_rst}
+                        {vsep}
+                    ''').format(
+                        vsep=("*" * 77),
+                        parent_reference=parent_reference,
+                        generated_rst_path=generated_rst_path,
+                        generated_rst=generated_rst
+                    )
+                )
 
     # Make sure they have the same name.
     test.assertEqual(
