@@ -2805,7 +2805,9 @@ class ExhaleRoot(object):
                             {heading}
                             {heading_mark}
 
-                            - Return to documentation for :ref:`{parent}`
+                            |exhale_lsh| :ref:`Return to documentation for file <{file}>` (``{location}``)
+
+                            .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
 
                         '''.format(
                             link=link_declaration,
@@ -2814,7 +2816,8 @@ class ExhaleRoot(object):
                                 prog_title,
                                 configs.SECTION_HEADING_CHAR
                             ),
-                            parent=f.link_name,
+                            file=f.link_name,
+                            location=f.location
                         )))
                         gen_file.write(full_program_listing)
                 except:
@@ -2847,7 +2850,7 @@ class ExhaleRoot(object):
                        :maxdepth: 1
 
                        {prog_link}
-                '''.format(prog_link=f.program_file.split(os.sep)[-1]))
+                '''.format(prog_link=os.path.basename(f.program_file)))
                 file_definition = "{}{}".format(file_definition, prog_file_definition)
 
             if len(f.includes) > 0:
@@ -2961,7 +2964,7 @@ class ExhaleRoot(object):
                     link_declaration = ".. _{0}:".format(f.link_name)
                     # every generated file must have a header for sphinx to be happy
                     f.title = "{0} {1}".format(utils.qualifyKind(f.kind), f.name)
-                    heading = textwrap.dedent('''
+                    gen_file.write(textwrap.dedent('''
                         {link}
 
                         {heading}
@@ -2973,17 +2976,20 @@ class ExhaleRoot(object):
                             f.title,
                             configs.SECTION_HEADING_CHAR
                         )
-                    ))
+                    )))
+
+                    if f.parent and f.parent.kind == "dir":
+                        gen_file.write(textwrap.dedent('''
+                            |exhale_lsh| :ref:`Parent directory <{parent_link}>` (``{parent_name}``)
+
+                            .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+                        '''.format(
+                            parent_link=f.parent.link_name, parent_name=f.parent.name
+                        )))
 
                     brief, detailed = parse.getBriefAndDetailedRST(self, f)
-                    gen_file.write(textwrap.dedent('''
-                        {heading}
-
-                        {brief}
-                    '''.format(
-                        heading=heading,
-                        brief=brief
-                    )))
+                    if brief:
+                        gen_file.write("\n{brief}\n".format(brief=brief))
 
                     # include the contents directive if requested
                     contents = utils.contentsDirectiveOrNone(f.kind)
@@ -3111,6 +3117,17 @@ class ExhaleRoot(object):
         else:
             child_files_string = ""
 
+        if node.parent and node.parent.kind == "dir":
+            parent_directory = textwrap.dedent('''
+                |exhale_lsh| :ref:`Parent directory <{parent_link}>` (``{parent_name}``)
+
+                .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+            '''.format(
+                parent_link=node.parent.link_name, parent_name=node.parent.name
+            ))
+        else:
+            parent_directory = ""
+
         # generate the file for this directory
         try:
             #flake8fail get rid of {} in this method
@@ -3132,9 +3149,10 @@ class ExhaleRoot(object):
                         configs.SECTION_HEADING_CHAR
                     )
                 ))
+                path = "\n*Directory path:* ``{path}``\n".format(path=node.name)
                 # write it all out
-                gen_file.write("{0}{1}{2}\n{3}\n\n".format(
-                    link_declaration, header, child_dirs_string, child_files_string)
+                gen_file.write("{0}{1}{2}{3}{4}\n{5}\n\n".format(
+                    link_declaration, header, parent_directory, path, child_dirs_string, child_files_string)
                 )
         except:
             utils.fancyError(
