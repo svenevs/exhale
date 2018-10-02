@@ -1273,6 +1273,69 @@ class ExhaleRoot(object):
                 missing_file_def[refid] = node
                 missing_file_def_candidates[refid] = []
 
+        # Some compounds like class / struct have their own XML file and if documented
+        # correctly will have a <location> tag.  For example, one may need to add the
+        #
+        #     \class namespace::ClassName file_basename.hpp full/file/path/file_basename.hpp
+        #
+        # in order for the <location> tag to be generated.  And in the case of forward
+        # declarations (e.g., for PIMPL patterns), in order for the class XML to be
+        # generated at all it seems this must be used.
+        #
+        #     <?xml version='1.0' encoding='UTF-8' standalone='no'?>
+        #     <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+        #       <compounddef id="classpimpl_1_1EarthImpl" kind="class" language="C++" prot="public">
+        #         <compoundname>pimpl::EarthImpl</compoundname>
+        #         <includes refid="earth_8hpp" local="no">include/pimpl/earth.hpp</includes>
+        #         <briefdescription>
+        #     <para>The <ref refid="classpimpl_1_1Earth" kindref="compound">Earth</ref> PIMPL. </para>    </briefdescription>
+        #         <detaileddescription>
+        #         </detaileddescription>
+        #         <location file="include/pimpl/earth.hpp" line="30" column="1"/>
+        #         <listofallmembers>
+        #         </listofallmembers>
+        #       </compounddef>
+        #     </doxygen>
+        #
+        # So we're taking advantage of the fact that
+        #
+        #    namespace pimpl {
+        #        /**
+        #         * \class pimpl::EarthImpl earth.hpp include/pimpl/earth.hpp
+        #         * \brief The Earth PIMPL.
+        #         */
+        #         class EarthImpl;
+        #     }
+        #
+        # Has a <location file="include/pimpl/earth.hpp" line="30" column="1"/>
+        #
+        # TODO: clarify this in the docs?  You don't understand the full cause though.
+        refid_removals = []
+        for refid in missing_file_def:
+            node = missing_file_def[refid]
+            node_xml_contents = utils.nodeCompoundXMLContents(node)
+            # None is returned when no {refid}.xml exists (e.g., for enum or union).
+            if not node_xml_contents:
+                pass
+
+            try:
+                node_soup = BeautifulSoup(node_xml_contents, "lxml-xml")
+                cdef = node_soup.doxygen.compounddef
+                location = cdef.find("location", recursive=False)
+                if location and "file" in location.attrs:
+                    file_path = location["file"]
+                    for f in self.files:
+                        if f.location == file_path:
+                            node.def_in_file = f
+                            f.children.append(node)
+                            refid_removals.append(refid)
+            except:
+                pass
+
+        # We found the def_in_file, don't parse the programlisting for these nodes.
+        for refid in refid_removals:
+            del missing_file_def[refid]
+
         # Go through every file and see if the refid associated with a node missing a
         # file definition location is present in the <programlisting>
         for f in self.files:
