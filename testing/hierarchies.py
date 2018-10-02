@@ -914,13 +914,24 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
     test.assertEqual(
         len(test_child.children),
         num_exhale_children,
-        "\ntest_child.children names:\n\n{tc_names}\n\nexhale_child.children names:\n\n{ec_names}\n".format(
-            tc_names="\n- ".join([
-                "{breathe_identifier}".format(breathe_identifier=child.breathe_identifier())
+        textwrap.dedent('''
+            For child: {child_name}
+
+            test_child.children names:
+
+            {tc_names}
+
+            exhale_child.children names:
+
+            {ec_names}
+        ''').format(
+            child_name=test_child.breathe_identifier(),
+            tc_names="\n".join([
+                "- {breathe_identifier}".format(breathe_identifier=child.breathe_identifier())
                 for child in test_child.children
             ]),
-            ec_names="\n- ".join([
-                "{breathe_identifier}".format(breathe_identifier=child.breathe_identifier())
+            ec_names="\n".join([
+                "- {breathe_identifier}".format(breathe_identifier=child.breathe_identifier())
                 for child in exhale_child.children if child.kind not in CHILD_COUNT_IGNORE_KINDS
             ])
         )

@@ -171,10 +171,13 @@ class ExhaleTestCaseMetaclass(type):
                 with open(os.path.join(testroot, "conf.py"), "w") as conf_py:
                     conf_py.write(textwrap.dedent('''\
                         # -*- coding: utf-8 -*-
+                        project = "{test_project}"
                         extensions = ["breathe", "exhale"]
                         master_doc = "index"
                         source_suffix = [".rst"]
-                    '''))
+                    ''').format(
+                        test_project=test_project
+                    ))
                     # Absurd test cases may need an increased recursion limit for Sphinx
                     if self.test_project in ["cpp_long_names"]:
                         conf_py.write(textwrap.dedent('''
