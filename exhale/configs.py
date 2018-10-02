@@ -381,6 +381,61 @@ fullToctreeMaxDepth = 5
        a value greater than ``5``.
 '''
 
+listingExclude = []
+'''
+**Optional**
+    A list of regular expressions to exclude from both the class hierarchy and namespace
+    page enumerations.  This can be useful when you want to keep the listings for the
+    hierarchy / namespace pages more concise, but **do** ultimately want the excluded
+    items documented somewhere.
+
+    Nodes whose ``name`` (fully qualified, e.g., ``namespace::ClassName``) matches any
+    regular expression supplied here will:
+
+    1. Exclude this item from the class view hierarchy listing.
+    2. Exclude this item from the defining namespace's listing (where applicable).
+    3. The "excluded" item will still have it's own documentation **and** be linked in
+       the "full API listing".  Otherwise Sphinx will explode with warnings about
+       documents not being included in any ``toctree`` directives.
+
+    This configuration variable is **one size fits all**.  It was created as a band-aid
+    fix for PIMPL frameworks.
+
+    .. todo::
+
+        More fine-grained control will be available in the pickleable writer API
+        sometime in Exhale 1.x.
+
+    .. note::
+
+        If you want to skip documentation of a compound in your framework *entirely*,
+        this configuration variable is **not** where you do it.  See
+        :ref:`Doxygen PREDEFINED <doxygen_predefined>` for information on excluding
+        compounds entirely using the doxygen preprocessor.
+
+**Value in** ``exhale_args`` (list)
+    The list can be of variable types, but each item will be compiled into an internal
+    list using :func:`python:re.compile`.  The arguments for
+    ``re.compile(pattern, flags=0)`` should be specified in order, but for convenience
+    if no ``flags`` are needed for your use case you can just specify a string.  For
+    example:
+
+    .. code-block:: py
+
+        exhale_args = {
+            # These two patterns should be equitable for excluding PIMPL
+            # objects in a framework that uses the ``XxxImpl`` naming scheme.
+            "listingExclude": [r".*Impl$", (r".*impl$", re.IGNORECASE)]
+        }
+
+    Each item in ``listingExclude`` may either be a string (the regular expression
+    pattern), or it may be a length two iterable ``(string pattern, int flags)``.
+'''
+
+# Compiled regular expressions from listingExclude
+# TODO: moves into config object
+_compiled_listing_exclude = []
+
 ########################################################################################
 # Clickable Hierarchies <3                                                             #
 ########################################################################################
@@ -1313,6 +1368,7 @@ def apply_sphinx_configurations(app):
     ####################################################################################
     # Gather the optional input for exhale.                                            #
     ####################################################################################
+    # TODO: `list` -> `(list, tuple)`, update docs too.
     opt_kv = [
         # Build Process Logging, Colors, and Debugging
         ("verboseBuild",                                bool),
@@ -1324,6 +1380,7 @@ def apply_sphinx_configurations(app):
         ("fullApiSubSectionTitle",          six.string_types),
         ("afterBodySummary",                six.string_types),
         ("fullToctreeMaxDepth",                          int),
+        ("listingExclude",                              list),
         # Clickable Hierarchies <3
         ("createTreeView",                              bool),
         ("minifyTreeView",                              bool),
@@ -1398,6 +1455,45 @@ def apply_sphinx_configurations(app):
                     kind=kind
                 )
             )
+
+    # Make sure the listingExlcude is usable
+    if "listingExclude" in exhale_args:
+        import re
+
+        # used for error printing, tries to create string out of item otherwise
+        # returns 'at index {idx}'
+        def item_or_index(item, idx):
+            try:
+                return "`{item}`".format(item=item)
+            except:
+                return "at index {idx}".format(idx=idx)
+
+        exclusions = exhale_args["listingExclude"]
+        for idx in range(len(exclusions)):
+            # Gather the `pattern` and `flags` parameters for `re.compile`
+            item = exclusions[idx]
+            if isinstance(item, six.string_types):
+                pattern = item
+                flags   = 0
+            else:
+                try:
+                    pattern, flags = item
+                except Exception as e:
+                    raise ConfigError(
+                        "listingExclude item {0} cannot be unpacked as `pattern, flags = item`:\n{1}".format(
+                            item_or_index(item, idx), e
+                        )
+                    )
+            # Compile the regular expression object.
+            try:
+                regex = re.compile(pattern, flags)
+            except Exception as e:
+                raise ConfigError(
+                    "Unable to compile specified listingExclude {0}:\n{1}".format(
+                        item_or_index(item, idx), e
+                    )
+                )
+            configs_globals["_compiled_listing_exclude"].append(regex)
 
     # Make sure the lexerMapping is usable
     if "lexerMapping" in exhale_args:

@@ -205,6 +205,8 @@ that you will link to from your documentation is laid out as follows:
 
 .. autodata:: exhale.configs.fullToctreeMaxDepth
 
+.. autodata:: exhale.configs.listingExclude
+
 Clickable Hierarchies
 ****************************************************************************************
 
