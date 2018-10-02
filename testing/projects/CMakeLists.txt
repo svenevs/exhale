@@ -119,6 +119,7 @@ set(EXHALE_PROJECTS
   cpp_func_overloads
   cpp_long_names
   cpp_nesting
+  cpp_pimpl
 )
 # At this time I care not to figure out how to actually get a functioning fortran
 # compiler setup to work with Visual Studio.  Maybe if Microsoft ever cares enough to

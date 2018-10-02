@@ -44,3 +44,9 @@ Project Tests
 
 .. automodule:: testing.tests.cpp_nesting
    :members:
+
+``cpp_pimpl``
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.tests.cpp_pimpl
+   :members:
