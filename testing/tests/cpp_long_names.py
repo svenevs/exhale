@@ -64,24 +64,15 @@ def make_file_hierarchy_dict():
     If :data:`RUN_ABSURD_TEST` is ``True``, :data:`ABSURD_DIRECTORY_PATH` will be
     incorporated in the returned dictionary.
     """
-    # at this point I have no idea why Doxygen on Windows cannot find the
-    # MAKE_IT_BIG(namespace)::value def_in_file and honestly don't care.  I'm not paid
-    # enough (or anything) to deal with this shit.
-    def namespace_child():
-        if platform.system() == "Windows":
-            return {}
-        else:
-            return {
-                variable("int", "value"): {}
-            }
-
     absurdly_long_names_hpp_contents = {
         define("MAKE_IT_BIG"): {},
         clike("class", make_it_big("class")): {},
         clike("struct", make_it_big("struct")): {},
         function("std::string", make_it_big("function")): parameters(),
         enum(make_it_big("enum")): {},  # TODO: values("first", "second", "third"),
-        namespace(make_it_big("namespace")): namespace_child(),
+        namespace(make_it_big("namespace")): {
+            variable("int", "value"): {}
+        },
         define(make_it_big("define").upper()): {},
         variable("int", make_it_big("variable")): {},
         typedef(make_it_big("typedef"), "float"): {},
