@@ -1210,7 +1210,7 @@ class ExhaleRoot(object):
                         ))
                         if location_str.startswith(abs_strip_path):
                             location_str = os.path.relpath(location_str, abs_strip_path)
-                        f.location = location_str
+                        f.location = os.path.normpath(location_str)
 
                 except:
                     utils.fancyError(
@@ -1254,15 +1254,14 @@ class ExhaleRoot(object):
                             if refid in self.node_by_refid:
                                 node = self.node_by_refid[refid]
                                 location = memberdef.find("location")
-                                if location:
-                                    if "file" in location.attrs:
-                                        filedef = location.attrs["file"]
-                                        for f in self.files:
-                                            if filedef == f.location:
-                                                node.def_in_file = f
-                                                if node not in f.children:
-                                                    f.children.append(node)
-                                                break
+                                if location and "file" in location.attrs:
+                                    filedef = os.path.normpath(location.attrs["file"])
+                                    for f in self.files:
+                                        if filedef == f.location:
+                                            node.def_in_file = f
+                                            if node not in f.children:
+                                                f.children.append(node)
+                                            break
 
         # Find the nodes that did not have their file location definition assigned
         missing_file_def            = {} # keys: refid, values: ExhaleNode
@@ -1323,7 +1322,7 @@ class ExhaleRoot(object):
                 cdef = node_soup.doxygen.compounddef
                 location = cdef.find("location", recursive=False)
                 if location and "file" in location.attrs:
-                    file_path = location["file"]
+                    file_path = os.path.normpath(location["file"])
                     for f in self.files:
                         if f.location == file_path:
                             node.def_in_file = f
@@ -1804,6 +1803,7 @@ class ExhaleRoot(object):
                 if manip.startswith(abs_strip_path):
                     manip = os.path.relpath(manip, abs_strip_path)
 
+                manip = os.path.normpath(manip)
                 if node.kind == "file":
                     node.location = manip
                 else:  # node.kind == "dir"

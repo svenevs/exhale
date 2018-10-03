@@ -554,7 +554,9 @@ class root(object):  # noqa: N801
             # update the fully qualified paths for children of directories
             if parent.kind == "dir":
                 if child.kind == "file":
-                    child.location = os.path.join(parent.name, child.name)
+                    child.location = os.path.normpath(os.path.join(
+                        parent.name, child.name
+                    ))
                 elif child.kind == "dir":
                     child.name = os.path.join(parent.name, child.name)
             # simulate how Doxygen will present fully qualified names
