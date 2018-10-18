@@ -53,7 +53,7 @@ test_script:
 
         # Installs dependencies and runs the tests.
         $tox_exec = $env:PYTHON + "\\Scripts\\tox"
-        $tox_args = "-e", "py", "--", "--cov=exhale", "--cov=testing"
+        $tox_args = "-e", "py", "--", "--cov-report", "xml:coverage.xml", "--cov"
         & $tox_exec $tox_args
       }
       else {
@@ -84,6 +84,6 @@ after_test:
         Invoke-Expression $codecov_cmd
       }
       else {
-        $codecov_cmd = '& codecov -X gcov --name ' + $env:TEST_NAME
+        $codecov_cmd = '& codecov -X gcov -f .\coverage.xml --name ' + $env:TEST_NAME
         Invoke-Expression $codecov_cmd
       }
