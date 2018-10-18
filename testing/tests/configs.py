@@ -12,6 +12,9 @@ from __future__ import unicode_literals
 import re
 import textwrap
 
+import pytest
+from sphinx.errors import ConfigError
+
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
 
@@ -167,3 +170,92 @@ class ConfigurationWarningTests(ExhaleTestCase):
             expected in sphinx_warnings,
             "Sphinx Warnings did not contain '{0}'.".format(expected)
         )
+
+
+class ListingExcludeTests(ExhaleTestCase):
+    """Test for expected failures when invalid configurations are given in ``conf.py``."""
+
+    test_project = "cpp_nesting"
+    """
+    .. testproject:: cpp_nesting
+
+    .. note::
+
+        The ``cpp_nesting`` project is just being recycled, the tests for that project
+        take place in
+        :class:`CPPNesting <testing.tests.cpp_nesting.CPPNesting>`.
+    """
+
+    class BadStr(object):
+        """
+        Helper for :func:`ListingExcludeTests.test_invalid_report_index`.
+        """
+
+        def __str__(self):
+            """Raise :class:`python:AttributeError`."""
+            raise AttributeError("No string for you!")
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"listingExclude item at index 1 cannot be unpacked as `pattern, flags = item`:"
+    )
+    @confoverrides(exhale_args={
+        "listingExclude": [r"valid", BadStr()]
+    })
+    def test_invalid_report_index(self):
+        """Verify list index is indicated when item cannot be converted to string."""
+        pass
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"Unable to compile specified listingExclude"
+    )
+    @confoverrides(exhale_args={
+        "listingExclude": [(r"some_string", "an invalid flag")]
+    })
+    def test_invalid_regex_flags(self):
+        """Verify invalid regex ``flags`` are rejected."""
+        pass
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"Unable to compile specified listingExclude"
+    )
+    @confoverrides(exhale_args={
+        "listingExclude": [
+            r"valid", r"*I don't compile$"
+        ]
+    })
+    def test_bad_regex(self):
+        """Verify string pattern that does not compile is gracefully rejected."""
+        pass
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"listingExclude item .* cannot be unpacked as `pattern, flags = item`:"
+    )
+    @confoverrides(exhale_args={
+        "listingExclude": [
+            r"valid",
+            (r"valid", 0),
+            (r"invalid", 0, 1)  # length 3 and longer cannot unpack
+        ]
+    })
+    def test_too_many(self):
+        """
+        Verify that length three item is rejected.
+
+        Only ``pattern:str`` or ``(pattern:str, flags:int)`` are allowed.
+        """
+        pass
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"listingExclude item .* cannot be unpacked as `pattern, flags = item`:"
+    )
+    @confoverrides(exhale_args={
+        "listingExclude": [1]
+    })
+    def test_invalid_pattern(self):
+        """Verify that non-string argument for pattern is rejected."""
+        pass

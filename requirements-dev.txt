@@ -1,3 +1,5 @@
 pytest
 pytest-cov
+# pytest-raises with patches for now
+git+http://github.com/svenevs/pytest-raises.git@setup_raises#egg=pytest-raises
 ipdb

@@ -35,9 +35,9 @@ linux_specifications: &linux_specs
     - pip install -U pip setuptools tox codecov
   script:
     - doxygen --version
-    - tox -e py -- --cov=exhale --cov=testing
+    - tox -e py -- --cov-report xml:coverage.xml --cov
   after_success:
-    - codecov --name "$(echo "linux-py@$PY-sphinx@$SPHINX_VERSION")"
+    - codecov -X gcov -f coverage.xml --name "$(echo "linux-py@$PY-sphinx@$SPHINX_VERSION")"
 
 matrix:
   allow_failures:
@@ -83,9 +83,9 @@ matrix:
       script:
         - doxygen --version
         - /usr/local/bin/python2 --version
-        - /usr/local/bin/python2 -m tox -e py -- --cov=exhale --cov=testing
+        - /usr/local/bin/python2 -m tox -e py -- --cov-report xml:coverage.xml --cov
       after_success:
-        - codecov --name osx_py2.7
+        - codecov -X gcov -f coverage.xml --name osx_py2.7
     ####################################################################################
     # OSX :: Python :: 3.6                                                             #
     ####################################################################################
@@ -100,9 +100,9 @@ matrix:
       script:
         - doxygen --version
         - /usr/local/bin/python3 --version
-        - /usr/local/bin/python3 -m tox -e py -- --cov=exhale --cov=testing
+        - /usr/local/bin/python3 -m tox -e py -- --cov-report xml:coverage.xml --cov
       after_success:
-        - codecov --name osx_py3.6
+        - codecov -X gcov -f coverage.xml --name osx_py3.6
     ####################################################################################
     # Flake8                                                                           #
     ####################################################################################
