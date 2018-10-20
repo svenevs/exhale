@@ -50,6 +50,7 @@ Doxygen, Sphinx, or Breathe.
    faq
    testing
    todo
+   changelog
 
 .. _index_credit:
 

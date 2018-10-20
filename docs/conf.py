@@ -35,8 +35,12 @@ extensions = [
     'sphinx.ext.intersphinx',
     # NOTE: viewcode isn't working, probably because of how my docs are setup
     #       and the lack of __all__ definitions?
-    'sphinx.ext.viewcode'
+    'sphinx.ext.viewcode',
+    'sphinx_issues'
 ]
+
+# See: https://github.com/sloria/sphinx-issues
+issues_github_path = 'svenevs/exhale'
 
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
