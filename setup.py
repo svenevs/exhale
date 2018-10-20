@@ -126,7 +126,7 @@ except Exception as e:
 setup(
     name="exhale",
     version=version,
-    packages=find_packages(),
+    packages=find_packages(exclude=["testing", "testing.*"]),
     install_requires=requirements,
     setup_requires=requirements,
     # See MANIFEST.in
