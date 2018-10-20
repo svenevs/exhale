@@ -395,8 +395,9 @@ listingExclude = []
     1. Exclude this item from the class view hierarchy listing.
     2. Exclude this item from the defining namespace's listing (where applicable).
     3. The "excluded" item will still have it's own documentation **and** be linked in
-       the "full API listing".  Otherwise Sphinx will explode with warnings about
-       documents not being included in any ``toctree`` directives.
+       the "full API listing", as well as from the file page that defined the compound
+       (if recovered).  Otherwise Sphinx will explode with warnings about documents not
+       being included in any ``toctree`` directives.
 
     This configuration variable is **one size fits all**.  It was created as a band-aid
     fix for PIMPL frameworks.
@@ -1459,6 +1460,8 @@ def apply_sphinx_configurations(app):
     # Make sure the listingExlcude is usable
     if "listingExclude" in exhale_args:
         import re
+        # TODO: remove this once config objects are in.  Reset needed for testing suite.
+        configs_globals["_compiled_listing_exclude"] = []
 
         # used for error printing, tries to create string out of item otherwise
         # returns 'at index {idx}'
@@ -1499,6 +1502,9 @@ def apply_sphinx_configurations(app):
     if "lexerMapping" in exhale_args:
         from pygments import lexers
         import re
+        # TODO: remove this once config objects are in.  Reset needed for testing suite.
+        configs_globals["_compiled_lexer_mapping"] = {}
+
         lexer_mapping = exhale_args["lexerMapping"]
         for key in lexer_mapping:
             val = lexer_mapping[key]

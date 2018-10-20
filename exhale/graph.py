@@ -587,8 +587,13 @@ class ExhaleNode(object):
             # flag that this node is already in the class view so we can find the
             # missing top level nodes at the end
             self.in_class_hierarchy = True
-            return self.kind == "struct" or self.kind == "class" or \
-                   self.kind == "enum"   or self.kind == "union"  # noqa
+
+            # Skip children whose names were requested to be explicitly ignored.
+            for exclude in configs._compiled_listing_exclude:
+                if exclude.match(self.name):
+                    return False
+
+            return self.kind in {"struct", "class", "enum", "union"}
 
     def inFileHierarchy(self):
         '''
@@ -2746,6 +2751,14 @@ class ExhaleRoot(object):
         nsp_unions            = []
         nsp_variables         = []
         for child in nspace.children:
+            # Skip children whose names were requested to be explicitly ignored.
+            should_exclude = False
+            for exclude in configs._compiled_listing_exclude:
+                if exclude.match(child.name):
+                    should_exclude = True
+            if should_exclude:
+                continue
+
             if child.kind == "namespace":
                 nsp_namespaces.append(child)
             elif child.kind == "struct" or child.kind == "class":
