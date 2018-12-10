@@ -9,14 +9,16 @@
 Tests for validating error handling with configs set in ``conf.py``.
 """
 from __future__ import unicode_literals
+import os
 import re
 import textwrap
 
 import pytest
 from sphinx.errors import ConfigError
 
+from testing import docs_dir
 from testing.base import ExhaleTestCase
-from testing.decorators import confoverrides
+from testing.decorators import confoverrides, with_file
 
 
 def assert_message_not_present(test, message, text, flags=0):
@@ -258,4 +260,56 @@ class ListingExcludeTests(ExhaleTestCase):
     })
     def test_invalid_pattern(self):
         """Verify that non-string argument for pattern is rejected."""
+        pass
+
+
+class DoxyfileTests(ExhaleTestCase):
+    """Test that users can specify the path to a ``Doxyfile``."""
+
+    test_project = "cpp_nesting"
+    """
+    .. testproject:: cpp_nesting
+
+    .. note::
+
+        The ``cpp_nesting`` project is just being recycled, the tests for that project
+        take place in
+        :class:`CPPNesting <testing.tests.cpp_nesting.CPPNesting>`.
+    """
+
+    no_test_common = True
+    """Do not generate ``test_common``."""
+
+    use_default_doxygen_stdin = False
+    """
+    Temporary band-aid needed for ``make_default_config`` and metaclass before 1.x.
+    """
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"The file \[.*Doxyfile\] does not exist"
+    )
+    @confoverrides(exhale_args={"exhaleUseDoxyfile": True})
+    def test_doxyfile_bool_nonexistent(self):
+        """Verify missing ``{confdir}/Doxyfile`` triggers failure."""
+        pass
+
+    @with_file(
+        os.path.join(
+            docs_dir("cpp_nesting", "DoxyfileTests", "test_doxyfile_bool_exists"),
+            "Doxyfile"
+        ),
+        textwrap.dedent('''
+            INPUT            = ../include
+            OUTPUT_DIRECTORY = ./_doxygen
+            STRIP_FROM_PATH  = ..
+            GENERATE_XML     = YES
+            GENERATE_HTML    = NO
+            GENERATE_LATEX   = NO
+            GENERATE_RTF     = NO
+        ''')
+    )
+    @confoverrides(exhale_args={"exhaleUseDoxyfile": True})
+    def test_doxyfile_bool_exists(self):
+        """Verify that ``{confdir}/Doxyfile`` and ``bool`` version work."""
         pass

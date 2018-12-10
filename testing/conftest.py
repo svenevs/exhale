@@ -20,3 +20,10 @@ pytest_plugins = [
     'testing.fixtures'
 ]
 """Signals to ``pytest`` which plugins are needed for all tests."""
+
+
+def pytest_runtest_setup(item):
+    """.. todo:: stop reloading configs module in 1.x."""
+    from six.moves import reload_module
+    from exhale import configs
+    reload_module(configs)

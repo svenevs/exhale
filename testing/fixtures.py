@@ -9,6 +9,7 @@
 Provides fixtures to be available for all test cases.
 """
 from __future__ import unicode_literals
+
 from exhale import deploy
 import pytest
 

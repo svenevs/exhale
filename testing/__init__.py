@@ -24,6 +24,34 @@ See also :data:`testing.base.ExhaleTestCase.test_project`.
 """
 
 
+def docs_dir(test_project, class_name, function_name):
+    """
+    Absolute path "docs" directory for a given test case.
+
+    **Parameters**
+
+    ``test_project`` (:class:`python:str`)
+        The test project (nested directory in :data:`testing.TEST_PROJECTS_ROOT`).
+
+    ``class_name`` (:class:`python:str`)
+        The name of the test class being used.
+
+    ``function_name`` (:class:`python:str`)
+        The name of the test function (``"test_xxx"``).
+
+    **Return** (:class:`python:str`)
+        The absolute path to the "docs" directory where ``conf.py`` and friends will be
+        generated.
+    """
+    return os.path.join(
+        TEST_PROJECTS_ROOT,
+        test_project,
+        "docs_{class_name}_{function_name}".format(
+            class_name=class_name, function_name=function_name
+        )
+    )
+
+
 def get_exhale_root(test):
     """
     Return the finalized :class:`exhale.graph.ExhaleRoot` object for the specified test.

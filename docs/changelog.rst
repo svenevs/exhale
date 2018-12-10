@@ -5,6 +5,13 @@ Changelog
    :local:
    :backlinks: none
 
+v0.2.2
+----------------------------------------------------------------------------------------
+
+- Relaxe doxygen constraints for :data:`~exhale.configs.exhaleUseDoxyfile`.  Please
+  update to using string paths over specifying a boolean value.  Requring the file named
+  exactly ``Doxyfile`` to be tracked next to ``conf.py`` is not necessary.
+
 v0.2.1
 ----------------------------------------------------------------------------------------
 

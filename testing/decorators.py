@@ -252,3 +252,33 @@ def no_run(obj):
             The decorated ``obj``.
     """
     return pytest.mark.usefixtures("no_run")(obj)
+
+
+def with_file(path, contents):
+    """
+    Create a file for a given test function and delete it afterward.
+
+    This decorator may **only** be used on ``test_*`` functions of a derived type of
+    :class:`~testing.base.ExhaleTestCase`.  The actual (contrived) mechanics are that
+    the function is marked, and a **class** level fixture that creates all requested
+    files is generated in the metaclass.  Trust me...I definitely tried to do this
+    "correctly", but this at least mostly works.
+
+    .. todo:: why can't this be used with ``@no_cleanup``
+
+    **Parameters**
+
+    ``path`` (:class:`python:str`)
+        The **absolute** path name to create the file with ``contents``.  The parent
+        directories of the file in question are **assumed** to already exist.
+
+    ``contents`` (:class:`python:str`)
+        The contents of the file to create at ``path``.
+
+    .. note::
+
+        See implementation in the metaclass, the way this works is actually
+    """
+    def with_file_decorator(func):
+        return pytest.mark.exhale_with_file(path=path, contents=contents)(func)
+    return with_file_decorator

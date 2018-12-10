@@ -12,6 +12,7 @@ All project based test cases should inherit from :class:`testing.base.ExhaleTest
 """
 
 from __future__ import unicode_literals
+import codecs
 import os
 import platform
 import re
@@ -25,11 +26,11 @@ import six
 from six import add_metaclass
 from sphinx.testing.path import path
 
-from . import TEST_PROJECTS_ROOT, get_exhale_root
+from . import docs_dir, get_exhale_root
 from .decorators import default_confoverrides
 
 
-def make_default_config(project):
+def make_default_config(project, execute_doxygen, default_doxygen_stdin):
     """
     Return a default configuration for exhale.
 
@@ -38,13 +39,16 @@ def make_default_config(project):
             The name of the project that will be searched for in
             ``testing/projects/{project}``.
 
+    Band-aid: execute_doxygen, default_doxygen_stdin.  Ignore them unless you are me.
+    See ``vvv this stuff here vvv`` in this file.
+
     **Return**
         ``dict``
             The global default testing configuration to supply to ``confoverrides``
             with ``@pytest.mark.sphinx``, these are values that would ordinarily be
             written in a ``conf.py``.
     """
-    return {
+    ret = {
         "breathe_projects": {
             project: "./_doxygen/xml"
         },
@@ -55,11 +59,16 @@ def make_default_config(project):
             "rootFileName": "{0}_root.rst".format(project),
             "rootFileTitle": "``{0}`` Test Project".format(project),
             "doxygenStripFromPath": "..",
-            # additional arguments
-            "exhaleExecutesDoxygen": True,
-            "exhaleDoxygenStdin": "INPUT = ../include"
         }
     }
+
+    # Only add the doxygen configurations if requested (most test cases do).
+    if execute_doxygen:
+        ret["exhale_args"]["exhaleExecutesDoxygen"] = True
+        if default_doxygen_stdin:
+            ret["exhale_args"]["exhaleDoxygenStdin"] = "INPUT = ../include"
+
+    return ret
 
 
 class ExhaleTestCaseMetaclass(type):
@@ -150,14 +159,11 @@ class ExhaleTestCaseMetaclass(type):
                 # Create the test project's 'docs' dir with a conf.py and index.rst.
 
                 # the root directory name is generated from the test name
-                testroot = os.path.join(
-                    TEST_PROJECTS_ROOT,
-                    self.test_project,
-                    "docs_{0}_{1}".format(self.__class__.__name__, self._testMethodName)
+                testroot = docs_dir(
+                    self.test_project, self.__class__.__name__, self._testMethodName
                 )
-                if os.path.isdir(testroot):
-                    shutil.rmtree(testroot)
-                os.makedirs(testroot)
+                if not os.path.isdir(testroot):
+                    os.makedirs(testroot)
 
                 # Make the testing root available for this test case for when separate
                 # source / build directories are used (in this case, self.app.srcdir
@@ -179,7 +185,7 @@ class ExhaleTestCaseMetaclass(type):
                         test_project=test_project
                     ))
                     # Absurd test cases may need an increased recursion limit for Sphinx
-                    if self.test_project in ["cpp_long_names"]:
+                    if self.test_project in {"cpp_long_names"}:
                         conf_py.write(textwrap.dedent('''
                             import sys
                             sys.setrecursionlimit(2000)
@@ -191,6 +197,7 @@ class ExhaleTestCaseMetaclass(type):
                     index_rst.write(textwrap.dedent('''
                         Exhale Test Case
                         ================
+
                         .. toctree::
                            :maxdepth: 2
 
@@ -215,22 +222,86 @@ class ExhaleTestCaseMetaclass(type):
             attrs["_rootdir"] = pytest.fixture(autouse=True)(_rootdir)
             attrs["_set_app"] = pytest.fixture(autouse=True)(_set_app)
 
-            # Create a default test that will validate some common tests
-            def test_common(self):
-                marks  = getattr(self, "pytestmark", False)
-                no_run = marks and any('no_run' in m.args for m in marks)
-                if not no_run:
-                    self.checkRequiredConfigs()
-                    self.checkAllFilesGenerated()
-                    self.checkAllFilesIncluded()
+            # Create fixture for generating files files requested with @with_file
+            # decorator.  First populate a list of (file_path, file_contents) tuples
+            # (reminder: this decorator is only allowed for functions).  If this list
+            # is non-empty, generate a class-level auto-used fixture that creates them.
+            with_file_requests = []
+            for n, attr in attrs.items():
+                # @with_file only intended to be used on functions.
+                if callable(attr) and n.startswith("test_"):
+                    marks = getattr(attr, "pytestmark", [])
+                    for mark in marks:
+                        if mark.name == "exhale_with_file":
+                            with_file_path = mark.kwargs.get("path", None)
+                            with_file_contents = mark.kwargs.get("contents", None)
+                            if not isinstance(with_file_path, six.string_types) or \
+                                    not isinstance(with_file_contents, six.string_types):
+                                raise RuntimeError("@with_file: `path` and `contents` must be strings!")
+                            with_file_requests.append((with_file_path, with_file_contents))
 
-            attrs["test_common"] = test_common
+            if with_file_requests:
+                def _actual_with_files(self):
+                    for file_path, file_contents in with_file_requests:
+                        # Create the desired file for this test case.
+                        try:
+                            parent_directory = os.path.dirname(file_path)
+                            if not os.path.isdir(parent_directory):
+                                os.makedirs(parent_directory)
+
+                            with codecs.open(file_path, "w", "utf-8") as f:
+                                f.write(file_contents)
+
+                            # import ipdb; ipdb.set_trace()
+                        except Exception as e:
+                            raise RuntimeError(
+                                "with_file: unable to create {file_path}:\n{e}".format(
+                                    file_path=file_path, e=e
+                                )
+                            )
+
+                    # Let the tests run
+                    yield
+
+                    # Now that the test is finished, remove the created file.
+                    for file_path, _ in with_file_requests:
+                        if os.path.isfile(file_path):
+                            try:
+                                os.remove(file_path)
+                            except Exception as e:
+                                raise RuntimeError(
+                                    "with_file: unable to remove {file_path}: {e}".format(
+                                        file_path=file_path, e=e
+                                    )
+                                )
+
+                # NOTE: *must* be scope="class" (or 'higher' scope).
+                attrs["_with_files"] = pytest.fixture(autouse=True, scope="class")(_actual_with_files)
+
+            if not attrs.get("no_test_common", False):
+                # Create a default test that will validate some common tests
+                def test_common(self):
+                    marks  = getattr(self, "pytestmark", False)
+                    no_run = marks and any('no_run' in m.args for m in marks)
+                    if not no_run:
+                        self.checkRequiredConfigs()
+                        self.checkAllFilesGenerated()
+                        self.checkAllFilesIncluded()
+
+                attrs["test_common"] = test_common
 
         # applying the default configuration override, which is overridden using the
         # @confoverride decorator at class or method level
         return default_confoverrides(
             super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs),
-            make_default_config(attrs["test_project"])
+            make_default_config(
+                attrs["test_project"],
+                # vvv this stuff here vvv
+                # for doxyfile tests since
+                # @confoverrides(exhale_args={"exhaleDoxygenStdin": None}) breaks
+                attrs.get("execute_doxygen", True),
+                attrs.get("use_default_doxygen_stdin", True)
+            )
         )
 
 

@@ -904,14 +904,61 @@ exhaleUseDoxyfile = False
     use your own ``Doxyfile``.  The encouraged approach is to use
     :data:`~exhale.configs.exhaleDoxygenStdin`.
 
-**Value in** ``exhale_args`` (bool)
-    Set to ``True`` to have Exhale use your ``Doxyfile``.
+**Value in** ``exhale_args`` (bool or str)
 
-    .. note::
+    .. note:: Changed in v0.2.2: prefer ``str`` absolute or relative paths to ``bool``.
 
-       The ``Doxyfile`` must be in the **same** directory as ``conf.py``.  Exhale will
-       change directories to here before launching Doxygen when you have separate source
-       and build directories for Sphinx configured.
+    The absolute or relative (*to* ``conf.py``) path to the doxygen configuration file
+    to use.  Exhale will change directories to the directory containing this
+    configuration file.
+
+    In Exhale v0.2.1 and prior releases, the user was required to track exactly
+    ``Doxyfile`` in the same directory as ``conf.py``.  Boolean values will continue to
+    be accepted until 1.x, but users are encouraged to update now.  Updating is as
+    simple as changing
+
+    .. code-block:: py
+
+        exhale_args = {
+            # ... other configs ...
+            "exhaleUseDoxyfile": True
+        }
+
+    to be
+
+    .. code-block:: py
+
+        exhale_args = {
+            # ... other configs ...
+            "exhaleUseDoxyfile": "./Doxyfile"
+        }
+
+    Exhale is switching to string paths to avoid forcing unnecessary project layout
+    constraints on the user.  For example, if your project has the following structure
+
+    .. code-block:: none
+
+        .
+        └── docs
+            ├── build
+            │   └── html
+            │       └── index.html
+            ├── Doxyfile
+            └── source
+                └── conf.py
+
+    then you can now specify
+
+    .. code-block:: py
+
+        exhale_args = {
+            # ... other configs ...
+            "exhaleUseDoxyfile": "../Doxyfile"
+        }
+
+    This can be particularly useful if your project is configuring a Doxyfile as part of
+    the build process.
+
 
     .. warning::
 
@@ -926,8 +973,9 @@ exhaleUseDoxyfile = False
        2. ``STRIP_FROM_PATH`` is configured to be identical to what is specified with
           :data:`~exhale.configs.doxygenStripFromPath`.
 
-       I have no idea what happens when these conflict, but it likely will never result
-       in valid documentation.
+       If (1) is inconsistent, breathe will not find the documentation.  If (2) is
+       inconsistent, then typically the paths in the file hierarchy are either incorrect
+       or too long (since the path being stripped is different, nothing gets stripped).
 '''
 
 exhaleDoxygenStdin = None
