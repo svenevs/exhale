@@ -22,12 +22,24 @@ install:
 
       # install python tests dependencies: doxygen, pip, tox, codecov
       if ($env:TEST_NAME -Match "py") {
-        choco install --no-progress doxygen.install
-        $env:Path += ";" + "C:\Program Files\doxygen\bin"
-
         $pip_exec = $env:PYTHON + "\\python.exe"
-        $pip_args = "-m", "pip", "install", "--no-warn-script-location", "-U", "pip", "tox", "codecov"
+        $pip_args = "-m", "pip", "install", "--no-warn-script-location", "-U", "pip", "tox", "codecov", "cmake"
         & $pip_exec $pip_args
+
+        # NOTE: doxygen doesn't seem to work with latest cmake // ninja :/
+        choco install winflexbison
+        mkdir doxygen
+        cd doxygen
+        $doxy_src = "https://github.com/doxygen/doxygen/archive/Release_1_8_14.zip"
+        $doxy_dst = "c:\projects\exhale\doxygen\Release_1_8_14.zip"
+        Invoke-WebRequest $doxy_src -OutFile $doxy_dst
+        7z x Release_1_8_14.zip
+        cd doxygen-Release_1_8_14
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 15 2017" .. -DCMAKE_INSTALL_PREFIX="c:\projects\exhale\doxygen"
+        cmake --build . --config Release --target install
+        $env:Path += ";c:\projects\exhale\doxygen\bin"
       }
       # install cxx tests dependencies: pip, codecov, opencppcoverage
       else {
