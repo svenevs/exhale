@@ -23,15 +23,18 @@ linux_specifications: &linux_specs
         - flex
         - bison
   install:
-    - curl -LO http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.src.tar.gz
-    - tar -xf doxygen-1.8.14.src.tar.gz
-    - cd doxygen-1.8.14/
-    - mkdir build && cd build/
-    - cmake ..
+    # NOTE: doxygen doesn't seem to work with latest cmake // ninja :/
+    - pip install cmake
+    - mkdir doxygen && cd doxygen
+    - curl -LO https://github.com/doxygen/doxygen/archive/Release_1_8_14.tar.gz
+    - tar -xf Release_1_8_14.tar.gz
+    - cd doxygen-Release_1_8_14
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../..
     - make -j
-    - export PATH="$PWD/bin:$PATH"
-    # Go back to repository root for the rest
+    - make install
     - cd $(git rev-parse --show-toplevel)
+    - export PATH="$PWD/doxygen/bin:$PATH"
     - pip install -U pip setuptools tox codecov
   script:
     - doxygen --version
