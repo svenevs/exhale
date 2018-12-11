@@ -30,10 +30,6 @@ except ImportError:
     # Python 3 StringIO
     from io import StringIO
 
-__all__       = ["ExhaleRoot", "ExhaleNode"]
-__name__      = "graph"
-__docformat__ = "reStructuredText"
-
 
 ########################################################################################
 #

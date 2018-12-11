@@ -28,9 +28,6 @@ try:
 except:
     __USE_PYGMENTS = False
 
-__name__      = "utils"
-__docformat__ = "reStructuredText"
-
 
 def heading_mark(title, char):
     '''

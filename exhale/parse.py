@@ -14,10 +14,6 @@ from . import utils
 import textwrap
 from bs4 import BeautifulSoup
 
-__all__       = ["walk", "convertDescriptionToRST", "getBriefAndDetailedRST"]
-__name__      = "utils"
-__docformat__ = "reStructuredText"
-
 
 def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara=False):
     '''

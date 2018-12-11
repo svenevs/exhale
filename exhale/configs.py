@@ -65,11 +65,6 @@ The |SphinxLoggerAdapter| for communicating with the sphinx build process.
 .. |SphinxLoggerAdapter| replace:: :class:`sphinx:sphinx.util.SphinxLoggerAdapter`
 """
 
-# __all__ = []
-
-__name__ = "configs"
-__docformat__ = "reStructuredText"
-
 ########################################################################################
 ##                                                                                     #
 ## Required configurations, these get set indirectly via the dictionary argument       #
