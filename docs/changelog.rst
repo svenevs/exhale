@@ -41,7 +41,7 @@ v0.2.1
 v0.2.0
 ----------------------------------------------------------------------------------------
 
-- Exhale no longer produces filenames that are longer than the operatins system can
+- Exhale no longer produces filenames that are longer than the operating system can
   handle (:pr:`35`).
 
     - Internal links have changed, more heavily discouraged in docs.  Ideally the
