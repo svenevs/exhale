@@ -50,11 +50,9 @@ intersphinx_mapping = {
     'bs4':    ('https://www.crummy.com/software/BeautifulSoup/bs4/doc', "_intersphinx/bs4_objects.inv")
 }
 
+# make linkcheck does not support GitHub README.md anchors (they are synthetic anchors)
 linkcheck_ignore = [
-    # linkcheck does not support GitHub README.md anchors (they are synthetic anchors)
-    r'https://github\.com/jonmiles/bootstrap-treeview#.*',
-    # frequent outages on doxygen website, annoying enough that I don't care anymore
-    r'.*www\.stack\.nl/~dimitri/doxygen.*'
+    r'https://github.com/jonmiles/bootstrap-treeview#.*'
 ]
 
 # show :autoclass: member definitions as defined in exhale.py
