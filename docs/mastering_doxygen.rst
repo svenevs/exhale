@@ -20,7 +20,7 @@ What is Doxygen, and How do I Approach it?
 `Doxygen`__ is a documentation (doxy) generation (gen) system.  You should approach it
 with fear, awe, and humility.  And remember to never look it in the eyes.
 
-__ http://www.stack.nl/~dimitri/doxygen/
+__ http://www.doxygen.nl/
 
 Doxygen on its own is a fascinating tool.  It's stupendously flexible, and immensely
 powerful.  I mean let's think about what it's actually doing: it's parsing and
@@ -68,7 +68,7 @@ overwhelming) approach of just reading the entire generated ``Doxyfile``.  You c
 acquire a shiny new ``Doxyfile`` by executing ``doxygen -g`` in your terminal in a
 directory where there is no ``Doxyfile`` present.
 
-__ http://www.stack.nl/~dimitri/doxygen/manual/index.html
+__ http://www.doxygen.nl/manual/index.html
 
 .. tip::
 
@@ -321,7 +321,7 @@ documenting specific aspects:
 | ``\c``          | Teletype a single word (e.g. ``\c computeroutput``).               |
 +-----------------+--------------------------------------------------------------------+
 
-__ http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html
+__ http://www.doxygen.nl/manual/docblocks.html
 
 Doxygen Documentation Pitfalls
 ----------------------------------------------------------------------------------------
@@ -342,7 +342,7 @@ documentation is empty)!  From the Doxygen documentation reiteration_:
     (functions, typedefs, enum, macros, etc), you must document the file in which they
     are defined.
 
-.. _reiteration: http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html
+.. _reiteration: http://www.doxygen.nl/manual/docblocks.html
 
 .. _file_associations:
 
@@ -350,7 +350,8 @@ Associating Documentation with the Right File
 ****************************************************************************************
 
 Classes, Structs, Enums, and Unions typically need additional care in order for them to
-appear in the hierarchy correctly.  If you have a file in a directory, the Doxygen FAQ_ explains that you need to specify this location:
+appear in the hierarchy correctly.  If you have a file in a directory, the Doxygen FAQ_
+explains that you need to specify this location:
 
 ..
 
@@ -382,7 +383,7 @@ might look like:
         thing() {}
      };
 
-.. _FAQ: http://www.stack.nl/~dimitri/doxygen/manual/faq.html#faq_code_inc
+.. _FAQ: http://www.doxygen.nl/manual/faq.html#faq_code_inc
 
 Features Available by Using Sphinx / Breathe / Exhale by way of reStructuredText
 ----------------------------------------------------------------------------------------
