@@ -94,6 +94,6 @@ after_test:
         Invoke-Expression $codecov_cmd
       }
       else {
-        $codecov_cmd = '& codecov -X gcov -f .\coverage.xml --name ' + $env:TEST_NAME
+        $codecov_cmd = '& codecov -X gcov -f c:\projects\exhale\coverage.xml --name ' + $env:TEST_NAME
         Invoke-Expression $codecov_cmd
       }
