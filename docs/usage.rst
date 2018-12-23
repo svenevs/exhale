@@ -461,8 +461,9 @@ Now we are ready to begin.
 
 6. Go to the admin page of your RTD website and select the *Advanced Settings* tab.
    Make sure the *Install your project inside a virtualenv using* ``setup.py install``
-   button is checked.  In the *Requirements file* box below, enter
-   ``docs/requirements.txt`` assuming you followed the steps above.
+   button is **NOT** checked (unless you have a ``setup.py`` at the root of your
+   repository).  In the *Requirements file* box below, enter ``docs/requirements.txt``
+   assuming you followed the steps above.
 
    I personally prefer to keep the ``requirements.txt`` hidden in the ``docs`` folder
    so that it is implicit that those are only requirements for building the docs, and
