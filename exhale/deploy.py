@@ -321,9 +321,9 @@ def generateDoxygenXML():
         doxy_dir = configs._doxygen_xml_output_directory.rsplit("{sep}xml".format(sep=os.sep), 1)[0]
         internal_configs = textwrap.dedent('''
             # Tell doxygen to output wherever breathe is expecting things
-            OUTPUT_DIRECTORY       = {out}
+            OUTPUT_DIRECTORY       = "{out}"
             # Tell doxygen to strip the path names (RTD builds produce long abs paths...)
-            STRIP_FROM_PATH        = {strip}
+            STRIP_FROM_PATH        = "{strip}"
         '''.format(out=doxy_dir, strip=configs.doxygenStripFromPath))
         external_configs = textwrap.dedent(configs.exhaleDoxygenStdin)
         # Place external configs last so that if the _valid_config method isn't actually
