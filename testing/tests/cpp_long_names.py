@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 ########################################################################################
-# This file is part of exhale.  Copyright (c) 2017-2018, Stephen McDowell.             #
+# This file is part of exhale.  Copyright (c) 2017-2019, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
 #                                                                                      #
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
@@ -219,7 +219,7 @@ def create_absurd_directory_structure():
                      * This file is dedicated to the public domain.  If your jurisdiction requires a       *
                      * specific license:                                                                   *
                      *                                                                                     *
-                     * Copyright (c) Stephen McDowell, 2017-2018                                           *
+                     * Copyright (c) Stephen McDowell, 2017-2019                                           *
                      * License:      CC0 1.0 Universal                                                     *
                      * License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode           *
                      **************************************************************************************/
