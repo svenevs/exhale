@@ -71,10 +71,13 @@ def _apply_confoverride_to_class(cls, config, priority):
 
         # create a list of exhale markers kwargs
         markers_kwargs = []
-        # NOTE: this check is needed for the documentation to build
-        if "_marks" in meth.exhale.__dict__.keys():
-            for m in meth.exhale._marks:
-                markers_kwargs.append((m.args[0], m.kwargs))
+        if getattr(meth, "pytestmark", False):
+            for mark in meth.pytestmark:
+                if mark.name == "exhale":
+                    # mark.args[0]: the priority from pytest.mark.exhale
+                    # mark.kwargs: the kwargs to override with said priority
+                    markers_kwargs.append((mark.args[0], mark.kwargs))
+
         # sort that list according to priority
         markers_kwargs.sort(key=lambda m: m[0])
 
