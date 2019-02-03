@@ -51,9 +51,6 @@ matrix:
     ####################################################################################
     - <<: *linux_specs
       python: "2.7"
-      env: PY=2.7 SPHINX_VERSION=1.6.7
-    - <<: *linux_specs
-      python: "2.7"
       env: PY=2.7 SPHINX_VERSION=1.7.9
     - <<: *linux_specs
       python: "2.7"
@@ -61,9 +58,6 @@ matrix:
     ####################################################################################
     # Linux :: Python :: 3.6                                                           #
     ####################################################################################
-    - <<: *linux_specs
-      python: "3.6"
-      env: PY=3.6 SPHINX_VERSION=1.6.7
     - <<: *linux_specs
       python: "3.6"
       env: PY=3.6 SPHINX_VERSION=1.7.9
