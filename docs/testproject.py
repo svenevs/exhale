@@ -95,11 +95,12 @@ class TestProjectDirective(Directive):
                 "Example: .. testproject:: c_maths"
             )
         self.content[0] = textwrap.dedent('''\
-            View the `{project} source code here <{baseurl}/{project}>`_.
+            View the `{project} source code here <{baseurl}/{project_dir}>`_.
 
             See also: :data:`ExhaleTestCase.test_project <testing.base.ExhaleTestCase.test_project>`.
         '''.format(
             project=self.content[0],
+            project_dir=self.content[0].replace(" ", "\\ "),
             baseurl=get_projects_baseurl()
         ))
         project_node = testproject("\n".join(self.content))
