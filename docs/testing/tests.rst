@@ -50,3 +50,9 @@ Project Tests
 
 .. automodule:: testing.tests.cpp_pimpl
    :members:
+
+``cpp with spaces``
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.tests.cpp_with_spaces
+   :members:
