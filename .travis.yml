@@ -1,11 +1,9 @@
 sudo: false
 
 branches:
-  except:
-    # Ignore fix/* branches since they'll also have a Pull Request build
-    - /^fix.*$/
-    # Ignore feature/* branches since they'll also have a Pull Request build
-    - /^feature.*$/
+  # Other branches receive a Pull Request build.
+  only:
+    - master
 
 # Sphinx version testing done only on Linux (fastest boot / install times).
 # Each test must specify `python: X.Y` and `env: PY=X.Y SPHINX_VERSION=X.Y.Z`.
