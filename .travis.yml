@@ -127,18 +127,15 @@ matrix:
     # testing/projects Code Validation                                                 #
     ####################################################################################
     - os: linux
+      dist: xenial
       addons:
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
           packages:
-            - gcc-7
-            - g++-7
-            - gfortran-7
-            - python3.5-setuptools
-            - python3.5
-            - python3.5-dev
-            - python3.5-venv
+            - gcc
+            - g++
+            - gfortran
+            - python3
+            - python3-venv
             - cmake
       language: cpp  # mostly ;)
       env: TEST=testing/projects
