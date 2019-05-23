@@ -131,12 +131,12 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - deadsnakes
           packages:
             - gcc-7
             - g++-7
             - gfortran-7
-            - python3.7
+            - python3
+            - python3-venv
             - cmake
       language: cpp  # mostly ;)
       env: TEST=testing/projects
@@ -146,7 +146,7 @@ matrix:
         - export FC=gfortran-7
       install:
         # I don't want to require sudo because I don't want to wait ;)
-        - python3.7 -m venv venv
+        - python3 -m venv venv
         - source venv/bin/activate
         - pip install -U pip codecov gcovr
         # cpp_long_names test runs code from testing/tests/cpp_long_names.py, so we need
