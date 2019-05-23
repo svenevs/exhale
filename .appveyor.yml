@@ -1,104 +1,104 @@
-# # If branch from same repo is on a PR, don't build both :)
-# skip_branch_with_pr: true
-# image: Visual Studio 2017
-# clone_folder: C:\projects\exhale
+# If branch from same repo is on a PR, don't build both :)
+skip_branch_with_pr: true
+image: Visual Studio 2017
+clone_folder: C:\projects\exhale
 
-# # See: https://packaging.python.org/guides/supporting-windows-using-appveyor/
-# environment:
-#   matrix:
-#     - PYTHON:    "C:\\Python27"
-#       TEST_NAME: "win32_py27"
-#       SPHINX_VERSION: "1.8.5"
-#       BREATHE_VERSION: "4.12.0"
-#     - PYTHON:    "C:\\Python27-x64"
-#       TEST_NAME: "win64_py27"
-#       SPHINX_VERSION: "1.8.5"
-#       BREATHE_VERSION: "4.12.0"
-#     # Use latest sphinx / breathe (see also: tox.ini)
-#     - PYTHON:    "C:\\Python36-x64"
-#       TEST_NAME: "win64_py36"
-#     - PYTHON:    "C:\\Python36-x64"
-#       TEST_NAME: "win64_cxx"
+# See: https://packaging.python.org/guides/supporting-windows-using-appveyor/
+environment:
+  matrix:
+    - PYTHON:    "C:\\Python27"
+      TEST_NAME: "win32_py27"
+      SPHINX_VERSION: "1.8.5"
+      BREATHE_VERSION: "4.12.0"
+    - PYTHON:    "C:\\Python27-x64"
+      TEST_NAME: "win64_py27"
+      SPHINX_VERSION: "1.8.5"
+      BREATHE_VERSION: "4.12.0"
+    # Use latest sphinx / breathe (see also: tox.ini)
+    - PYTHON:    "C:\\Python36-x64"
+      TEST_NAME: "win64_py36"
+    - PYTHON:    "C:\\Python36-x64"
+      TEST_NAME: "win64_cxx"
 
-# install:
-#   - ps: |
-#       # Make it so codecov etc can be found
-#       $env:Path += ";" + $env:PYTHON + "\\Scripts"
+install:
+  - ps: |
+      # Make it so codecov etc can be found
+      $env:Path += ";" + $env:PYTHON + "\\Scripts"
 
-#       # install python tests dependencies: doxygen, pip, tox, codecov
-#       if ($env:TEST_NAME -Match "py") {
-#         $pip_exec = $env:PYTHON + "\\python.exe"
-#         $pip_args = "-m", "pip", "install", "--no-warn-script-location", "-U", "pip", "tox", "codecov"
-#         & $pip_exec $pip_args
+      # install python tests dependencies: doxygen, pip, tox, codecov
+      if ($env:TEST_NAME -Match "py") {
+        $pip_exec = $env:PYTHON + "\\python.exe"
+        $pip_args = "-m", "pip", "install", "--no-warn-script-location", "-U", "pip", "tox", "codecov"
+        & $pip_exec $pip_args
 
-#         # Fetch the pre-compiled binary release for doxygen directly.
-#         mkdir doxygen
-#         cd doxygen
-#         $doxy_src = "https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.windows.x64.bin.zip"
-#         $doxy_dst = "c:\projects\exhale\doxygen\doxygen-1.8.14.windows.x64.bin.zip"
-#         # Needs -UserAgent "NativeHost" to follow sourceforge redirects
-#         Invoke-WebRequest -Uri $doxy_src -OutFile $doxy_dst -UserAgent "NativeHost"
-#         # Extracts `doxygen.exe`, `doxyindexer.exe`, `doxysearch.cgi.exe`, and
-#         # `libclang.dll` to same directory aka c:\projects\exhale\doxygen\doxygen.exe
-#         # is what we want to use.
-#         7z x doxygen-1.8.14.windows.x64.bin.zip
-#         $env:Path += ";c:\projects\exhale\doxygen"
-#       }
-#       # install cxx tests dependencies: pip, codecov, opencppcoverage
-#       else {
-#         $pip_exec = $env:PYTHON + "\\python.exe"
-#         $pip_args = "-m", "pip", "install", "--no-warn-script-location", "-U", "pip", "codecov"
-#         & $pip_exec $pip_args
+        # Fetch the pre-compiled binary release for doxygen directly.
+        mkdir doxygen
+        cd doxygen
+        $doxy_src = "https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.windows.x64.bin.zip"
+        $doxy_dst = "c:\projects\exhale\doxygen\doxygen-1.8.14.windows.x64.bin.zip"
+        # Needs -UserAgent "NativeHost" to follow sourceforge redirects
+        Invoke-WebRequest -Uri $doxy_src -OutFile $doxy_dst -UserAgent "NativeHost"
+        # Extracts `doxygen.exe`, `doxyindexer.exe`, `doxysearch.cgi.exe`, and
+        # `libclang.dll` to same directory aka c:\projects\exhale\doxygen\doxygen.exe
+        # is what we want to use.
+        7z x doxygen-1.8.14.windows.x64.bin.zip
+        $env:Path += ";c:\projects\exhale\doxygen"
+      }
+      # install cxx tests dependencies: pip, codecov, opencppcoverage
+      else {
+        $pip_exec = $env:PYTHON + "\\python.exe"
+        $pip_args = "-m", "pip", "install", "--no-warn-script-location", "-U", "pip", "codecov"
+        & $pip_exec $pip_args
 
-#         choco install --no-progress opencppcoverage
-#         $env:Path += ";" + "C:\Program Files\OpenCppCoverage"
-#       }
+        choco install --no-progress opencppcoverage
+        $env:Path += ";" + "C:\Program Files\OpenCppCoverage"
+      }
 
-# build: off
+build: off
 
-# test_script:
-#   - ps: |
-#       if ($env:TEST_NAME -Match "py") {
-#         # Prints setuptools version
-#         easy_install --version
+test_script:
+  - ps: |
+      if ($env:TEST_NAME -Match "py") {
+        # Prints setuptools version
+        easy_install --version
 
-#         # Print doxygen version
-#         Write-Host "Doxygen version:"
-#         doxygen --version
+        # Print doxygen version
+        Write-Host "Doxygen version:"
+        doxygen --version
 
-#         # Installs dependencies and runs the tests.
-#         $tox_exec = $env:PYTHON + "\\Scripts\\tox"
-#         $tox_args = "-e", "py", "--", "--cov-report", "xml:coverage.xml", "--cov"
-#         & $tox_exec $tox_args
-#       }
-#       else {
-#         cd testing\projects
-#         mkdir build
-#         cd build
-#         cmake -G "Visual Studio 15 2017" ..
-#         cmake --build .
-#         cmake --build . --target coverage-xml
-#       }
+        # Installs dependencies and runs the tests.
+        $tox_exec = $env:PYTHON + "\\Scripts\\tox"
+        $tox_args = "-e", "py", "--", "--cov-report", "xml:coverage.xml", "--cov"
+        & $tox_exec $tox_args
+      }
+      else {
+        cd testing\projects
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 15 2017" ..
+        cmake --build .
+        cmake --build . --target coverage-xml
+      }
 
-# # Why use Invoke-Expression like this?  Because I keep getting
-# #
-# #   codecov : The filename, directory name, or volume label syntax is incorrect.
-# #
-# # Which reports the build as failed, but Invoke-Expression always succeeds xD
-# after_test:
-#   - ps: |
-#       if ($env:TEST_NAME -Match "cxx") {
-#         # Gerrymander generated coverage report to include paths from the repository
-#         # root (rather than let AppVeyor build folder paths leak in).
-#         # Take note of two things: (1) no C:\\ at beginning, and (2) clone_folder above
-#         (Get-Content .\coverage.xml) -replace '(.*)filename=\"projects\\exhale\\(.*)\"(.*)', '$1 filename="$2"$3' | Set-Content .\coverage.xml
-#         Copy-Item .\coverage.xml -Destination C:\projects\exhale
-#         cd C:\projects\exhale
+# Why use Invoke-Expression like this?  Because I keep getting
+#
+#   codecov : The filename, directory name, or volume label syntax is incorrect.
+#
+# Which reports the build as failed, but Invoke-Expression always succeeds xD
+after_test:
+  - ps: |
+      if ($env:TEST_NAME -Match "cxx") {
+        # Gerrymander generated coverage report to include paths from the repository
+        # root (rather than let AppVeyor build folder paths leak in).
+        # Take note of two things: (1) no C:\\ at beginning, and (2) clone_folder above
+        (Get-Content .\coverage.xml) -replace '(.*)filename=\"projects\\exhale\\(.*)\"(.*)', '$1 filename="$2"$3' | Set-Content .\coverage.xml
+        Copy-Item .\coverage.xml -Destination C:\projects\exhale
+        cd C:\projects\exhale
 
-#         $codecov_cmd = '& codecov -X gcov -f .\coverage.xml --name ' + $env:TEST_NAME
-#         Invoke-Expression $codecov_cmd
-#       }
-#       else {
-#         $codecov_cmd = '& codecov -X gcov -f c:\projects\exhale\coverage.xml --name ' + $env:TEST_NAME
-#         Invoke-Expression $codecov_cmd
-#       }
+        $codecov_cmd = '& codecov -X gcov -f .\coverage.xml --name ' + $env:TEST_NAME
+        Invoke-Expression $codecov_cmd
+      }
+      else {
+        $codecov_cmd = '& codecov -X gcov -f c:\projects\exhale\coverage.xml --name ' + $env:TEST_NAME
+        Invoke-Expression $codecov_cmd
+      }
