@@ -433,6 +433,41 @@ listingExclude = []
 # TODO: moves into config object
 _compiled_listing_exclude = []
 
+unabridgedOrphanKinds = {"dir", "file"}
+"""
+**Optional**
+    The list of node kinds to **exclude** from the unabridged API listing beneath the
+    class and file hierarchies.
+
+**Value in** ``exhale_args`` (list or set of strings)
+    The list of kinds (see :data:`~exhale.utils.AVAILABLE_KINDS`) that will **not** be
+    included in the unabridged API listing.  The default is to exclude directories and
+    files (which are already in the file hierarchy).  Note that if this variable is
+    provided, it will overwrite the default  ``{"dir", "file"}``, meaning if you want
+    to exclude something in addition you need to include ``"dir"`` and ``"file"``:
+
+    .. code-block:: py
+
+        # In conf.py
+        exhale_args = {
+            # Case 1: _only_ exclude union
+            "unabridgedOrphanKinds": {"union"}
+            # Case 2: exclude union in addition to dir / file.
+            "unabridgedOrphanKinds": {"dir", "file", "union"}
+        }
+
+    .. tip::
+
+        See :data:`~exhale.configs.fullToctreeMaxDepth`, users seeking to reduce the
+        length of the unabridged API should set this value to ``1``.
+
+    .. warning::
+
+        If **either** ``"class"`` **or** ``"struct"`` appear in
+        ``unabridgedOrphanKinds`` then **both** will be excluded.  The unabridged API
+        will present classes and structs together.
+"""
+
 ########################################################################################
 # Clickable Hierarchies <3                                                             #
 ########################################################################################
@@ -1378,6 +1413,7 @@ def apply_sphinx_configurations(app):
         ("afterBodySummary",                six.string_types),
         ("fullToctreeMaxDepth",                          int),
         ("listingExclude",                              list),
+        ("unabridgedOrphanKinds",                (list, set)),
         # Clickable Hierarchies <3
         ("createTreeView",                              bool),
         ("minifyTreeView",                              bool),
@@ -1443,14 +1479,19 @@ def apply_sphinx_configurations(app):
 
     _list_of_strings(         contentsSpecifiers,          "contentsSpecifiers")
     _list_of_strings(kindsWithContentsDirectives, "kindsWithContentsDirectives")
+    _list_of_strings(      unabridgedOrphanKinds,       "unabridgedOrphanKinds")
 
     # Make sure the kinds they specified are valid
+    unknown = "Unknown kind `{kind}` given in `{config}`.  See utils.AVAILABLE_KINDS."
     for kind in kindsWithContentsDirectives:
         if kind not in utils.AVAILABLE_KINDS:
             raise ConfigError(
-                "Unknown `{kind}` given in `kindsWithContentsDirectives`.  See utils.AVAILABLE_KINDS.".format(
-                    kind=kind
-                )
+                unknown.format(kind=kind, config="kindsWithContentsDirectives")
+            )
+    for kind in unabridgedOrphanKinds:
+        if kind not in utils.AVAILABLE_KINDS:
+            raise ConfigError(
+                unknown.format(kind=kind, config="unabridgedOrphanKinds")
             )
 
     # Make sure the listingExlcude is usable
@@ -1623,7 +1664,7 @@ def apply_sphinx_configurations(app):
 
     # fullToctreeMaxDepth > 5 may produce other sphinx issues unrelated to exhale
     if fullToctreeMaxDepth > 5:
-        logger.ingwarn(
+        logger.warning(
             "Exhale: `fullToctreeMaxDepth={0}` is greater than 5 and may build errors for non-html.".format(
                 fullToctreeMaxDepth
             )

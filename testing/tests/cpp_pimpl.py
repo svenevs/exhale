@@ -401,25 +401,6 @@ class CPPPimpl(ExhaleTestCase):
             self.contents_for_node(jupiter_hpp), required=self.jupiter_hpp_link_names(), forbidden=None
         )
 
-    def validate_full_api_listing(self):
-        """
-        Validate that every node shows up in the full api listing.
-
-        .. todo:: Maybe this should be a default check instead?
-        """
-        exhale_root = get_exhale_root(self)
-        with open(exhale_root.unabridged_api_file) as api_root:
-            api_root_contents = api_root.read()
-
-        for node in exhale_root.all_nodes:
-            self.assertTrue(
-                node.file_name in api_root_contents,
-                "{file_name} not included in {unabridged_api}!".format(
-                    file_name=node.file_name,
-                    unabridged_api=exhale_root.unabridged_api_file
-                )
-            )
-
     def test_hierarchies(self):
         """Verify the class and file hierarchies."""
         compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict))
@@ -433,7 +414,7 @@ class CPPPimpl(ExhaleTestCase):
         self.validate_class_hierarchy(TestedExclusionTypes.NoExclusions)
         self.validate_namespace_listings(TestedExclusionTypes.NoExclusions)
         self.validate_file_listings()
-        self.validate_full_api_listing()
+        self.checkAllFilesIncluded()
 
     @confoverrides(exhale_args={"listingExclude": [r".*Impl$"]})
     def test_impl_exclude(self):
@@ -441,7 +422,7 @@ class CPPPimpl(ExhaleTestCase):
         self.validate_class_hierarchy(TestedExclusionTypes.AllImpl)
         self.validate_namespace_listings(TestedExclusionTypes.AllImpl)
         self.validate_file_listings()
-        self.validate_full_api_listing()
+        self.checkAllFilesIncluded()
 
     @confoverrides(exhale_args={"listingExclude": [(r".*impl$", re.IGNORECASE)]})
     def test_impl_exclude_ignorecase(self):
@@ -451,7 +432,7 @@ class CPPPimpl(ExhaleTestCase):
         self.validate_class_hierarchy(TestedExclusionTypes.AllImpl)
         self.validate_namespace_listings(TestedExclusionTypes.AllImpl)
         self.validate_file_listings()
-        self.validate_full_api_listing()
+        self.checkAllFilesIncluded()
 
     @confoverrides(exhale_args={"listingExclude": [r".*detail::.*Impl$"]})
     def test_detail_impl_exclude(self):
@@ -461,7 +442,7 @@ class CPPPimpl(ExhaleTestCase):
         self.validate_class_hierarchy(TestedExclusionTypes.DetailImpl)
         self.validate_namespace_listings(TestedExclusionTypes.DetailImpl)
         self.validate_file_listings()
-        self.validate_full_api_listing()
+        self.checkAllFilesIncluded()
 
     @confoverrides(exhale_args={"listingExclude": [(r".*detail::.*impl$", re.IGNORECASE)]})
     def test_detail_impl_exclude_ignorecase(self):
@@ -473,4 +454,4 @@ class CPPPimpl(ExhaleTestCase):
         self.validate_class_hierarchy(TestedExclusionTypes.DetailImpl)
         self.validate_namespace_listings(TestedExclusionTypes.DetailImpl)
         self.validate_file_listings()
-        self.validate_full_api_listing()
+        self.checkAllFilesIncluded()

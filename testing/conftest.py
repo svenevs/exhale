@@ -31,3 +31,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "sphinx: register sphinx test."
     )
+
+
+def pytest_runtest_setup(item):
+    """.. todo:: stop reloading configs module in 1.x."""
+    from six.moves import reload_module
+    from exhale import configs
+    reload_module(configs)

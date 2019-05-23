@@ -180,6 +180,11 @@ that you will link to from your documentation is laid out as follows:
       each section be setting the key ``"fullToctreeMaxDepth"`` (e.g. to a smaller
       number such as ``2``).  See :data:`~exhale.configs.fullToctreeMaxDepth`.
 
+   .. tip::
+
+      Use :data:`~exhale.configs.unabridgedOrphanKinds` to exclude entire sections from
+      the full API listing.
+
 8. If provided, the value of the key ``"afterBodySummary"`` will be included at the
    bottom of the document.  See :data:`~exhale.configs.afterBodySummary`.
 
@@ -206,6 +211,8 @@ that you will link to from your documentation is laid out as follows:
 .. autodata:: exhale.configs.fullToctreeMaxDepth
 
 .. autodata:: exhale.configs.listingExclude
+
+.. autodata:: exhale.configs.unabridgedOrphanKinds
 
 Clickable Hierarchies
 ****************************************************************************************
