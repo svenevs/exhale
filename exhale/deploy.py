@@ -28,9 +28,6 @@ import tempfile
 import textwrap
 from subprocess import PIPE, Popen, STDOUT
 
-__name__      = "deploy"
-__docformat__ = "reStructuredText"
-
 
 def _generate_doxygen(doxygen_input):
     '''

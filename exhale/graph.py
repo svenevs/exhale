@@ -31,8 +31,6 @@ except ImportError:
     from io import StringIO
 
 __all__       = ["ExhaleRoot", "ExhaleNode"]
-__name__      = "graph"
-__docformat__ = "reStructuredText"
 
 
 ########################################################################################
