@@ -135,6 +135,7 @@ matrix:
             - gcc-7
             - g++-7
             - gfortran-7
+            - python3.5-setuptools
             - python3.5
             - python3.5-dev
             - python3.5-venv
