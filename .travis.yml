@@ -49,25 +49,23 @@ matrix:
     ####################################################################################
     - <<: *linux_specs
       python: "2.7"
-      env: PY=2.7 SPHINX_VERSION=1.7.9
-    - <<: *linux_specs
-      python: "2.7"
-      env: PY=2.7 SPHINX_VERSION=1.8.0
+      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
     ####################################################################################
     # Linux :: Python :: 3.6                                                           #
     ####################################################################################
     - <<: *linux_specs
       python: "3.6"
-      env: PY=3.6 SPHINX_VERSION=1.7.9
+      env: PY=3.6 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
+      # Use latest sphinx / breathe (see also: tox.ini)
     - <<: *linux_specs
       python: "3.6"
-      env: PY=3.6 SPHINX_VERSION=1.8.0
+      env: PY=3.6
     ####################################################################################
     # OSX :: Python :: 2.7                                                             #
     ####################################################################################
     - os: osx
       language: generic
-      env: PYTHON=2.7
+      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
       before_install:
         # Something strange about final step of install gives exit code != 1 but the
         # installation appears to work?
@@ -86,7 +84,8 @@ matrix:
     ####################################################################################
     - os: osx
       language: generic
-      env: PYTHON=3.6
+      # Use latest sphinx / breathe (see also: tox.ini)
+      env: PY=3.6
       before_install:
         - brew upgrade python
       install:
@@ -132,10 +131,12 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - deadsnakes
           packages:
             - gcc-7
             - g++-7
             - gfortran-7
+            - python3.7
             - cmake
       language: cpp  # mostly ;)
       env: TEST=testing/projects
@@ -145,8 +146,7 @@ matrix:
         - export FC=gfortran-7
       install:
         # I don't want to require sudo because I don't want to wait ;)
-        - pip install virtualenv
-        - virtualenv venv
+        - python3.7 -m venv venv
         - source venv/bin/activate
         - pip install -U pip codecov gcovr
         # cpp_long_names test runs code from testing/tests/cpp_long_names.py, so we need
