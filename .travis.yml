@@ -44,85 +44,85 @@ matrix:
   allow_failures:
     - env: ALLOW_ME_TO=FAIL
   include:
-    ####################################################################################
-    # Linux :: Python :: 2.7                                                           #
-    ####################################################################################
-    - <<: *linux_specs
-      python: "2.7"
-      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
-    ####################################################################################
-    # Linux :: Python :: 3.6                                                           #
-    ####################################################################################
-    - <<: *linux_specs
-      python: "3.6"
-      env: PY=3.6 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
-      # Use latest sphinx / breathe (see also: tox.ini)
-    - <<: *linux_specs
-      python: "3.6"
-      env: PY=3.6
-    ####################################################################################
-    # OSX :: Python :: 2.7                                                             #
-    ####################################################################################
-    - os: osx
-      language: generic
-      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0 HOMEBREW_NO_AUTO_UPDATE=1
-      before_install:
-        # Something strange about final step of install gives exit code != 1 but the
-        # installation appears to work?
-        - brew install python@2 || true
-      install:
-        - brew install doxygen
-        - /usr/local/bin/pip install -U tox codecov
-      script:
-        - doxygen --version
-        - /usr/local/bin/python2 --version
-        - /usr/local/bin/python2 -m tox -e py -- --cov-report xml:coverage.xml --cov
-      after_success:
-        - codecov -X gcov -f coverage.xml --name osx_py2.7
-    ####################################################################################
-    # OSX :: Python :: 3.6                                                             #
-    ####################################################################################
-    - os: osx
-      language: generic
-      # Use latest sphinx / breathe (see also: tox.ini)
-      env: PY=3.6 HOMEBREW_NO_AUTO_UPDATE=1
-      before_install:
-        - brew upgrade python || true
-      install:
-        - brew install doxygen
-        - /usr/local/bin/pip3 install -U tox codecov
-      script:
-        - doxygen --version
-        - /usr/local/bin/python3 --version
-        - /usr/local/bin/python3 -m tox -e py -- --cov-report xml:coverage.xml --cov
-      after_success:
-        - codecov -X gcov -f coverage.xml --name osx_py3.6
-    ####################################################################################
-    # Flake8                                                                           #
-    ####################################################################################
-    - os: linux
-      language: python
-      env: TEST=flake8
-      python: "3.6"
-      install:
-        - pip install -U tox
-      script:
-        - tox -e flake8
-    ####################################################################################
-    # Docs and Linkcheck                                                               #
-    ####################################################################################
-    - os: linux
-      addons:
-        apt:
-          packages:
-            - graphviz
-      language: python
-      python: "3.6"
-      env: TEST=docs_linkcheck
-      install:
-        - pip install -U tox
-      script:
-        - tox -e docs,linkcheck
+    # ####################################################################################
+    # # Linux :: Python :: 2.7                                                           #
+    # ####################################################################################
+    # - <<: *linux_specs
+    #   python: "2.7"
+    #   env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
+    # ####################################################################################
+    # # Linux :: Python :: 3.6                                                           #
+    # ####################################################################################
+    # - <<: *linux_specs
+    #   python: "3.6"
+    #   env: PY=3.6 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
+    #   # Use latest sphinx / breathe (see also: tox.ini)
+    # - <<: *linux_specs
+    #   python: "3.6"
+    #   env: PY=3.6
+    # ####################################################################################
+    # # OSX :: Python :: 2.7                                                             #
+    # ####################################################################################
+    # - os: osx
+    #   language: generic
+    #   env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0 HOMEBREW_NO_AUTO_UPDATE=1
+    #   before_install:
+    #     # Something strange about final step of install gives exit code != 1 but the
+    #     # installation appears to work?
+    #     - brew install python@2 || true
+    #   install:
+    #     - brew install doxygen
+    #     - /usr/local/bin/pip install -U tox codecov
+    #   script:
+    #     - doxygen --version
+    #     - /usr/local/bin/python2 --version
+    #     - /usr/local/bin/python2 -m tox -e py -- --cov-report xml:coverage.xml --cov
+    #   after_success:
+    #     - codecov -X gcov -f coverage.xml --name osx_py2.7
+    # ####################################################################################
+    # # OSX :: Python :: 3.6                                                             #
+    # ####################################################################################
+    # - os: osx
+    #   language: generic
+    #   # Use latest sphinx / breathe (see also: tox.ini)
+    #   env: PY=3.6 HOMEBREW_NO_AUTO_UPDATE=1
+    #   before_install:
+    #     - brew upgrade python || true
+    #   install:
+    #     - brew install doxygen
+    #     - /usr/local/bin/pip3 install -U tox codecov
+    #   script:
+    #     - doxygen --version
+    #     - /usr/local/bin/python3 --version
+    #     - /usr/local/bin/python3 -m tox -e py -- --cov-report xml:coverage.xml --cov
+    #   after_success:
+    #     - codecov -X gcov -f coverage.xml --name osx_py3.6
+    # ####################################################################################
+    # # Flake8                                                                           #
+    # ####################################################################################
+    # - os: linux
+    #   language: python
+    #   env: TEST=flake8
+    #   python: "3.6"
+    #   install:
+    #     - pip install -U tox
+    #   script:
+    #     - tox -e flake8
+    # ####################################################################################
+    # # Docs and Linkcheck                                                               #
+    # ####################################################################################
+    # - os: linux
+    #   addons:
+    #     apt:
+    #       packages:
+    #         - graphviz
+    #   language: python
+    #   python: "3.6"
+    #   env: TEST=docs_linkcheck
+    #   install:
+    #     - pip install -U tox
+    #   script:
+    #     - tox -e docs,linkcheck
     ####################################################################################
     # testing/projects Code Validation                                                 #
     ####################################################################################
@@ -136,6 +136,7 @@ matrix:
             - g++-7
             - gfortran-7
             - python3.5
+            - python3.5-dev
             - python3.5-venv
             - cmake
       language: cpp  # mostly ;)
