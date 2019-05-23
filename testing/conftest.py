@@ -16,7 +16,18 @@ __ https://docs.pytest.org/en/latest/example/simple.html#package-directory-level
 from __future__ import unicode_literals
 
 pytest_plugins = [
-    'sphinx.testing.fixtures',
-    'testing.fixtures'
+    "sphinx.testing.fixtures",
+    "testing.fixtures"
 ]
 """Signals to ``pytest`` which plugins are needed for all tests."""
+
+
+def pytest_configure(config):
+    """Register ``@pytest.mark.exhale`` with PyTest."""
+    config.addinivalue_line(
+        "markers", "exhale: internal marker for testing metaclass."
+    )
+    # TODO: upstream this if not fixed already.
+    config.addinivalue_line(
+        "markers", "sphinx: register sphinx test."
+    )
