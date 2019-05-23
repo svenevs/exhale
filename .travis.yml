@@ -1,11 +1,9 @@
 sudo: false
 
 branches:
-  except:
-    # Ignore fix/* branches since they'll also have a Pull Request build
-    - /^fix.*$/
-    # Ignore feature/* branches since they'll also have a Pull Request build
-    - /^feature.*$/
+  # Other branches receive a Pull Request build.
+  only:
+    - master
 
 # Sphinx version testing done only on Linux (fastest boot / install times).
 # Each test must specify `python: X.Y` and `env: PY=X.Y SPHINX_VERSION=X.Y.Z`.
@@ -26,9 +24,9 @@ linux_specifications: &linux_specs
     # NOTE: doxygen doesn't seem to work with latest cmake // ninja :/
     - pip install cmake
     - mkdir doxygen && cd doxygen
-    - curl -LO https://github.com/doxygen/doxygen/archive/Release_1_8_14.tar.gz
-    - tar -xf Release_1_8_14.tar.gz
-    - cd doxygen-Release_1_8_14
+    - curl -LO https://github.com/doxygen/doxygen/archive/Release_1_8_15.tar.gz
+    - tar -xf Release_1_8_15.tar.gz
+    - cd doxygen-Release_1_8_15
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../..
     - make -j
@@ -51,25 +49,23 @@ matrix:
     ####################################################################################
     - <<: *linux_specs
       python: "2.7"
-      env: PY=2.7 SPHINX_VERSION=1.7.9
-    - <<: *linux_specs
-      python: "2.7"
-      env: PY=2.7 SPHINX_VERSION=1.8.0
+      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
     ####################################################################################
     # Linux :: Python :: 3.6                                                           #
     ####################################################################################
     - <<: *linux_specs
       python: "3.6"
-      env: PY=3.6 SPHINX_VERSION=1.7.9
+      env: PY=3.6 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
+      # Use latest sphinx / breathe (see also: tox.ini)
     - <<: *linux_specs
       python: "3.6"
-      env: PY=3.6 SPHINX_VERSION=1.8.0
+      env: PY=3.6
     ####################################################################################
     # OSX :: Python :: 2.7                                                             #
     ####################################################################################
     - os: osx
       language: generic
-      env: PYTHON=2.7
+      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0 HOMEBREW_NO_AUTO_UPDATE=1
       before_install:
         # Something strange about final step of install gives exit code != 1 but the
         # installation appears to work?
@@ -88,9 +84,10 @@ matrix:
     ####################################################################################
     - os: osx
       language: generic
-      env: PYTHON=3.6
+      # Use latest sphinx / breathe (see also: tox.ini)
+      env: PY=3.6 HOMEBREW_NO_AUTO_UPDATE=1
       before_install:
-        - brew upgrade python
+        - brew upgrade python || true
       install:
         - brew install doxygen
         - /usr/local/bin/pip3 install -U tox codecov
@@ -130,25 +127,27 @@ matrix:
     # testing/projects Code Validation                                                 #
     ####################################################################################
     - os: linux
+      dist: xenial
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-7
-            - g++-7
-            - gfortran-7
+            - gcc-8
+            - g++-8
+            - gfortran-8
+            - python3
+            - python3-venv
             - cmake
       language: cpp  # mostly ;)
       env: TEST=testing/projects
       before_install:
-        - export CC=gcc-7
-        - export CXX=g++-7
-        - export FC=gfortran-7
+        - export CC=gcc-8
+        - export CXX=g++-8
+        - export FC=gfortran-8
       install:
         # I don't want to require sudo because I don't want to wait ;)
-        - pip install virtualenv
-        - virtualenv venv
+        - python3 -m venv venv
         - source venv/bin/activate
         - pip install -U pip codecov gcovr
         # cpp_long_names test runs code from testing/tests/cpp_long_names.py, so we need

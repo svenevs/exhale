@@ -8,8 +8,13 @@ environment:
   matrix:
     - PYTHON:    "C:\\Python27"
       TEST_NAME: "win32_py27"
+      SPHINX_VERSION: "1.8.5"
+      BREATHE_VERSION: "4.12.0"
     - PYTHON:    "C:\\Python27-x64"
       TEST_NAME: "win64_py27"
+      SPHINX_VERSION: "1.8.5"
+      BREATHE_VERSION: "4.12.0"
+    # Use latest sphinx / breathe (see also: tox.ini)
     - PYTHON:    "C:\\Python36-x64"
       TEST_NAME: "win64_py36"
     - PYTHON:    "C:\\Python36-x64"
@@ -29,14 +34,14 @@ install:
         # Fetch the pre-compiled binary release for doxygen directly.
         mkdir doxygen
         cd doxygen
-        $doxy_src = "https://sourceforge.net/projects/doxygen/files/rel-1.8.14/doxygen-1.8.14.windows.x64.bin.zip"
-        $doxy_dst = "c:\projects\exhale\doxygen\doxygen-1.8.14.windows.x64.bin.zip"
+        $doxy_src = "https://sourceforge.net/projects/doxygen/files/rel-1.8.15/doxygen-1.8.15.windows.x64.bin.zip"
+        $doxy_dst = "c:\projects\exhale\doxygen\doxygen-1.8.15.windows.x64.bin.zip"
         # Needs -UserAgent "NativeHost" to follow sourceforge redirects
         Invoke-WebRequest -Uri $doxy_src -OutFile $doxy_dst -UserAgent "NativeHost"
         # Extracts `doxygen.exe`, `doxyindexer.exe`, `doxysearch.cgi.exe`, and
         # `libclang.dll` to same directory aka c:\projects\exhale\doxygen\doxygen.exe
         # is what we want to use.
-        7z x doxygen-1.8.14.windows.x64.bin.zip
+        7z x doxygen-1.8.15.windows.x64.bin.zip
         $env:Path += ";c:\projects\exhale\doxygen"
       }
       # install cxx tests dependencies: pip, codecov, opencppcoverage
