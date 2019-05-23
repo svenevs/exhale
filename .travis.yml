@@ -65,7 +65,7 @@ matrix:
     ####################################################################################
     - os: osx
       language: generic
-      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0
+      env: PY=2.7 SPHINX_VERSION=1.8.5 BREATHE_VERSION=4.12.0 HOMEBREW_NO_AUTO_UPDATE=1
       before_install:
         # Something strange about final step of install gives exit code != 1 but the
         # installation appears to work?
@@ -85,7 +85,7 @@ matrix:
     - os: osx
       language: generic
       # Use latest sphinx / breathe (see also: tox.ini)
-      env: PY=3.6
+      env: PY=3.6 HOMEBREW_NO_AUTO_UPDATE=1
       before_install:
         - brew upgrade python
       install:
