@@ -3639,7 +3639,13 @@ class ExhaleRoot(object):
                 return k
 
             def __getitem__(self, key):
-                return self.items[self._key(key)]
+                k = self._key(key)
+                if k not in self.items:
+                    sys.stderr.write(utils.critical(
+                        "Unabridged API: unexpected kind '{}' (IGNORED)\n".format(key)
+                    ))
+                    self.items[k] = []
+                return self.items[k]
 
             def __setitem__(self, key, value):
                 self.items[self._key(key)] = value
