@@ -1,0 +1,14 @@
+/* Make external links stand out from teletype text. */
+a[class='reference external'] > code > span {
+  color: #2980B9;;
+}
+
+/* Make internal links stand out form teletype text. */
+a[class='reference internal'] > code > span {
+  color: #138a36;
+}
+
+/* Change inline code text color. */
+code > span {
+  color: #343131;
+}

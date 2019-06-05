@@ -31,8 +31,6 @@ except ImportError:
     from io import StringIO
 
 __all__       = ["ExhaleRoot", "ExhaleNode"]
-__name__      = "graph"
-__docformat__ = "reStructuredText"
 
 
 ########################################################################################
@@ -965,12 +963,13 @@ class ExhaleRoot(object):
     '''
     def __init__(self):
         # file generation location and root index data
-        self.root_directory        = configs.containmentFolder
-        self.root_file_name        = configs.rootFileName
-        self.full_root_file_path   = os.path.join(self.root_directory, self.root_file_name)
-        self.class_hierarchy_file       = os.path.join(self.root_directory, "class_view_hierarchy.rst")
-        self.file_hierarchy_file   = os.path.join(self.root_directory, "file_view_hierarchy.rst")
-        self.unabridged_api_file   = os.path.join(self.root_directory, "unabridged_api.rst")
+        self.root_directory         = configs.containmentFolder
+        self.root_file_name         = configs.rootFileName
+        self.full_root_file_path    = os.path.join(self.root_directory, self.root_file_name)
+        self.class_hierarchy_file   = os.path.join(self.root_directory, "class_view_hierarchy.rst")
+        self.file_hierarchy_file    = os.path.join(self.root_directory, "file_view_hierarchy.rst")
+        self.unabridged_api_file    = os.path.join(self.root_directory, "unabridged_api.rst")
+        self.unabridged_orphan_file = os.path.join(self.root_directory, "unabridged_orphan.rst")
 
         # whether or not we should generate the raw html tree view
         self.use_tree_view = configs.createTreeView
@@ -3625,73 +3624,101 @@ class ExhaleRoot(object):
         - Typedefs
         - Directories
         - Files
-
-        If you want to change the ordering, just change the order of the calls to
-        :func:`~exhale.graph.ExhaleRoot.enumerateAll` in this method.
         '''
-        ####flake8fail
-        # TODO: I've reverted my decision, the full API should include everything,
-        # including nested types.  the code below invalidates certain portions of the
-        # docs and probably gets rid of a need for the recursive find methods
-        all_namespaces = []
-        all_class_like = []
-        all_enums      = []
-        all_unions     = []
-        all_functions  = []
-        all_variables  = []
-        all_defines    = []
-        all_typedefs   = []
-        all_dirs       = []
-        all_files      = []
+        from collections import MutableMapping
+        class UnabridgedDict(MutableMapping):
+            def __init__(self):
+                self.items = {}
+                for kind in utils.AVAILABLE_KINDS:
+                    self.__setitem__(kind, [])
 
-        for node in self.all_nodes:
-            if node.kind == "namespace":
-                all_namespaces.append(node)
-            elif node.kind == "class" or node.kind == "struct":
-                all_class_like.append(node)
-            elif node.kind == "enum":
-                all_enums.append(node)
-            elif node.kind == "union":
-                all_unions.append(node)
-            elif node.kind == "function":
-                all_functions.append(node)
-            elif node.kind == "variable":
-                all_variables.append(node)
-            elif node.kind == "define":
-                all_defines.append(node)
-            elif node.kind == "typedef":
-                all_typedefs.append(node)
-            elif node.kind == "dir":
-                all_dirs.append(node)
-            elif node.kind == "file":
-                all_files.append(node)
+            def _key(self, k):
+                # Just need to fold class and struct to same bucket.
+                if k == "struct":
+                    return "class"
+                return k
+
+            def __getitem__(self, key):
+                k = self._key(key)
+                if k not in self.items:
+                    sys.stderr.write(utils.critical(
+                        "Unabridged API: unexpected kind '{}' (IGNORED)\n".format(key)
+                    ))
+                    self.items[k] = []
+                return self.items[k]
+
+            def __setitem__(self, key, value):
+                self.items[self._key(key)] = value
+
+            def __delitem__(self, key):
+                del self.items[self._key(key)]
+
+            def __iter__(self):
+                return iter(self.items)
+
+            def __len__(self):
+                return len(self.items)
 
         try:
-            with codecs.open(self.unabridged_api_file, "w", "utf-8") as full_api_file:
-                # write the header
-                full_api_file.write(textwrap.dedent('''
+            # Gather all nodes in an easy to index dictionary mapping node.kind to the
+            # node itself.  "class" and "struct" are stored together.
+            unabridged_specs = UnabridgedDict()
+            for node in self.all_nodes:
+                unabridged_specs[node.kind].append(node)
+
+            # Create the buffers to write to and dump the page headings.
+            unabridged_api = StringIO()
+            orphan_api = StringIO()
+            for page, is_orphan in [(unabridged_api, False), (orphan_api, True)]:
+                if is_orphan:
+                    page.write(":orphan:\n\n")
+                page.write(textwrap.dedent('''
                     {heading}
                     {heading_mark}
-
                 '''.format(
                     heading=configs.fullApiSubSectionTitle,
                     heading_mark=utils.heading_mark(
                         configs.fullApiSubSectionTitle,
-                        configs.SUB_SECTION_HEADING_CHAR
+                        configs.SECTION_HEADING_CHAR if is_orphan
+                        else configs.SUB_SECTION_HEADING_CHAR
                     )
                 )))
 
-                # write everything to file: reorder these lines for different outcomes
-                self.enumerateAll(         "Namespaces", all_namespaces, full_api_file)
-                self.enumerateAll("Classes and Structs", all_class_like, full_api_file)
-                self.enumerateAll(              "Enums",      all_enums, full_api_file)
-                self.enumerateAll(             "Unions",     all_unions, full_api_file)
-                self.enumerateAll(          "Functions",  all_functions, full_api_file)
-                self.enumerateAll(          "Variables",  all_variables, full_api_file)
-                self.enumerateAll(            "Defines",    all_defines, full_api_file)
-                self.enumerateAll(           "Typedefs",   all_typedefs, full_api_file)
-                self.enumerateAll(        "Directories",       all_dirs, full_api_file)
-                self.enumerateAll(              "Files",      all_files, full_api_file)
+            dump_order = [
+                ("Namespaces", "namespace"),
+                ("Classes and Structs", "class"),  # NOTE: class/struct stored together!
+                ("Enums", "enum"),
+                ("Unions", "union"),
+                ("Functions", "function"),
+                ("Variables", "variable"),
+                ("Defines", "define"),
+                ("Typedefs", "typedef"),
+                ("Directories", "dir"),
+                ("Files", "file")
+            ]
+            for title, kind in dump_order:
+                node_list = unabridged_specs[kind]
+                # Write to orphan_api if this kind is to be ignored, or the kind is
+                # "class" and "struct" was ignored (stored together).
+                if kind in configs.unabridgedOrphanKinds or \
+                        (kind == "class" and "struct" in configs.unabridgedOrphanKinds) or \
+                        (kind == "struct" and "class" in configs.unabridgedOrphanKinds):
+                    dest = orphan_api
+                else:
+                    dest = unabridged_api
+                self.enumerateAll(title, node_list, dest)
+
+            # Write out the unabridged api file (gets included to root).
+            with codecs.open(self.unabridged_api_file, "w", "utf-8") as full_api_file:
+                full_api_file.write(unabridged_api.getvalue())
+
+            # If the orphan file has any .. toctree:: in there, then we want to make
+            # sure to write it.  For example, if files and directories are dumped here,
+            # we want Sphinx to be convinced that they show up in a toctree somewhere.
+            orphan_api_value = orphan_api.getvalue()
+            if "toctree" in orphan_api_value:
+                with codecs.open(self.unabridged_orphan_file, "w", "utf-8") as orphan_file:
+                    orphan_file.write(orphan_api_value)
         except:
             utils.fancyError("Error writing the unabridged API.")
 

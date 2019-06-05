@@ -1,9 +1,21 @@
 Changelog
 ========================================================================================
 
+*See also:* :ref:`version_compatibility`.
+
 .. contents:: Release Notes
    :local:
    :backlinks: none
+
+v0.2.3
+----------------------------------------------------------------------------------------
+
+- Allow unabridged API to exclude different kinds (:pr:`67`).
+  :data:`~exhale.configs.unabridgedOrphanKinds` allows users to exclude a specific kind
+  from getting dumped in the unabridged API beneath the hierarchies.
+
+  By default, the unabridged API will exclude ``"file"`` and ``"dir"``, given that the
+  file hierarchy already includes these.
 
 v0.2.2
 ----------------------------------------------------------------------------------------

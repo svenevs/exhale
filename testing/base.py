@@ -456,10 +456,14 @@ class ExhaleTestCase(unittest.TestCase):
 
         .. autotested::
         """
+        # TODO: config objects: this import can go away
+        from exhale.configs import unabridgedOrphanKinds
+
         # build path to unabridged api document that adds all toctree directives
         root = get_exhale_root(self)
         containmentFolder = self.getAbsContainmentFolder()
         unabridged_api_path = os.path.join(containmentFolder, "unabridged_api.rst")
+        unabridged_orphan_path = os.path.join(containmentFolder, "unabridged_orphan.rst")
 
         # gather lines that match the indented part of the toctree
         #
@@ -469,19 +473,40 @@ class ExhaleTestCase(unittest.TestCase):
         #    some_node.file_name.rst
         #
         # so just lazily look for the leading three spaces and ending with .rst
-        toctrees = []
+        full_api_toctrees = []
         under_toctree_re = re.compile(r"^   .+\.rst$")
         with open(unabridged_api_path) as unabridged_api:
             for line in unabridged_api:
                 if under_toctree_re.match(line):
-                    toctrees.append(line.strip())
+                    full_api_toctrees.append(line.strip())
 
-        # scal all nodes and make sure they were found in the toctrees above
+        orphan_toctrees = []
+        if os.path.isfile(unabridged_orphan_path):
+            with open(unabridged_orphan_path) as unabridged_orphan:
+                for line in unabridged_orphan:
+                    if under_toctree_re.match(line):
+                        orphan_toctrees.append(line.strip())
+
+        # Scan all nodes and make sure they were found in the toctrees above.
         for node in root.all_nodes:
-            if node.kind not in ["enumvalue", "group"]:
-                self.assertTrue(
-                    node.file_name in toctrees,
-                    "Node refid=[{refid}] and basename=[{file_name}] not found in [{unabridged_api}]!".format(
-                        refid=node.refid, file_name=node.file_name, unabridged_api=unabridged_api_path
-                    )
+            if node.kind in {"enumvalue", "group"}:
+                continue
+
+            if node.kind in unabridgedOrphanKinds or \
+                    (node.kind == "class" and "struct" in unabridgedOrphanKinds) or \
+                    (node.kind == "struct" and "class" in unabridgedOrphanKinds):
+                toctrees = orphan_toctrees
+                doc = unabridged_orphan_path
+            else:
+                toctrees = full_api_toctrees
+                doc = unabridged_api_path
+
+            self.assertTrue(
+                node.file_name in toctrees,
+                "Node refid=[{refid}] and basename=[{file_name}] not found in [{doc}]!".format(
+                    refid=node.refid, file_name=node.file_name, doc=doc
                 )
+            )
+
+        # Some tests may want the toctree names afterward.
+        return full_api_toctrees, orphan_toctrees

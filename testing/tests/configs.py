@@ -15,6 +15,7 @@ import textwrap
 import pytest
 from sphinx.errors import ConfigError
 
+from testing import get_exhale_root
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
 
@@ -259,3 +260,135 @@ class ListingExcludeTests(ExhaleTestCase):
     def test_invalid_pattern(self):
         """Verify that non-string argument for pattern is rejected."""
         pass
+
+
+class UnabridgedOrphanKindsTests(ExhaleTestCase):
+    """Test various values of :data:`~exhale.configs.unabridgedOrphanKinds`."""
+
+    test_project = "cpp_long_names"
+    """
+    .. testproject:: cpp_long_names
+
+    The ``cpp_long_names`` project essentially has 1 compound of each kind, which makes
+    it an ideal project to reuse here.
+    """
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"^The type of the value for key `unabridgedOrphanKinds`"
+    )
+    @confoverrides(exhale_args={
+        "unabridgedOrphanKinds": False
+    })
+    def test_not_iterable_fails(self):
+        """Verify that non-list/set values raise a configuration error."""
+        pass
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"^`unabridgedOrphanKinds` must be a list of strings."
+    )
+    @confoverrides(exhale_args={
+        "unabridgedOrphanKinds": ["file", 22, "dir"]
+    })
+    def test_non_string_fails(self):
+        """Verify that non-string entries raise a configuration error."""
+        pass
+
+    @pytest.mark.setup_raises(
+        exception=ConfigError,
+        match=r"^Unknown kind `jabooty` given in `unabridgedOrphanKinds`."
+    )
+    @confoverrides(exhale_args={
+        "unabridgedOrphanKinds": ["file", "jabooty", "dir"]
+    })
+    def test_invalid_kind(self):
+        """Verify that invalid ``kind`` raises a configuration error."""
+        pass
+
+    def total(self, root):
+        """Count all nodes that are not ``enumvalue`` and ``group``."""
+        # TODO: probably should make this available in ExhaleRoot...
+        return sum(n.kind not in {"group", "enumvalue"} for n in root.all_nodes)
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": []})
+    def test_no_exclusion(self):
+        """Verify empty list means no exlusions from full API."""
+        full_names, orphan_names = self.checkAllFilesIncluded()
+        root = get_exhale_root(self)
+        total = self.total(root)
+        assert len(full_names) == total
+        assert len(orphan_names) == 0
+
+    def _validate_diff_for_kinds(self, diff, *kinds):
+        """Check if ``diff`` items got orphaned."""
+        # Initial check: verify expected lengths.
+        full_names, orphan_names = self.checkAllFilesIncluded()
+        root = get_exhale_root(self)
+        total = self.total(root)
+        assert len(full_names) == total - diff
+        assert len(orphan_names) == diff
+
+        # Verify the right things actually got excluded.
+        for node in root.all_nodes:
+            if node.kind in kinds:
+                assert node.file_name in orphan_names
+            else:
+                assert node.file_name not in orphan_names
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"namespace"}})
+    def test_orphan_namespace(self):
+        """Verify excluding ``namespace`` behaves as expected."""
+        self._validate_diff_for_kinds(1, "namespace")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"class"}})
+    def test_orphan_class(self):
+        """Verify excluding ``class`` behaves as expected."""
+        self._validate_diff_for_kinds(2, "class", "struct")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"struct"}})
+    def test_orphan_struct(self):
+        """Verify excluding ``struct`` behaves as expected."""
+        self._validate_diff_for_kinds(2, "struct", "class")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"class", "struct"}})
+    def test_orphan_class_struct(self):
+        """Verify excluding ``class`` and ``struct`` behaves as expected."""
+        self._validate_diff_for_kinds(2, "class", "struct")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"enum"}})
+    def test_orphan_enum(self):
+        """Verify excluding ``enum`` behaves as expected."""
+        self._validate_diff_for_kinds(1, "enum")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"union"}})
+    def test_orphan_union(self):
+        """Verify excluding ``union`` behaves as expected."""
+        self._validate_diff_for_kinds(1, "union")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"function"}})
+    def test_orphan_function(self):
+        """Verify excluding ``function`` behaves as expected."""
+        self._validate_diff_for_kinds(1, "function")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"variable"}})
+    def test_orphan_variable(self):
+        """Verify excluding ``variable`` behaves as expected."""
+        # There are two variables in the project.
+        self._validate_diff_for_kinds(2, "variable")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"define"}})
+    def test_orphan_define(self):
+        """Verify excluding ``define`` behaves as expected."""
+        # There are two define's in the project.
+        self._validate_diff_for_kinds(2, "define")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"typedef"}})
+    def test_orphan_typedef(self):
+        """Verify excluding ``typedef`` behaves as expected."""
+        self._validate_diff_for_kinds(1, "typedef")
+
+    @confoverrides(exhale_args={"unabridgedOrphanKinds": {"file"}})
+    def test_orphan_file(self):
+        """Verify excluding ``file`` behaves as expected."""
+        self._validate_diff_for_kinds(1, "file")
