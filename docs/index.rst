@@ -6,10 +6,6 @@ Exhale
    :end-before:  end_exhale_brief_desc
 
 .. include:: ../README.rst
-   :start-after: begin_tmp_danger_warning
-   :end-before:  end_tmp_danger_warning
-
-.. include:: ../README.rst
    :start-after: begin_exhale_long_desc
    :end-before:  end_exhale_long_desc
 
@@ -27,6 +23,10 @@ See it in Action
 .. include:: ../README.rst
    :start-after: begin_installation
    :end-before:  end_installation
+
+.. include:: ../README.rst
+   :start-after: begin_version_compatibility
+   :end-before: end_version_compatibility
 
 Getting Started
 ----------------------------------------------------------------------------------------

@@ -38,16 +38,6 @@ markup syntax / websites.
 
 .. end_exhale_brief_desc
 
-.. begin_tmp_danger_warning
-
-.. note::
-
-   There is a reason why Exhale is development status 2 as far as ``pip`` is concerned.
-   It is functional enough that it should work for your project, but there are a number
-   of features I still intend to implement when there is more time.
-
-.. end_tmp_danger_warning
-
 .. contents:: Contents
    :local:
    :backlinks: none
@@ -120,12 +110,10 @@ __ http://www.sphinx-doc.org/en/stable/extensions.html
 
 .. code-block:: bash
 
+   # NOTE: see version compatibility notes below.
    $ pip install exhale
 
-This will install Exhale, as well as all of its dependencies.  You are of course capable
-of installing Exhale through other means, as it contains a ``setup.py``.  If you choose
-to do this, I assume you know what you are doing (and will provide neither instructions
-nor support for alternative installation strategies).
+This will install Exhale, as well as all of its dependencies.
 
 .. note::
 
@@ -140,6 +128,47 @@ nor support for alternative installation strategies).
    __ http://lxml.de/installation.html
 
 .. end_installation
+
+.. begin_version_compatibility
+
+.. _version_compatibility:
+
+Exhale Version Compatibility with Python, Sphinx, and Breathe
+----------------------------------------------------------------------------------------
+
++----------------+----------------+----------------+-----------------+
+| Exhale Version | Python Version | Sphinx Version | Breathe Version |
++================+================+================+=================+
+| 0.2.1-0.2.3    | 2.7, 3.3+      | >=1.6.1        | "Any"           |
++----------------+----------------+----------------+-----------------+
+| <=0.2.0        | 2.7, 3.3+      | >=1.0          | "Any"           |
++----------------+----------------+----------------+-----------------+
+
+Sphinx 2.0 requires Python 3.5+.  Breathe 4.13.0 drops support for Sphinx<2.0 in better
+support of the Sphinx C++ domain.
+
+Implications:
+
+- **Unless you have a genuine need for Python 2.7**, you will be better served by
+  pinning ``sphinx>=2.0`` and ``breathe>=4.13.0``.  It has many important improvements.
+
+- For Python 3.5+, you should pin your documentation requirements to::
+
+    sphinx>=2.0
+    breathe>=4.13.0
+    exhale
+
+- For Python 2.7, you should pin your documentation requirements to::
+
+    sphinx==1.8.5
+    breathe==4.12.0
+    exhale
+
+**Order matters**, namely that ``sphinx`` and ``breathe`` appear / are installed before
+``exhale``.  Exhale 0.* releases will continue support Python 2.7, but users need to be
+aware of the dependencies between Python, Sphinx, and Breathe versions.
+
+.. end_version_compatibility
 
 Usage
 ----------------------------------------------------------------------------------------
@@ -351,17 +380,6 @@ If you find a problem or think there is something that should change, please sub
 issue (or pull request!) explaining what should change.  I made this because it was
 something I really wanted, and felt the community at large could benefit from as well.
 I put a lot of effort into making it flexible, but it is by no means perfect.
-
-Roadmap
-****************************************************************************************
-
-There are some features I need to / want to implement this summer.  I'm open to
-suggestions / ideas / things you would want to see in this library.  I'll be revamping
-`exhale` this summer when I have a little more time.
-
-The proposed changes are in the project `roadmap <project_roadmap_>`_.
-
-.. _project_roadmap: https://github.com/svenevs/exhale/projects/1
 
 Credit
 ----------------------------------------------------------------------------------------

@@ -18,11 +18,11 @@ import exhale
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.0'
+needs_sphinx = '2.0'
 
 # General information about the project.
 project = u'Exhale'
-copyright = u'2018, Stephen McDowell'
+copyright = u'2019, Stephen McDowell'
 author = u'Stephen McDowell'
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -124,12 +124,7 @@ todo_link_only     = True
 
 # -- Options for HTML output ----------------------------------------------
 
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -158,7 +153,7 @@ html_short_title = 'Exhale'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -225,6 +220,9 @@ htmlhelp_basename = 'ExhaleDoc'
 
 
 def setup(app):
+    # Style overrides.  See _static/custom.css.
+    app.add_css_file("custom.css")
+
     # testproject.py defines these classes (they cannot be defined in conf.py)
     sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
     from testproject import testproject, visit_testproject_node, depart_testproject_node, TestProjectDirective
