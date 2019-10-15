@@ -28,7 +28,7 @@ Use the tool `sphobjinv` to do this (`pip install sphobjinv`).
 2. Converted that bad boy to human readable (the file `bs4_objects.txt`).
 
    ```console
-   $ sphobjinv decode bs4_objects.inv bs4_objects.txt
+   $ sphobjinv convert plain bs4_objects.inv bs4_objects.txt
    ```
 
 3. Any time I have a class I want to add a reference for, just add that line to
@@ -38,7 +38,7 @@ Use the tool `sphobjinv` to do this (`pip install sphobjinv`).
 4. When you add a new line, simply run (assuming you are in this directory)
 
     ```console
-    $ sphobjinv encode bs4_objects.txt bs4_objects.inv
+    $ sphobjinv convert zlib bs4_objects.txt bs4_objects.inv
     ```
 
 5. Re-run sphinx, usually you need to clean it for the doctree index to be rebuilt.
