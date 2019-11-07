@@ -3789,7 +3789,8 @@ class ExhaleRoot(object):
             "namespace": utils.AnsiColors.BOLD_CYAN,
             "typedef":   utils.AnsiColors.BOLD_YELLOW,
             "union":     utils.AnsiColors.BOLD_MAGENTA,
-            "variable":  utils.AnsiColors.BOLD_CYAN
+            "variable":  utils.AnsiColors.BOLD_CYAN,
+            "interface": utils.AnsiColors.BOLD_MAGENTA
         }
 
         self.consoleFormat(
