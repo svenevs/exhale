@@ -243,6 +243,9 @@ class ExhaleNode(object):
                 particular the signature must be included to distinguish overloads.
         """
         if self.kind == "function":
+            # if "operator" in self.name:
+            #     import pdb
+            #     pdb.set_trace()
             # TODO: breathe bug with templates and overloads, don't know what to do...
             return "{name}({parameters})".format(
                 name=self.name,
@@ -1999,8 +2002,42 @@ class ExhaleRoot(object):
                 # 2. The function parameter list.
                 parameters = []
                 for param in memberdef.find_all("param", recursive=False):
-                    parameters.append(param.type.text)
-                func.parameters = utils.sanitize_all(parameters)
+                    declname = ""
+                    if hasattr(param, "declname"):
+                        declname = param.declname.text
+                    # if "operator" not in func.name:
+                    #     parameters.append(param.type.text)
+                    # else:
+                    #     # import pdb
+                    #     # pdb.set_trace()
+                    p_type = utils.sanitize(param.type.text)
+                    # TODO: find better way to do this...
+                    # If ref or ptr
+                    #     +----------------+----------+
+                    #     | p_type         | declname |
+                    #     +----------------+----------+
+                    #     | ref or ptr     |          |
+                    #     | `float *`      | `x`      |
+                    #     |      ^         |          |
+                    #     | space included |          |
+                    #     +----------------+----------+
+                    #     | `int`          | `x`      |
+                    #     |     ^ no space |          |
+                    #     +----------------+----------+
+                    # so we have to add space for non-ptr/ref params.?
+                    if p_type[-1] not in {"&", "*"}:
+                        p_type = p_type + " "
+                    parameters.append("{p_type}{declname}".format(
+                        p_type=p_type, declname=declname
+                    ))
+
+                func.parameters = parameters
+
+                # >>> xs = [f.full_signature() for f in exhale_child.children if f.kind == "function"]
+                # >>> print("\n".join(xs))
+                # if "operator" not in func.name:
+                #     func.parameters = utils.sanitize_all(parameters)
+
                 # 3. The template parameter list.
                 templateparamlist = memberdef.templateparamlist
                 if templateparamlist:
