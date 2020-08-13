@@ -952,8 +952,11 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
                 if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:
                     exhale_grand_child = candidate
         if not exhale_grand_child:
+            import pdb
+            pdb.set_trace()
             raise RuntimeError("Matching child for [{0}] '{1}' not found!".format(
-                test_grand_child.kind, test_grand_child.name
+                test_grand_child.kind,
+                test_grand_child.name if test_grand_child.kind != "function" else test_grand_child.full_signature()
             ))
         _compare_children(hierarchy_type, test, test_grand_child, exhale_grand_child)
 

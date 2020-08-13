@@ -82,6 +82,7 @@ namespace overload {
         return t;
     }
 
+    /*
     /// Returns parameter ``t`` converted to a ``T`` (enabled when ``std::is_convertible`` is ``true``).
     template <class C, typename T>
     typename std::enable_if<
@@ -97,6 +98,7 @@ namespace overload {
     >::type blargh(typename C::type t) {
         return T();
     }
+    */
 }// namespace overload
 
 /// A free hanging function shows up in the file XML page, the others are in the namespace XML.
