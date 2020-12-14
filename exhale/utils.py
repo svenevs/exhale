@@ -277,8 +277,6 @@ def sanitize(name):
     ).replace(
         " >", ">"
     ).replace(
-        " &", "&"
-    ).replace(
         "& ", "&"
     )
 
