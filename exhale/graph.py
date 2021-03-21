@@ -398,7 +398,7 @@ class ExhaleNode(object):
 
             # Create the link, if possible
             # TODO: how to do intersphinx links here?
-            if refid:
+            if refid and refid in nodeByRefid:
                 # TODO: why are these links not working????????????????????????????????
                 ###########flake8breaks :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/
                 # if please_close:
