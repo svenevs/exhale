@@ -178,6 +178,7 @@ class ExhaleNode(object):
         self.link_name   = None
         self.title       = None
         # representation of hierarchies
+        self.in_page_hierarchy = False
         self.in_class_hierarchy = False
         self.in_file_hierarchy = False
         # kind-specific additional information
@@ -564,6 +565,19 @@ class ExhaleNode(object):
         for c in self.children:
             c.typeSort()
 
+    def inPageHierarchy(self):
+        '''
+        Whether or not this node should be included in the page view hierarchy.  Helper
+        method for :func:`~exhale.graph.ExhaleNode.toHierarchy`.  Sets the member
+        variable ``self.in_page_hierarchy`` to True if appropriate.
+
+        :Return (bool):
+            True if this node should be included in the page view --- if it is a
+            node of kind ``page``. Returns False otherwise.
+        '''
+        self.in_page_hierarchy = (self.kind == "page")
+        return self.in_page_hierarchy
+
     def inClassHierarchy(self):
         '''
         Whether or not this node should be included in the class view hierarchy.  Helper
@@ -615,14 +629,24 @@ class ExhaleNode(object):
                     return True
         return False
 
-    def inHierarchy(self, classView):
-        if classView:
+    def inHierarchy(self, classType):
+        if classType == "page":
+            return self.inPageHierarchy()
+        elif classType == "class":
             return self.inClassHierarchy()
-        else:
+        elif classType == "file":
             return self.inFileHierarchy()
+        else:
+            raise RuntimeError("'{}' is not a valid hierarchy type".format(classType))
 
-    def hierarchySortedDirectDescendants(self, classView):
-        if classView:
+    def hierarchySortedDirectDescendants(self, classType):
+        if classType == "page":
+            if self.kind != "page":
+                raise RuntimeError(
+                    "Page hierarchies do not apply to '{}' nodes".format(self.kind)
+                )
+            return sorted(self.children)
+        elif classType == "class":
             # search for nested children to display as sub-items in the tree view
             if self.kind == "class" or self.kind == "struct":
                 # first find all of the relevant children
@@ -654,7 +678,7 @@ class ExhaleNode(object):
                 nested_nspaces = []
                 nested_kids    = []
                 for c in self.children:
-                    if c.inHierarchy(classView):
+                    if c.inHierarchy(classType):
                         if c.kind == "namespace":
                             nested_nspaces.append(c)
                         else:
@@ -671,14 +695,13 @@ class ExhaleNode(object):
             else:
                 # everything else is a terminal node
                 return []
-        # file view hierarchy
-        else:
+        elif classType == "file":
             if self.kind == "dir":
                 # find the nested children of interest
                 nested_dirs = []
                 nested_kids = []
                 for c in self.children:
-                    if c.inHierarchy(classView):
+                    if c.inHierarchy(classType):
                         if c.kind == "dir":
                             nested_dirs.append(c)
                         elif c.kind == "file":
@@ -695,12 +718,16 @@ class ExhaleNode(object):
             else:
                 # files are terminal nodes in this hierarchy view
                 return []
+        else:
+            raise RuntimeError("{} is not a valid hierarchy type".format(classType))
 
-    def toHierarchy(self, classView, level, stream, lastChild=False):
+    def toHierarchy(self, classType, level, stream, lastChild=False):
         '''
         **Parameters**
-            ``classView`` (bool)
-                ``True`` if generating the Class Hierarchy, ``False`` for File Hierarchy.
+            ``classType`` (str)
+                ``"page"`` if generating the Page Hierarchy,
+                ``"class"`` if generating the Class Hierarchy,
+                ``"file"`` if generating the File Hierarchy.
 
             ``level`` (int)
                 Recursion level used to determine indentation.
@@ -716,10 +743,10 @@ class ExhaleNode(object):
 
         .. todo:: add thorough documentation of this
         '''
-        if self.inHierarchy(classView):
+        if self.inHierarchy(classType):
             # For the Tree Views, we need to know if there are nested children before
             # writing anything.  If there are, we need to open a new list
-            nested_children = self.hierarchySortedDirectDescendants(classView)
+            nested_children = self.hierarchySortedDirectDescendants(classType)
 
             ############################################################################
             # Write out this node.                                                     #
@@ -744,20 +771,26 @@ class ExhaleNode(object):
                     anchor=html_link
                 )
 
-                # should always have at least two parts (templates will have more)
-                title_as_link_parts = self.title.split(" ")
-                if self.template_params:
-                    # E.g. 'Template Class Foo'
-                    q_start = 0
-                    q_end   = 2
+                if self.kind != "page":
+                    # should always have at least two parts (templates will have more)
+                    title_as_link_parts = self.title.split(" ")
+                    if self.template_params:
+                        # E.g. 'Template Class Foo'
+                        q_start = 0
+                        q_end   = 2
+                    else:
+                        # E.g. 'Class Foo'
+                        q_start = 0
+                        q_end   = 1
+                    # the qualifier will not be part of the hyperlink (for clarity of
+                    # navigation), the link_title will be
+                    qualifier   = " ".join(title_as_link_parts[q_start:q_end])
+                    link_title  = " ".join(title_as_link_parts[q_end:])
                 else:
-                    # E.g. 'Class Foo'
-                    q_start = 0
-                    q_end   = 1
-                # the qualifier will not be part of the hyperlink (for clarity of
-                # navigation), the link_title will be
-                qualifier   = " ".join(title_as_link_parts[q_start:q_end])
-                link_title  = " ".join(title_as_link_parts[q_end:])
+                    # E.g. 'Foo'
+                    qualifier = ""
+                    link_title = self.title
+
                 link_title  = link_title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 # the actual text / link inside of the list item
                 li_text     = '{qualifier} <a href="{href}">{link_title}</a>'.format(
@@ -840,7 +873,7 @@ class ExhaleNode(object):
             last_child_index = len(nested_children) - 1
             child_idx        = 0
             for child in nested_children:
-                child.toHierarchy(classView, level + 1, stream, child_idx == last_child_index)
+                child.toHierarchy(classType, level + 1, stream, child_idx == last_child_index)
                 child_idx += 1
 
             ############################################################################
@@ -966,6 +999,7 @@ class ExhaleRoot(object):
         self.root_directory         = configs.containmentFolder
         self.root_file_name         = configs.rootFileName
         self.full_root_file_path    = os.path.join(self.root_directory, self.root_file_name)
+        self.page_hierarchy_file    = os.path.join(self.root_directory, "page_view_hierarchy.rst")
         self.class_hierarchy_file   = os.path.join(self.root_directory, "class_view_hierarchy.rst")
         self.file_hierarchy_file    = os.path.join(self.root_directory, "file_view_hierarchy.rst")
         self.unabridged_api_file    = os.path.join(self.root_directory, "unabridged_api.rst")
@@ -1016,6 +1050,8 @@ class ExhaleRoot(object):
         self.unions          = []           # |
         # doxygenvariable  <-+-> "variable"   |
         self.variables       = []           # |
+        # doxygenpage      <-+-> "page"       |
+        self.pages           = []           # |
         # -------------------+----------------+
 
     ####################################################################################
@@ -1115,6 +1151,75 @@ class ExhaleRoot(object):
                                 child_node.def_in_file = curr_node
 
                             curr_node.children.append(child_node)
+
+        for page in self.pages:
+            node_xml_contents = utils.nodeCompoundXMLContents(page)
+            if node_xml_contents:
+                try:
+                    page.soup = BeautifulSoup(node_xml_contents, "lxml-xml")
+                except:
+                    utils.fancyError("Unable to parse file xml [{0}]:".format(page.name))
+
+                try:
+                    cdef = page.soup.doxygen.compounddef
+
+                    title = cdef.find("title")
+                    if title and title.string:
+                        page.title = title.string
+
+                    err_non = "[CRITICAL] did not find refid [{0}] in `self.node_by_refid`."
+                    err_dup = "Conflicting page definition: [{0}] appears to be defined in both [{1}] and [{2}]."  # noqa
+                    # process subpages
+                    inner_pages = cdef.find_all("innerpage", recursive=False)
+
+                    utils.verbose_log(
+                        "*** [{0}] had [{1}] innerpages found".format(page.name, len(inner_pages)),
+                        utils.AnsiColors.BOLD_MAGENTA
+                    )
+
+                    for subpage in inner_pages:
+                        if "refid" in subpage.attrs:
+                            refid = subpage.attrs["refid"]
+                            if refid in self.node_by_refid:
+                                node = self.node_by_refid[refid]
+
+                                # << verboseBuild
+                                utils.verbose_log(
+                                    "    - [{0}]".format(node.name),
+                                    utils.AnsiColors.BOLD_MAGENTA
+                                )
+
+                                if node.parent:
+                                    utils.verbose_log(
+                                        err_dup.format(node.name, node.parent.name, page.name),
+                                        utils.AnsiColors.BOLD_YELLOW
+                                    )
+
+                                if node not in page.children:
+                                    page.children.append(node)
+                                    node.parent = page
+                            else:
+                                # << verboseBuild
+                                utils.verbose_log(err_non.format(refid), utils.AnsiColors.BOLD_RED)
+
+                    # the location of the page as determined by doxygen
+                    location = cdef.find("location")
+                    if location and "file" in location.attrs:
+                        location_str = os.path.normpath(location.attrs["file"])
+                        # some older versions of doxygen don't reliably strip from path
+                        # so make sure to remove it
+                        abs_strip_path = os.path.normpath(os.path.abspath(
+                            configs.doxygenStripFromPath
+                        ))
+                        if location_str.startswith(abs_strip_path):
+                            location_str = os.path.relpath(location_str, abs_strip_path)
+                        page.location = os.path.normpath(location_str)
+
+                except:
+                    utils.fancyError(
+                        "Could not process Doxygen xml for file [{0}]".format(f.name)
+                    )
+        self.pages = [page for page in self.pages if not page.parent]
 
         # Now that we have discovered everything, we need to explicitly parse the file
         # xml documents to determine where leaf-like nodes have been declared.
@@ -1518,6 +1623,8 @@ class ExhaleRoot(object):
                 self.typedefs.append(node)
             elif node.kind == "union":
                 self.unions.append(node)
+            elif node.kind == "page":
+                self.pages.append(node)
 
     def reparentAll(self):
         '''
@@ -2041,6 +2148,7 @@ class ExhaleRoot(object):
         self.groups.sort()
         self.typedefs.sort()
         self.variables.sort()
+        self.pages.sort()
 
         # hierarchical lists: sort children
         self.deepSortList(self.class_like)
@@ -2048,6 +2156,7 @@ class ExhaleRoot(object):
         self.deepSortList(self.unions)
         self.deepSortList(self.files)
         self.deepSortList(self.dirs)
+        self.deepSortList(self.pages)
 
     def deepSortList(self, lst):
         '''
@@ -2077,8 +2186,8 @@ class ExhaleRoot(object):
 
         1. Generate a single file restructured text document for all of the nodes that
            have either no children, or children that are leaf nodes.
-        2. When building the view hierarchies (class view and file view), provide a link
-           to the appropriate files generated previously.
+        2. When building the view hierarchies (page, class, and file view and), provide
+           a link to the appropriate files generated previously.
 
         If adding onto the framework to say add another view (from future import groups)
         you would link from a restructured text document to one of the individually
@@ -2115,17 +2224,19 @@ class ExhaleRoot(object):
                 if configs.pageLevelConfigMeta:
                     generated_index.write("{0}\n\n".format(configs.pageLevelConfigMeta))
 
-                generated_index.write(textwrap.dedent('''
-                    {heading}
-                    {heading_mark}
+                if configs.rootFileTitle:
+                    generated_index.write(textwrap.dedent('''\
+                        {heading_mark}
+                        {heading}
+                        {heading_mark}
 
-                '''.format(
-                    heading=configs.rootFileTitle,
-                    heading_mark=utils.heading_mark(
-                        configs.rootFileTitle,
-                        configs.SECTION_HEADING_CHAR
-                    )
-                )))
+                    '''.format(
+                        heading=configs.rootFileTitle,
+                        heading_mark=utils.heading_mark(
+                            configs.rootFileTitle,
+                            configs.SECTION_HEADING_CHAR
+                        )
+                    )))
 
                 if configs.afterTitleDescription:
                     generated_index.write("\n{0}\n\n".format(configs.afterTitleDescription))
@@ -2173,6 +2284,8 @@ class ExhaleRoot(object):
             if node.kind in utils.LEAF_LIKE_KINDS:
                 self.generateSingleNodeRST(node)
 
+        self.generatePageDocuments()
+
         # generate the remaining parent-like documents
         self.generateNamespaceNodeDocuments()
         self.generateFileNodeDocuments()
@@ -2212,7 +2325,7 @@ class ExhaleRoot(object):
         # namespace directive.  As such, where possible, the filename should be as
         # human-friendly has possible so that users can conveniently link to the
         # internal Exhal ref's using e.g. :ref:`file_dir_subdir_filename.h`.
-        SPECIAL_CASES = ["dir", "file", "namespace"]
+        SPECIAL_CASES = ["dir", "file", "namespace", "page"]
         if node.kind in SPECIAL_CASES:
             if node.kind == "file":
                 unique_id = node.location
@@ -2326,10 +2439,11 @@ class ExhaleRoot(object):
             title = node.name
 
         # Last but not least, set the title for the page to be generated.
-        node.title = "{kind} {title}".format(
-            kind=utils.qualifyKind(node.kind),
-            title=title
-        )
+        if node.kind != "page":
+            node.title = "{kind} {title}".format(
+                kind=utils.qualifyKind(node.kind),
+                title=title
+            )
         if node.template_params or template_special:
             node.title = "Template {title}".format(title=node.title)
 
@@ -2658,6 +2772,82 @@ class ExhaleRoot(object):
                     breathe_identifier=node.breathe_identifier()
                 )
                 gen_file.write("\n{directive}\n".format(directive=directive))
+                # include any specific directives for this doxygen directive
+                specifications = utils.prefix(
+                    "   ",
+                    "\n".join(spec for spec in utils.specificationsForKind(node.kind))
+                )
+                gen_file.write(specifications)
+        except:
+            utils.fancyError(
+                "Critical error while generating the file for [{0}].".format(node.file_name)
+            )
+
+    def generatePageDocuments(self):
+        '''
+        Generates the reStructuredText document for every page.
+        '''
+        for page in self.pages:
+            # generate this page
+            self.generateSinglePageDocument(page)
+
+    def generateSinglePageDocument(self, node):
+        '''
+        Creates the reStructuredText document for a page
+
+        :Parameters:
+            ``node`` (ExhaleNode)
+                The "page" node being generated by this method.
+        '''
+        try:
+            with codecs.open(node.file_name, "w", "utf-8") as gen_file:
+                ########################################################################
+                # Page header / linking.                                               #
+                ########################################################################
+                # generate a link label for every generated file
+                link_declaration = ".. _{0}:".format(node.link_name)
+
+                # acquire the file this was originally defined in
+                if node.def_in_file:
+                    defined_in = "Defined in :ref:`{where}`".format(where=node.def_in_file.link_name)
+                else:
+                    defined_in = ".. did not find file this was defined in"
+                    sys.stderr.write(utils.critical(
+                        "Did not locate file that defined {0} [{1}]; no link generated.\n".format(node.kind,
+                                                                                                  node.name)
+                    ))
+
+                # Add the metadata if they requested it
+                if configs.pageLevelConfigMeta:
+                    gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
+
+                gen_file.write(textwrap.dedent('''\
+                    {link}
+
+                    {defined_in}
+
+                    {heading}
+                    {heading_mark}
+
+                '''.format(
+                    link=link_declaration,
+                    defined_in=defined_in,
+                    heading=node.title,
+                    heading_mark=utils.heading_mark(
+                        node.title, configs.SECTION_HEADING_CHAR
+                    )
+                )))
+
+                contents = utils.contentsDirectiveOrNone(node.kind)
+                if contents:
+                    gen_file.write(contents)
+
+                # inject the appropriate doxygen directive and name of this node
+                directive = ".. {directive}:: {breathe_identifier}".format(
+                    directive=utils.kindAsBreatheDirective(node.kind),
+                    breathe_identifier=node.breathe_identifier()
+                )
+                gen_file.write("{directive}\n".format(directive=directive))
                 # include any specific directives for this doxygen directive
                 specifications = utils.prefix(
                     "   ",
@@ -3258,9 +3448,10 @@ class ExhaleRoot(object):
         hierarchies as well as the full API listing.  As a result, three files will now
         be ready:
 
-        1. ``self.class_hierarchy_file``
-        2. ``self.file_hierarchy_file``
-        3. ``self.unabridged_api_file``
+        1. ``self.page_hierarchy_file``
+        2. ``self.class_hierarchy_file``
+        3. ``self.file_hierarchy_file``
+        4. ``self.unabridged_api_file``
 
         These three files are then *included* into the root library file.  The
         consequence of using an ``include`` directive is that Sphinx will complain about
@@ -3276,7 +3467,17 @@ class ExhaleRoot(object):
             self.generateViewHierarchies()
             self.generateUnabridgedAPI()
             with codecs.open(self.full_root_file_path, "a", "utf-8") as generated_index:
-                # Include the class and file hierarchies
+                # Include index page, if present
+                for page in self.pages:
+                    if page.refid == "indexpage":
+                        generated_index.write(".. include:: {0}\n\n".format(
+                            os.path.basename(page.file_name)
+                        ))
+                        break
+                # Include the page, class, and file hierarchies
+                generated_index.write(".. include:: {0}\n\n".format(
+                    os.path.basename(self.page_hierarchy_file)
+                ))
                 generated_index.write(".. include:: {0}\n\n".format(
                     os.path.basename(self.class_hierarchy_file)
                 ))
@@ -3336,6 +3537,18 @@ class ExhaleRoot(object):
                                     */
                                     // Part 1: use linkColor as a parameter to bootstrap treeview
 
+                                    // apply the page view hierarchy
+                                    $("#{page_idx}").treeview({{
+                                        data: {page_func_name}(),
+                                        enableLinks: true,
+                                        color: linkColor,
+                                        showTags: {show_tags},
+                                        collapseIcon: "{collapse_icon}",
+                                        expandIcon: "{expand_icon}",
+                                        levels: {levels},
+                                        onhoverColor: "{onhover_color}"
+                                    }});
+
                                     // apply the class view hierarchy
                                     $("#{class_idx}").treeview({{
                                         data: {class_func_name}(),
@@ -3370,6 +3583,8 @@ class ExhaleRoot(object):
                            </script>
                     '''.format(
                         icon_mimic=configs.treeViewBootstrapIconMimicColor,
+                        page_idx=configs._page_hierarchy_id,
+                        page_func_name=configs._bstrap_page_hierarchy_fn_data_name,
                         class_idx=configs._class_hierarchy_id,
                         class_func_name=configs._bstrap_class_hierarchy_fn_data_name,
                         file_idx=configs._file_hierarchy_id,
@@ -3401,20 +3616,42 @@ class ExhaleRoot(object):
     def generateViewHierarchies(self):
         '''
         Wrapper method to create the view hierarchies.  Currently it just calls
-        :func:`~exhale.graph.ExhaleRoot.generateClassView` and
+        :func:`~exhale.graph.ExhaleRoot.generatePageView`,
+        :func:`~exhale.graph.ExhaleRoot.generateClassView`, and
         :func:`~exhale.graph.ExhaleRoot.generateDirectoryView` --- if you want to implement
         additional hierarchies, implement the additionaly hierarchy method and call it
         from here.  Then make sure to ``include`` it in
         :func:`~exhale.graph.ExhaleRoot.generateAPIRootBody`.
         '''
+        # gather the page hierarchy data and write it out
+        page_view_data = self.generatePageView()
+        self.writeOutHierarchy({
+            "idx": configs._page_hierarchy_id,
+            "bstrap_data_func_name": configs._bstrap_page_hierarchy_fn_data_name,
+            "file_name": self.page_hierarchy_file,
+            "file_title": "Content",
+            "type": "page"
+        }, page_view_data)
         # gather the class hierarchy data and write it out
         class_view_data = self.generateClassView()
-        self.writeOutHierarchy(True, class_view_data)
+        self.writeOutHierarchy({
+            "idx": configs._class_hierarchy_id,
+            "bstrap_data_func_name": configs._bstrap_class_hierarchy_fn_data_name,
+            "file_name": self.class_hierarchy_file,
+            "file_title": "Class Hierarchy",
+            "type": "class"
+        }, class_view_data)
         # gather the file hierarchy data and write it out
         file_view_data = self.generateDirectoryView()
-        self.writeOutHierarchy(False, file_view_data)
+        self.writeOutHierarchy({
+            "idx": configs._file_hierarchy_id,
+            "bstrap_data_func_name": configs._bstrap_file_hierarchy_fn_data_name,
+            "file_name": self.file_hierarchy_file,
+            "file_title": "File Hierarchy",
+            "type": "file"
+        }, file_view_data)
 
-    def writeOutHierarchy(self, classView, data):
+    def writeOutHierarchy(self, hierarchy_config, data):
         # inject the raw html for the treeView unordered lists
         if configs.createTreeView:
             # Cheap minification.  The `data` string is either
@@ -3433,98 +3670,106 @@ class ExhaleRoot(object):
                 if configs.treeViewIsBootstrap:
                     data = data.replace(': ', ':').replace(",}", "}").replace(",,", ",").replace(",]", "]")
 
-            # conveniently, both get indented to the same level.  a happy accident
-            indent = " " * 9  # indent by 6 + 3 for being under .. raw:: html
-            indented_data = re.sub(r'(.+)', r'{indent}\1'.format(indent=indent), data)
-            if classView:
-                idx = configs._class_hierarchy_id
-            else:
-                idx = configs._file_hierarchy_id
+            if data:
+                # conveniently, both get indented to the same level.  a happy accident
+                indent = " " * 9  # indent by 6 + 3 for being under .. raw:: html
+                indented_data = re.sub(r'(.+)', r'{indent}\1'.format(indent=indent), data)
+                idx = hierarchy_config["idx"]
 
-            final_data_stream = StringIO()
-            if configs.treeViewIsBootstrap:
-                if classView:
-                    func_name = configs._bstrap_class_hierarchy_fn_data_name
+                final_data_stream = StringIO()
+                if configs.treeViewIsBootstrap:
+                    func_name = hierarchy_config["bstrap_data_func_name"]
+                    # developer note: when using string formatting with {curly_braces}, if
+                    # you want a literal curly brace you escape it with curly braces.  so
+                    # the left curly brace is `{{` rather than `{` so that the formatting
+                    # knows you want a literal `{` in the end.
+                    final_data_stream.write(textwrap.dedent('''
+                        .. raw:: html
+
+                           <div id="{idx}"></div>
+                           <script type="text/javascript">
+                             function {func_name}() {{
+                                return [
+                    '''.format(idx=idx, func_name=func_name)))
+                    final_data_stream.write(indented_data)
+                    # NOTE: the final .. end raw html line "tricks" textwrap.dedent into
+                    #       only stripping out until there. DO NOT REMOVE EVER!
+                    final_data_stream.write(textwrap.dedent('''
+                                ]
+                             }}
+                           </script><!-- end {func_name}() function -->
+
+                        .. end raw html for treeView
+                    '''.format(idx=idx, func_name=func_name)))
                 else:
-                    func_name = configs._bstrap_file_hierarchy_fn_data_name
-                # developer note: when using string formatting with {curly_braces}, if
-                # you want a literal curly brace you escape it with curly braces.  so
-                # the left curly brace is `{{` rather than `{` so that the formatting
-                # knows you want a literal `{` in the end.
-                final_data_stream.write(textwrap.dedent('''
-                    .. raw:: html
+                    final_data_stream.write(textwrap.dedent('''
+                        .. raw:: html
 
-                       <div id="{idx}"></div>
-                       <script type="text/javascript">
-                         function {func_name}() {{
-                            return [
-                '''.format(idx=idx, func_name=func_name)))
-                final_data_stream.write(indented_data)
-                # NOTE: the final .. end raw html line "tricks" textwrap.dedent into
-                #       only stripping out until there. DO NOT REMOVE EVER!
-                final_data_stream.write(textwrap.dedent('''
-                            ]
-                         }}
-                       </script><!-- end {func_name}() function -->
+                           <ul class="treeView" id="{idx}">
+                             <li>
+                               <ul class="collapsibleList">
+                    '''.format(idx=idx)))
+                    final_data_stream.write(indented_data)
+                    # NOTE: the final .. end raw html line "tricks" textwrap.dedent into
+                    #       only stripping out until there. DO NOT REMOVE EVER!
+                    final_data_stream.write(textwrap.dedent('''
+                               </ul>
+                             </li><!-- only tree view element -->
+                           </ul><!-- /treeView {idx} -->
 
-                    .. end raw html for treeView
-                '''.format(idx=idx, func_name=func_name)))
+                        .. end raw html for treeView
+                    '''.format(idx=idx)))
+
+                # the appropriate raw html has been created, grab the final value
+                final_data_string = final_data_stream.getvalue()
+                final_data_stream.close()
             else:
-                final_data_stream.write(textwrap.dedent('''
-                    .. raw:: html
-
-                       <ul class="treeView" id="{idx}">
-                         <li>
-                           <ul class="collapsibleList">
-                '''.format(idx=idx)))
-                final_data_stream.write(indented_data)
-                # NOTE: the final .. end raw html line "tricks" textwrap.dedent into
-                #       only stripping out until there. DO NOT REMOVE EVER!
-                final_data_stream.write(textwrap.dedent('''
-                           </ul>
-                         </li><!-- only tree view element -->
-                       </ul><!-- /treeView {idx} -->
-
-                    .. end raw html for treeView
-                '''.format(idx=idx)))
-
-            # the appropriate raw html has been created, grab the final value
-            final_data_string = final_data_stream.getvalue()
-            final_data_stream.close()
+                final_data_string = data
         else:
             # non-treeView is already done formatting, just a bulleted list
             final_data_string = data
 
         # Last but not least, we need the file to write to
-        if classView:
-            file_name  = self.class_hierarchy_file
-            file_title = "Class Hierarchy"
-        else:
-            file_name  = self.file_hierarchy_file
-            file_title = "File Hierarchy"
+        file_name = hierarchy_config["file_name"]
 
         # write everything to file to be incorporated with `.. include::` later
         try:
             with codecs.open(file_name, "w", "utf-8") as hierarchy_file:
-                hierarchy_file.write(textwrap.dedent('''
-                    {heading}
-                    {heading_mark}
+                if final_data_string:
+                    file_title = hierarchy_config["file_title"]
+                    hierarchy_file.write(textwrap.dedent('''
+                        {heading}
+                        {heading_mark}
 
-                ''').format(
-                    heading=file_title,
-                    heading_mark=utils.heading_mark(
-                        file_title,
-                        configs.SUB_SECTION_HEADING_CHAR
-                    )
-                ))
-                hierarchy_file.write(final_data_string)
-                hierarchy_file.write("\n\n")  # just in case, extra whitespace causes no harm
+                    ''').format(
+                        heading=file_title,
+                        heading_mark=utils.heading_mark(
+                            file_title,
+                            configs.SUB_SECTION_HEADING_CHAR
+                        )
+                    ))
+                    hierarchy_file.write(final_data_string)
+                    hierarchy_file.write("\n\n")  # just in case, extra whitespace causes no harm
         except:
-            if classView:
-                h_type = "class"
-            else:
-                h_type = "file"
+            h_type = hierarchy_config["type"]
             utils.fancyError("Error writing the {h_type} hierarchy.".format(h_type=h_type))
+
+    def generatePageView(self):
+        '''
+        Generates the pages view hierarchy, writing it to ``self.page_hierarchy_file``.
+        '''
+        page_view_stream = StringIO()
+
+        for p in self.pages:
+            if p.refid == "indexpage":
+                continue
+            p.toHierarchy("page", 0, page_view_stream)
+
+        # extract the value from the stream and close it down
+        page_view_string = page_view_stream.getvalue()
+        page_view_stream.close()
+
+        return page_view_string
 
     def generateClassView(self):
         '''
@@ -3533,7 +3778,7 @@ class ExhaleRoot(object):
         class_view_stream = StringIO()
 
         for n in self.namespaces:
-            n.toHierarchy(True, 0, class_view_stream)
+            n.toHierarchy("class", 0, class_view_stream)
 
         # Add everything that was not nested in a namespace.
         missing = []
@@ -3554,7 +3799,7 @@ class ExhaleRoot(object):
             idx = 0
             last_missing_child = len(missing) - 1
             for m in missing:
-                m.toHierarchy(True, 0, class_view_stream, idx == last_missing_child)
+                m.toHierarchy("class", 0, class_view_stream, idx == last_missing_child)
                 idx += 1
         elif configs.createTreeView:
             # need to restart since there were no missing children found, otherwise the
@@ -3565,7 +3810,7 @@ class ExhaleRoot(object):
             last_nspace_index = len(self.namespaces) - 1
             for idx in range(last_nspace_index + 1):
                 nspace = self.namespaces[idx]
-                nspace.toHierarchy(True, 0, class_view_stream, idx == last_nspace_index)
+                nspace.toHierarchy("class", 0, class_view_stream, idx == last_nspace_index)
 
         # extract the value from the stream and close it down
         class_view_string = class_view_stream.getvalue()
@@ -3579,7 +3824,7 @@ class ExhaleRoot(object):
         file_view_stream = StringIO()
 
         for d in self.dirs:
-            d.toHierarchy(False, 0, file_view_stream)
+            d.toHierarchy("file", 0, file_view_stream)
 
         # add potential missing files (not sure if this is possible though)
         missing = []
@@ -3592,7 +3837,7 @@ class ExhaleRoot(object):
             idx = 0
             last_missing_child = len(missing) - 1
             for m in missing:
-                m.toHierarchy(False, 0, file_view_stream, idx == last_missing_child)
+                m.toHierarchy("file", 0, file_view_stream, idx == last_missing_child)
                 idx += 1
         elif configs.createTreeView:
             # need to restart since there were no missing children found, otherwise the
@@ -3603,7 +3848,7 @@ class ExhaleRoot(object):
             last_dir_index = len(self.dirs) - 1
             for idx in range(last_dir_index + 1):
                 curr_d = self.dirs[idx]
-                curr_d.toHierarchy(False, 0, file_view_stream, idx == last_dir_index)
+                curr_d.toHierarchy("file", 0, file_view_stream, idx == last_dir_index)
 
         # extract the value from the stream and close it down
         file_view_string = file_view_stream.getvalue()
@@ -3678,6 +3923,8 @@ class ExhaleRoot(object):
             # node itself.  "class" and "struct" are stored together.
             unabridged_specs = UnabridgedDict()
             for node in self.all_nodes:
+                if node.kind == "page" and node.refid == "indexpage":
+                    continue
                 unabridged_specs[node.kind].append(node)
 
             # Create the buffers to write to and dump the page headings.
@@ -3708,7 +3955,8 @@ class ExhaleRoot(object):
                 ("Defines", "define"),
                 ("Typedefs", "typedef"),
                 ("Directories", "dir"),
-                ("Files", "file")
+                ("Files", "file"),
+                ("Pages", "page")
             ]
             for title, kind in dump_order:
                 node_list = unabridged_specs[kind]
@@ -3803,7 +4051,8 @@ class ExhaleRoot(object):
             "namespace": utils.AnsiColors.BOLD_CYAN,
             "typedef":   utils.AnsiColors.BOLD_YELLOW,
             "union":     utils.AnsiColors.BOLD_MAGENTA,
-            "variable":  utils.AnsiColors.BOLD_CYAN
+            "variable":  utils.AnsiColors.BOLD_CYAN,
+            "page":      utils.AnsiColors.BOLD_YELLOW
         }
 
         self.consoleFormat(
@@ -3867,6 +4116,11 @@ class ExhaleRoot(object):
         self.consoleFormat(
             utils._use_color("Variables", fmt_spec["variable"], sys.stderr),
             self.variables,
+            fmt_spec
+        )
+        self.consoleFormat(
+            utils._use_color("Pages", fmt_spec["page"], sys.stderr),
+            self.pages,
             fmt_spec
         )
 

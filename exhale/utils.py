@@ -114,7 +114,8 @@ AVAILABLE_KINDS = [
     "struct",
     "typedef",
     "union",
-    "variable"
+    "variable",
+    "page"
 ]
 '''
 All potential input ``kind`` values coming from Doxygen.
@@ -472,7 +473,8 @@ def kindAsBreatheDirective(kind):
     +-------------+--------------------+
     | "variable"  | "doxygenvariable"  |
     +-------------+--------------------+
-
+    | "page"      | "doxygenpage"      |
+    +-------------+--------------------+
     The following breathe kinds are ignored:
 
     - "autodoxygenfile"
