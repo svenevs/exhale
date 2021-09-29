@@ -376,8 +376,6 @@ def explode():
         raise RuntimeError(err_msg.format(config="containmentFolder"))
     if configs.rootFileName is None:
         raise RuntimeError(err_msg.format(config="rootFileName"))
-    if configs.rootFileTitle is None:
-        raise RuntimeError(err_msg.format(config="rootFileTitle"))
     if configs.doxygenStripFromPath is None:
         raise RuntimeError(err_msg.format(config="doxygenStripFromPath"))
 
