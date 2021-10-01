@@ -14,7 +14,7 @@ Exhale
 
 .. |travis| image:: https://travis-ci.com/svenevs/exhale.svg?branch=master
    :alt: Travis CI Build Status (Unix, Flake8 and Docs Tests)
-   :target: https://travis-ci.com/svenevs/exhale
+   :target: https://app.travis-ci.com/github/svenevs/exhale
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/g6ja670b5dgkej7u/branch/master
    :alt: AppVeyor CI Build Satus (Windows Tests)
@@ -106,7 +106,7 @@ __ http://www.sphinx-doc.org/en/stable/extensions.html
 
 .. _BeautifulSoup: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 .. _lxml: http://lxml.de/
-.. _six: https://pythonhosted.org/six/
+.. _six: https://six.readthedocs.io/
 
 .. code-block:: bash
 

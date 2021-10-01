@@ -31,14 +31,14 @@ I've prepared a crash-course on how to get it up and running on the companion si
 
 Why does it build locally, but not on Read the Docs?
 ----------------------------------------------------------------------------------------
-Most likely Exhale is failing to build if you are getting this.
+Most likely Exhale is failing to build if you are getting this.  Check the build logs
+on RTD, and also make sure that you are using the correct version of python you desire
+by configuring the `read the docs yaml <rtd_yaml_>`_.
 
-Make sure you have the *virtualenv* functionality available on the Admin page of your
-website enabled, and provide a ``requirements.txt`` that has at the very least the line
-``exhale`` (lower case, RTD will ``pip install`` every line in ``requirements.txt``).
-Refer to the RTD docs here_.
+.. _rtd_yaml: https://docs.readthedocs.io/en/stable/config-file/v2.html
 
-.. _here: http://docs.readthedocs.io/en/latest/faq.html#my-project-isn-t-building-with-autodoc
+Note that you may specify a version of python, as well as a path to a
+``requirements.txt`` to have your project's documentation dependencies installed.
 
 Why are there build warnings about generated files not being included?
 ----------------------------------------------------------------------------------------

@@ -95,13 +95,13 @@ v0.1.6
 - First release with manual namespace documentation parsing (same as files).
 
     - Limitations described in :ref:`file_and_namespace_level_documentation_in_exhale`.
-    - Namespace documentation `example here <nspace_example>`_.
+    - Namespace documentation `example here <nspace_example_>`_.
 
 - Fixed bad error message when multiple potential file parents are found, which produced
   an exception preventing the rest of the build. Full description can be found in
   :pr:`12`.
 
-.. _nspace_example: http://my-favorite-documentation-test.readthedocs.io/en/latest/api/namespace_arbitrary.html#namespace-arbitrary
+.. _nspace_example: https://my-favorite-documentation-test.readthedocs.io/en/latest/api/namespace_arbitrary.html#namespace-arbitrary
 
 v0.1.5
 ----------------------------------------------------------------------------------------

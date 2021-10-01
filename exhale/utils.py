@@ -324,7 +324,7 @@ LANG_TO_LEX = {
 Mapping of ``language="xxx"`` from the Doxygen programlisting to Pygments Lexers.  This
 mapping is used in :func:`doxygenLanguageToPygmentsLexer`.
 
-From the Doxygen documentation on `EXTENSION_MAPPING <ext_map>`_:
+From the Doxygen documentation on `EXTENSION_MAPPING <ext_map_>`_:
 
 ..
 
@@ -336,7 +336,7 @@ From the Doxygen documentation on `EXTENSION_MAPPING <ext_map>`_:
 We need to take each one of those, and map them to their corresponding
 `Pygments Lexer <http://pygments.org/docs/lexers/>`_.
 
-.. _ext_map: https://www.stack.nl/%7Edimitri/doxygen/manual/config.html#cfg_extension_mapping
+.. _ext_map: https://www.doxygen.nl/manual/config.html#cfg_extension_mapping
 
 .. note::
 

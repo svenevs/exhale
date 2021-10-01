@@ -775,7 +775,7 @@ pageLevelConfigMeta = None
 
     See the `Field Lists`__ guide for more information.
 
-    __ http://www.sphinx-doc.org/en/latest/usage/restructuredtext/field-lists.html
+    __ https://www.sphinx-doc.org/en/master/usage/restructuredtext/field-lists.html
 '''
 
 repoRedirectURL = None
