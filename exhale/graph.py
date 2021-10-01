@@ -1536,6 +1536,10 @@ class ExhaleRoot(object):
         self.reparentClassLike()
         self.reparentDirectories()
         self.renameToNamespaceScopes()
+
+        # NOTE: must be last in current setup, reparenting of unions and class_like
+        # relies on self.namespaces having all namespaces in self.namespaces, after this
+        # nested namespaces are not in self.namespaces.
         self.reparentNamespaces()
 
         # make sure all children lists are unique (no duplicate children)
@@ -1597,11 +1601,21 @@ class ExhaleRoot(object):
             parts = cl.name.split("::")
             if len(parts) > 1:
                 parent_name = "::".join(parts[:-1])
+
+                # Try and reparent to class_like first.  If it is a nested class then
+                # we remove from the top level self.class_like.
                 for parent_cl in self.class_like:
                     if parent_cl.name == parent_name:
                         parent_cl.children.append(cl)
                         cl.parent = parent_cl
                         removals.append(cl)
+                        break
+
+                # Next, reparent to namespaces.  Do not delete from self.class_like.
+                for parent_nspace in self.namespaces:
+                    if parent_nspace.name == parent_name:
+                        parent_nspace.children.append(cl)
+                        cl.parent = parent_nspace
                         break
 
         for rm in removals:
