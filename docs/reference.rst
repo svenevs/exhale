@@ -70,7 +70,7 @@ and the following (simplified, read the Sphinx docs for the full story) occurs:
    - Exhale requests notification of the `builder-inited`__ event, which is the first
      event where the configuration variables have been populated.
 
-     __ http://www.sphinx-doc.org/en/latest/extdev/appapi.html#event-builder-inited
+     __ https://www.sphinx-doc.org/en/master/extdev/appapi.html#event-builder-inited
 
    - It would be nice to one-day support incremental builds and a clean target, but at
      this time I have no idea how to do these.
@@ -86,7 +86,7 @@ and the following (simplified, read the Sphinx docs for the full story) occurs:
 
         Even if you don't have a solution, it would be great to hear of ideas!
 
-     __ http://www.sphinx-doc.org/en/latest/extdev/appapi.html#event-env-get-outdated
+     __ https://www.sphinx-doc.org/en/master/extdev/appapi.html#event-env-get-outdated
 
 3. Now that the extensions have been setup, the rest of ``conf.py`` is processed.  For
    all intensive purposes, you can assume that as soon as this is complete is when
