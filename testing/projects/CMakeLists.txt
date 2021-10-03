@@ -20,7 +20,7 @@
 # safety as your eyes may bleed, or you may spontaneously combust.                     #
 #                                                                                      #
 ########################################################################################
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 project(exhale-projects)
 
 # Forcibly setting this to make CI easier.
@@ -35,7 +35,7 @@ set(CMAKE_BUILD_TYPE "Debug") # required for code coverage
 # Download the test suite utilities (Catch2 <3)
 file(
   DOWNLOAD
-    https://raw.githubusercontent.com/catchorg/Catch2/master/single_include/catch2/catch.hpp
+    https://raw.githubusercontent.com/catchorg/Catch2/v2.x/single_include/catch2/catch.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/include/catch2/catch.hpp
 )
 

@@ -6,7 +6,7 @@
 # License:      CC0 1.0 Universal                                                      #
 # License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode            #
 ########################################################################################
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 project(cpp-with-spaces LANGUAGES CXX)
 
 # Add the cpp-with-spaces library
