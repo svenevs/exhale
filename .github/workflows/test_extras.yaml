@@ -1,0 +1,71 @@
+name: Test Extras
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build_docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Tools
+        run: |
+          pip install -U tox
+          sudo apt-get install -y graphviz
+      - name: Install Tools
+        run: pip install -U tox
+      - name: Test Docs
+        run: |
+          tox -e docs
+
+  build_linkcheck:
+    name: Linkcheck
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Tools
+        run: |
+          pip install -U tox
+          sudo apt-get install -y graphviz
+      - name: Test Linkcheck
+        run: |
+          tox -e linkcheck
+
+  build_flake8:
+    name: Flake8
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Tools
+        run: |
+          pip install -U tox
+          sudo apt-get install -y graphviz
+      - name: Test Flake8
+        run: |
+          tox -e flake8
