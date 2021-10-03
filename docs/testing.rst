@@ -1,6 +1,6 @@
 Testing Suite
 ========================================================================================
-|travis| |appveyor| |coverage|
+|coverage|
 
 .. include:: ../README.rst
    :start-after: begin_badges

@@ -1,6 +1,6 @@
 Exhale
 ========================================================================================
-|docs| |pypi| |travis| |appveyor| |coverage| |license|
+|docs| |pypi| |coverage| |license|
 
 .. begin_badges
 
@@ -11,14 +11,6 @@ Exhale
 .. |pypi| image:: https://badge.fury.io/py/exhale.svg
    :alt: Latest Version
    :target: https://badge.fury.io/py/exhale
-
-.. |travis| image:: https://travis-ci.com/svenevs/exhale.svg?branch=master
-   :alt: Travis CI Build Status (Unix, Flake8 and Docs Tests)
-   :target: https://app.travis-ci.com/github/svenevs/exhale
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/g6ja670b5dgkej7u/branch/master
-   :alt: AppVeyor CI Build Satus (Windows Tests)
-   :target: https://ci.appveyor.com/project/svenevs/exhale
 
 .. |coverage| image:: https://codecov.io/gh/svenevs/exhale/branch/master/graph/badge.svg
    :alt: Code Coverage Report

@@ -53,6 +53,12 @@ def get_projects_baseurl():
     if https_match:
         user = https_match.groups()[0]
 
+    # HTTPS url as done by GitHub Actions.
+    https_re = r"https://github\.com/(.*)/exhale"  # no .git
+    https_match = re.match(https_re, git_remote_out)
+    if https_match:
+        user = https_match.groups()[0]
+
     # SSH url:   git@github.com:svenevs/exhale.git
     ssh_re   = r"git@github\.com:(.*)/exhale\.git"
     ssh_match = re.match(ssh_re, git_remote_out)
