@@ -2793,7 +2793,7 @@ class ExhaleRoot(object):
 
     def generateSinglePageDocument(self, node):
         '''
-        Creates the reStructuredText document for a page
+        Creates the reStructuredText document for a page.
 
         :Parameters:
             ``node`` (ExhaleNode)
