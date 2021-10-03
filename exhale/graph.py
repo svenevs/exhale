@@ -575,7 +575,7 @@ class ExhaleNode(object):
             True if this node should be included in the page view --- if it is a
             node of kind ``page``. Returns False otherwise.
         '''
-        self.in_page_hierarchy = (self.kind == "page")
+        self.in_page_hierarchy = self.kind == "page"
         return self.in_page_hierarchy
 
     def inClassHierarchy(self):
