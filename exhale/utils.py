@@ -475,6 +475,7 @@ def kindAsBreatheDirective(kind):
     +-------------+--------------------+
     | "page"      | "doxygenpage"      |
     +-------------+--------------------+
+
     The following breathe kinds are ignored:
 
     - "autodoxygenfile"
