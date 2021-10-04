@@ -129,7 +129,6 @@ class CPPNesting(ExhaleTestCase):
 
         .. todo:: this test is not supported yet
         """
-        return  # TODO: Exhale should remove the include/ directory
         # dirty hack to pop off the first include/ directory without needing to know
         # the actual object that is the first and only key
         for key in self.file_hierarchy_dict:

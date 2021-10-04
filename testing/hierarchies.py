@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 import codecs
 import os
 import textwrap
+from copy import deepcopy
 
 from exhale.graph import ExhaleNode
 from testing import get_exhale_root
@@ -417,7 +418,24 @@ class root(object):  # noqa: N801
         self.top_level  = []
 
         # Initialize from the specified hierarchy and construct the graph.
-        self._init_from(hierarchy)
+        # NOTE: a deep copy of hierarchy is needed so that if a test wants to
+        # examine multiple tests against the same hierarchy dict (cpp_nesting)
+        # the manipulations here do not alter the original nodes.
+        def traverse_copy(spec):
+            if isinstance(spec, dict):
+                spec_copy = {}
+                for s in spec:
+                    v = spec[s]
+                    s_copy = deepcopy(s)
+                    if isinstance(v, dict):
+                        spec_copy[s_copy] = traverse_copy(v)
+                    else:
+                        spec_copy[s_copy] = deepcopy(v)
+                return spec_copy
+            else:
+                return deepcopy(spec)
+
+        self._init_from(traverse_copy(hierarchy))
         self._reparent_all()
 
     def _init_from(self, hierarchy):
