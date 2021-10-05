@@ -629,24 +629,24 @@ class ExhaleNode(object):
                     return True
         return False
 
-    def inHierarchy(self, classType):
-        if classType == "page":
+    def inHierarchy(self, hierarchyType):
+        if hierarchyType == "page":
             return self.inPageHierarchy()
-        elif classType == "class":
+        elif hierarchyType == "class":
             return self.inClassHierarchy()
-        elif classType == "file":
+        elif hierarchyType == "file":
             return self.inFileHierarchy()
         else:
-            raise RuntimeError("'{}' is not a valid hierarchy type".format(classType))
+            raise RuntimeError("'{}' is not a valid hierarchy type".format(hierarchyType))
 
-    def hierarchySortedDirectDescendants(self, classType):
-        if classType == "page":
+    def hierarchySortedDirectDescendants(self, hierarchyType):
+        if hierarchyType == "page":
             if self.kind != "page":
                 raise RuntimeError(
                     "Page hierarchies do not apply to '{}' nodes".format(self.kind)
                 )
             return sorted(self.children)
-        elif classType == "class":
+        elif hierarchyType == "class":
             # search for nested children to display as sub-items in the tree view
             if self.kind == "class" or self.kind == "struct":
                 # first find all of the relevant children
@@ -678,7 +678,7 @@ class ExhaleNode(object):
                 nested_nspaces = []
                 nested_kids    = []
                 for c in self.children:
-                    if c.inHierarchy(classType):
+                    if c.inHierarchy(hierarchyType):
                         if c.kind == "namespace":
                             nested_nspaces.append(c)
                         else:
@@ -695,13 +695,13 @@ class ExhaleNode(object):
             else:
                 # everything else is a terminal node
                 return []
-        elif classType == "file":
+        elif hierarchyType == "file":
             if self.kind == "dir":
                 # find the nested children of interest
                 nested_dirs = []
                 nested_kids = []
                 for c in self.children:
-                    if c.inHierarchy(classType):
+                    if c.inHierarchy(hierarchyType):
                         if c.kind == "dir":
                             nested_dirs.append(c)
                         elif c.kind == "file":
@@ -719,12 +719,12 @@ class ExhaleNode(object):
                 # files are terminal nodes in this hierarchy view
                 return []
         else:
-            raise RuntimeError("{} is not a valid hierarchy type".format(classType))
+            raise RuntimeError("{} is not a valid hierarchy type".format(hierarchyType))
 
-    def toHierarchy(self, classType, level, stream, lastChild=False):
+    def toHierarchy(self, hierarchyType, level, stream, lastChild=False):
         '''
         **Parameters**
-            ``classType`` (str)
+            ``hierarchyType`` (str)
                 ``"page"`` if generating the Page Hierarchy,
                 ``"class"`` if generating the Class Hierarchy,
                 ``"file"`` if generating the File Hierarchy.
@@ -743,10 +743,10 @@ class ExhaleNode(object):
 
         .. todo:: add thorough documentation of this
         '''
-        if self.inHierarchy(classType):
+        if self.inHierarchy(hierarchyType):
             # For the Tree Views, we need to know if there are nested children before
             # writing anything.  If there are, we need to open a new list
-            nested_children = self.hierarchySortedDirectDescendants(classType)
+            nested_children = self.hierarchySortedDirectDescendants(hierarchyType)
 
             ############################################################################
             # Write out this node.                                                     #
@@ -873,7 +873,7 @@ class ExhaleNode(object):
             last_child_index = len(nested_children) - 1
             child_idx        = 0
             for child in nested_children:
-                child.toHierarchy(classType, level + 1, stream, child_idx == last_child_index)
+                child.toHierarchy(hierarchyType, level + 1, stream, child_idx == last_child_index)
                 child_idx += 1
 
             ############################################################################
