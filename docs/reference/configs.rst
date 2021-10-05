@@ -142,7 +142,9 @@ that you will link to from your documentation is laid out as follows:
    ``exhale_args`` will be included.  See :data:`~exhale.configs.afterTitleDescription`.
 
 3. The Page Hierarchy will be included.  By default this is a bulleted list; see
-   the :ref:`usage_creating_the_treeview` section.
+   the :ref:`usage_creating_the_treeview` section. The default title for this section
+   is ``"Page Hierarchy"``, but can be changed using the key ``"pageHierarchySubSectionTitle"``
+   in ``exhale_args``.  See :data:`~exhale.configs.pageHierarchySubSectionTitle`.
 
    .. note::
 

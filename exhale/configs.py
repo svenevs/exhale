@@ -317,6 +317,16 @@ afterTitleDescription = None
        }
 '''
 
+pageHierarchySubSectionTitle = "Page Hierarchy"
+'''
+**Optional**
+    The title for the subsection that comes before the Page hierarchy.
+
+**Value in** ``exhale_args`` (str)
+    The default value is simply ``"Page Hierarchy"``.  Change this to be something else if you
+    so desire.
+'''
+
 afterHierarchyDescription = None
 '''
 **Optional**
@@ -1425,6 +1435,7 @@ def apply_sphinx_configurations(app):
         ("generateBreatheFileDirectives",               bool),
         # Root API Document Customization and Treeview
         ("afterTitleDescription",           six.string_types),
+        ("pageHierarchySubSectionTitle",    six.string_types)
         ("afterHierarchyDescription",       six.string_types),
         ("fullApiSubSectionTitle",          six.string_types),
         ("afterBodySummary",                six.string_types),

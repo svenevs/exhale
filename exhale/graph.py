@@ -3629,7 +3629,7 @@ class ExhaleRoot(object):
             "idx": configs._page_hierarchy_id,
             "bstrap_data_func_name": configs._bstrap_page_hierarchy_fn_data_name,
             "file_name": self.page_hierarchy_file,
-            "file_title": "Content",
+            "file_title": configs.pageHierarchySubSectionTitle,
             "type": "page"
         }, page_view_data)
         # gather the class hierarchy data and write it out
