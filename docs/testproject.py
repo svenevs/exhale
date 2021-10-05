@@ -101,12 +101,16 @@ class TestProjectDirective(Directive):
                 "Example: .. testproject:: c_maths"
             )
         self.content[0] = textwrap.dedent('''\
-            View the `{project} source code here <{baseurl}/{project_dir}>`_.
+            The ``{project}`` test project.
+
+            - Additional documentation: :mod:`testing.projects.{project_fixed}`.
+            - Source code for `{project} available here <{baseurl}/{project_dir}>`_.
 
             See also: :data:`ExhaleTestCase.test_project <testing.base.ExhaleTestCase.test_project>`.
         '''.format(
             project=self.content[0],
             project_dir=self.content[0].replace(" ", "\\ "),
+            project_fixed=self.content[0].replace(" ", "_"),  # cpp with spaces project
             baseurl=get_projects_baseurl()
         ))
         project_node = testproject("\n".join(self.content))

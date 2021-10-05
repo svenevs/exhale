@@ -11,14 +11,14 @@ Tests specifically focused on the various tree view configurations.
 from __future__ import unicode_literals
 import os
 import re
-import textwrap
+from textwrap import dedent
 
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
 
 
 class_hierarchy_ground_truth = {
-    "default_rst_list": textwrap.dedent(r'''
+    "default_rst_list": dedent(r'''
         - :ref:`namespace_nested`
             - :ref:`namespace_nested__dual_nested`
                 - :ref:`exhale_struct_structnested_1_1dual__nested_1_1one`
@@ -36,7 +36,7 @@ class_hierarchy_ground_truth = {
             - :ref:`exhale_union_unionnested_1_1four__bytes`
         - :ref:`exhale_struct_structtop__level`
     '''),
-    "collapsible_lists": textwrap.dedent(r'''
+    "collapsible_lists": dedent(r'''
         <ul class="treeView" id="class-treeView">
         <li>
             <ul class="collapsibleList">
@@ -101,7 +101,7 @@ class_hierarchy_ground_truth = {
         </li><!-- only tree view element -->
         </ul><!-- /treeView class-treeView -->
     '''),  # noqa: E501
-    "bootstrap": textwrap.dedent(r'''
+    "bootstrap": dedent(r'''
         <div id="class-treeView"></div>
         <script type="text/javascript">
         function getClassHierarchyTree() {
@@ -254,7 +254,7 @@ Keys and what they represent:
 
 
 file_hierarchy_ground_truth = {
-    "default_rst_list": textwrap.dedent(r'''
+    "default_rst_list": dedent(r'''
         - :ref:`dir_include`
             - :ref:`dir_include_nested`
                 - :ref:`dir_include_nested_dual_nested`
@@ -268,7 +268,7 @@ file_hierarchy_ground_truth = {
                     - :ref:`file_include_nested_two_two.hpp`
             - :ref:`file_include_top_level.hpp`
     '''),
-    "collapsible_lists": textwrap.dedent(r'''
+    "collapsible_lists": dedent(r'''
         <ul class="treeView" id="file-treeView">
         <li>
             <ul class="collapsibleList">
@@ -317,7 +317,7 @@ file_hierarchy_ground_truth = {
         </li><!-- only tree view element -->
         </ul><!-- /treeView file-treeView -->
     '''),  # noqa: E501
-    "bootstrap": textwrap.dedent(r'''
+    "bootstrap": dedent(r'''
         <div id="file-treeView"></div>
         <script type="text/javascript">
         function getFileHierarchyTree() {
@@ -438,6 +438,12 @@ Keys and what they represent:
 """
 
 
+# NOTE: See cpp_nesting.CPPNestingPages.{setUp,tearDown} (creates page_town_rock.hpp).
+@confoverrides(exhale_args={
+    "exhaleDoxygenStdin": dedent("""\
+        INPUT            = ../include
+        EXCLUDE_PATTERNS = */page_town_rock.hpp
+    """)})
 class TreeViewHierarchyTests(ExhaleTestCase):
     """
     Naive tests on raw "reStructuredText" generated for tree views.
@@ -673,12 +679,26 @@ class TreeViewHierarchyTests(ExhaleTestCase):
         """
         Verify the default reStructuredText list appears as expected.
         """
+        err_fmt = dedent("""\
+            Expected
+            ============================================================================
+            {expected}
+
+            Got
+            ============================================================================
+            {got}
+        """)
         test_class_view, test_file_view = self.raw_hierarchies()
+
+        class_default = class_hierarchy_ground_truth["default_rst_list"]
         self.assertTrue(
-            class_hierarchy_ground_truth["default_rst_list"] in test_class_view
-        )
+            class_default in test_class_view,
+            err_fmt.format(expected=class_default, got=test_class_view))
+
+        file_default = file_hierarchy_ground_truth["default_rst_list"]
         self.assertTrue(
-            file_hierarchy_ground_truth["default_rst_list"] in test_file_view
+            file_default in test_file_view,
+            err_fmt.format(expected=file_default, got=test_file_view)
         )
 
     @confoverrides(exhale_args={

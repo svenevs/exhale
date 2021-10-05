@@ -18,9 +18,8 @@ import textwrap
 from testing import get_exhale_root
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
-from testing.hierarchies import                                              \
-    class_hierarchy, clike, compare_class_hierarchy, compare_file_hierarchy, \
-    directory, file, file_hierarchy, namespace
+from testing.hierarchies import                                                        \
+    class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, file_hierarchy
 
 
 class TestedExclusionTypes(object):
@@ -47,56 +46,6 @@ class CPPPimpl(ExhaleTestCase):
 
     test_project = "cpp_pimpl"
     """.. testproject:: cpp_pimpl"""
-
-    file_hierarchy_dict = {
-        directory("include"): {
-            directory("pimpl"): {
-                file("planet.hpp"): {
-                    namespace("pimpl"): {
-                        clike("class", "Planet"): {}
-                    }
-                },
-                file("earth.hpp"): {
-                    namespace("pimpl"): {
-                        clike("class", "Earth"): {},
-                        clike("class", "EarthImpl"): {},
-                        clike("class", "Earth_v2"): {},
-                        namespace("detail"): {
-                            clike("class", "EarthImpl"): {}
-                        }
-                    }
-                },
-                file("jupiter.hpp"): {
-                    namespace("pimpl"): {
-                        clike("class", "Jupiter"): {},
-                        clike("class", "JupiterImpl"): {},
-                        clike("class", "Jupiter_v2"): {},
-                        namespace("detail"): {
-                            clike("class", "JupiterImpl"): {}
-                        }
-                    }
-                }
-            }
-        }
-    }
-    """The file hierarchy for this test."""
-
-    class_hierarchy_dict = {
-        namespace("pimpl"): {
-            clike("class", "Planet"): {},
-            clike("class", "Earth"): {},
-            clike("class", "EarthImpl"): {},
-            clike("class", "Earth_v2"): {},
-            clike("class", "Jupiter"): {},
-            clike("class", "JupiterImpl"): {},
-            clike("class", "Jupiter_v2"): {},
-            namespace("detail"): {
-                clike("class", "EarthImpl"): {},
-                clike("class", "JupiterImpl"): {}
-            }
-        }
-    }
-    """The class hierarchy for this test."""
 
     def impl_link_names(self):
         """Link names for ``pimpl::{Earth,Jupiter}Impl``."""
@@ -403,8 +352,8 @@ class CPPPimpl(ExhaleTestCase):
 
     def test_hierarchies(self):
         """Verify the class and file hierarchies."""
-        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict))
-        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict))
+        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
+        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
 
     # TODO: once config objects are in this override is not necessary, but currently
     #       the tests in tests/configs.py populate a listingExclude....
