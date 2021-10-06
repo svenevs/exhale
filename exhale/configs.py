@@ -1435,7 +1435,7 @@ def apply_sphinx_configurations(app):
         ("generateBreatheFileDirectives",               bool),
         # Root API Document Customization and Treeview
         ("afterTitleDescription",           six.string_types),
-        ("pageHierarchySubSectionTitle",    six.string_types)
+        ("pageHierarchySubSectionTitle",    six.string_types),
         ("afterHierarchyDescription",       six.string_types),
         ("fullApiSubSectionTitle",          six.string_types),
         ("afterBodySummary",                six.string_types),
