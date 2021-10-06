@@ -703,17 +703,6 @@ treeViewBootstrapLevels = 1
     **no validity checks are performed** on your input.  Buyer beware.
 '''
 
-_page_hierarchy_id = "page-treeView"
-'''
-The ``id`` attribute of the HTML element associated with the **Page** Hierarchy when
-:data:`~exhale.configs.createTreeView` is ``True``.
-
-1. When :data:`~exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
-   to the outer-most ``ul``.
-2. For bootstrap, an empty ``div`` is inserted with this ``id``, which will be the
-   anchor point for the ``bootstrap-treeview`` library.
-'''
-
 _class_hierarchy_id = "class-treeView"
 '''
 The ``id`` attribute of the HTML element associated with the **Class** Hierarchy when
@@ -736,11 +725,15 @@ The ``id`` attribute of the HTML element associated with the **Class** Hierarchy
    anchor point for the ``bootstrap-treeview`` library.
 '''
 
-_bstrap_page_hierarchy_fn_data_name = "getPageHierarchyTree"
+_page_hierarchy_id = "page-treeView"
 '''
-The name of the JavaScript function that returns the ``json`` data associated with the
-**Page** Hierarchy when :data:`~exhale.configs.createTreeView` is ``True`` **and**
-:data:`~exhale.configs.treeViewIsBootstrap` is ``True``.
+The ``id`` attribute of the HTML element associated with the **Page** Hierarchy when
+:data:`~exhale.configs.createTreeView` is ``True``.
+
+1. When :data:`~exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
+   to the outer-most ``ul``.
+2. For bootstrap, an empty ``div`` is inserted with this ``id``, which will be the
+   anchor point for the ``bootstrap-treeview`` library.
 '''
 
 _bstrap_class_hierarchy_fn_data_name = "getClassHierarchyTree"
@@ -754,6 +747,13 @@ _bstrap_file_hierarchy_fn_data_name = "getFileHierarchyTree"
 '''
 The name of the JavaScript function that returns the ``json`` data associated with the
 **File** Hierarchy when :data:`~exhale.configs.createTreeView` is ``True`` **and**
+:data:`~exhale.configs.treeViewIsBootstrap` is ``True``.
+'''
+
+_bstrap_page_hierarchy_fn_data_name = "getPageHierarchyTree"
+'''
+The name of the JavaScript function that returns the ``json`` data associated with the
+**Page** Hierarchy when :data:`~exhale.configs.createTreeView` is ``True`` **and**
 :data:`~exhale.configs.treeViewIsBootstrap` is ``True``.
 '''
 

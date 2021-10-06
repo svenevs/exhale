@@ -141,18 +141,23 @@ that you will link to from your documentation is laid out as follows:
 2. If provided, the value of the key ``"afterTitleDescription"`` given to
    ``exhale_args`` will be included.  See :data:`~exhale.configs.afterTitleDescription`.
 
-3. The Page Hierarchy will be included.  By default this is a bulleted list; see
-   the :ref:`usage_creating_the_treeview` section. The default title for this section
-   is ``"Page Hierarchy"``, but can be changed using the key ``"pageHierarchySubSectionTitle"``
-   in ``exhale_args``.  See :data:`~exhale.configs.pageHierarchySubSectionTitle`.
+3. The Page Hierarchy will be included.  This section is only included if the project is
+   using the ``\page`` / ``\subpage`` doxygen commands in its documentation.  If those
+   commands are not present, this section is not included.  By default this is a
+   bulleted list; see the :ref:`usage_creating_the_treeview` section. The default title
+   for this section is ``"Page Hierarchy"``, but can be changed using the key
+   ``"pageHierarchySubSectionTitle"`` in ``exhale_args``.  See
+   :data:`~exhale.configs.pageHierarchySubSectionTitle`.
 
    .. note::
 
       This is performed by an ``.. include::`` directive.  The file for this section
       is ``"{containmentFolder}/page_view_hierarchy.rst"``.
 
-4. Next, the Class Hierarchy is included.  By default this is a bulleted list; see
-   the :ref:`usage_creating_the_treeview` section.
+4. Next, the Class Hierarchy is included.  If no class-like compounds are documented in
+   the project (e.g., only free-standing functions), this section will not be included.
+   By default this is a bulleted list; see the :ref:`usage_creating_the_treeview`
+   section.
 
    .. note::
 
@@ -213,6 +218,8 @@ that you will link to from your documentation is laid out as follows:
 .. end_root_api_document_layout
 
 .. autodata:: exhale.configs.afterTitleDescription
+
+.. autodata:: exhale.configs.pageHierarchySubSectionTitle
 
 .. autodata:: exhale.configs.afterHierarchyDescription
 
@@ -306,10 +313,13 @@ Neither library should produce any legal gray areas for you, but I'm not a lawye
 
 .. autodata:: exhale.configs._file_hierarchy_id
 
+.. autodata:: exhale.configs._page_hierarchy_id
+
 .. autodata:: exhale.configs._bstrap_class_hierarchy_fn_data_name
 
 .. autodata:: exhale.configs._bstrap_file_hierarchy_fn_data_name
 
+.. autodata:: exhale.configs._bstrap_page_hierarchy_fn_data_name
 
 Page Level Customization
 ****************************************************************************************
