@@ -11,11 +11,13 @@ Tests for the ``cpp_nesting`` project.
 
 from __future__ import unicode_literals
 
+import os
 import os.path as osp
 from textwrap import dedent
 
 import pytest
 
+from testing import TEST_PROJECTS_ROOT
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides, no_cleanup
 from testing.hierarchies import                                                        \
@@ -59,6 +61,78 @@ class CPPNesting(ExhaleTestCase):
         compare_file_hierarchy(self, file_hierarchy(no_include))
 
 
+def with_page_hierarchy(f_path, page_hierarchy):
+    """
+    Return a function using a generated fixture creating a page hierarchy.
+
+    The generated fixture generates a fixture that will create ``f_path`` prior to the
+    test running (so Doxygen sees it) and then afterward deletes the file.  The comment
+    generated will follow the provided ``page_hierarchy``.
+
+    **Parameters**
+    ``f_path`` (:class:`python:str`)
+        The destination to generate the C++ documented file encoding the specified
+        ``page_hierarchy``.
+
+    ``page_hierarchy`` (:class:`python:dict`)
+        A dictionary of :ref:`~testing.hierarchies.mainpage`,
+        :ref:`~testing.hierarchies.page`, and/or :ref:`~testing.hierarchies.subpage`
+        keys that either map to a :ref:`~testing.hierarchies.page_contents` node, or
+        a subpage.
+
+    **Return**
+    The input ``func``, after executing ``pytest.mark.usefixtures``.
+    """
+    def actual_decorator(func):
+        # NOTE: this is only supposed to be used on test functions, *BUT* controlling
+        # order of fixtures is chaos and so I just cheat and force it to module scope
+        # so that it actually runs before sphinx (and therefore doxygen).
+        @pytest.fixture(scope="module")
+        def page_town_rock_fixture():
+            with open(f_path, "w") as f:
+                f.write(dedent(r"""
+                    /**
+                     * \file page_town_rock.hpp
+                     * yardy hardy har
+                     */
+                    /**
+                    * \page super Super
+                    * How interesting it is to be a page.  A super page.
+                    *
+                    * \section super_first First Things First
+                    * It is the first of times, it is the worst of times.
+                    *
+                    * \section super_second Second
+                    * It is the second of times, it is the worst of times.
+                    */
+                    /**
+                    * \page super_super Super Super
+                    * Super to be super.
+                    *
+                    * \subpage super_super_super Super Super Super
+                    * Super super super.
+                    */
+                """))
+            globals()["active_page_hierarchy"] = {"page": "hierarchy"}
+
+            yield
+
+            del globals()["active_page_hierarchy"]
+            if osp.isfile(f_path):
+                os.remove(f_path)
+            del globals()["page_town_rock_fixture"]
+
+        globals()["page_town_rock_fixture"] = page_town_rock_fixture
+        return pytest.mark.usefixtures("page_town_rock_fixture")(func)
+
+    return actual_decorator
+
+
+page_town_rock_hpp_path = osp.join(
+    TEST_PROJECTS_ROOT, "cpp_nesting", "include", "page_town_rock.hpp")
+r"""File path to generate for tests on ``\page`` / ``\subpage`` commands."""
+
+
 class CPPNestingPages(ExhaleTestCase):
     """
     Primary test class for project ``doxygenpage``.
@@ -67,93 +141,22 @@ class CPPNestingPages(ExhaleTestCase):
     test_project = "cpp_nesting"
     """.. testproject:: cpp_nesting"""
 
-    def _page_town_rock_hpp_path(self):
-        project_root = osp.abspath(osp.dirname(self.testroot))
-        return osp.join(project_root, "include", "page_town_rock.hpp")
-
-    def setUp(self):
-        r"""
-        Create ``page_town_rock.hpp`` with various ``\\page`` / ``\\subpage`` combos.
+    def get_page_hierarchy(self):
         """
-        # TODO: this needs to be a fixture like the cpp_long_names one?
-        # test_name = self.id().split(".")[-1]
-        # test_func = getattr(self.__class__, test_name)
-        # marks = getattr(test_func, "pytestmark", False)
-        # if marks and any(m.name == "page_town_rock" for m in marks):
-        #     import ipdb
-        #     ipdb.set_trace()
+        Return the ``page_hierarchy`` that was created in |with_page_hierarchy|.
 
-        # project_root = osp.abspath(osp.dirname(self.testroot))
-        with open(self._page_town_rock_hpp_path(), "w") as f:
-            f.write(dedent(r"""\
-                /**
-                 * \\page super Super
-                 * How interesting it is to be a page.  A super page.
-                 *
-                 * \\section super_first First Things First
-                 * It is the first of times, it is the worst of times.
-                 *
-                 * \section super_second Second
-                 * It is the second of times, it is the worst of times.
-                 */
-                /**
-                 * \page super_super Super Super
-                 * Super to be super.
-                 *
-                 * \subpage super_super_super Super Super Super
-                 * Super super super.
-                 */
-            """))
+        The decorator just stashes it in ``globals()["active_page_hierarchy"]``.
+        """
+        return globals()["active_page_hierarchy"]
 
-    @pytest.mark.page_town_rock
+    @with_page_hierarchy(page_town_rock_hpp_path, {})
     def test_hierarchies_without_pages(self):
         """Verify the class, file, and page hierarchies with pages excluded."""
+        # import ipdb
+        # ipdb.set_trace()
+        self.app.build()
+        page_hierarchy = self.get_page_hierarchy()
+        print(page_hierarchy)
         # TODO: test that page hierarchy is not written (no pages included)
-        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
-        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
-
-    # TODO: delete no_cleanup before merge.  Generated files go in
-    # B = testing/projects/cpp_nesting/docs_CPPNestingPages_test_hierarchies_with_pages_dracula_is_mainpage/
-    # - Doxygen XML: $B/_doxygen
-    # - Sphinx html: $B/_build/html
-    @pytest.mark.page_town_rock
-    @confoverrides(exhale_args={
-        "exhaleDoxygenStdin": dedent("""\
-            INPUT       = ../include
-            PREDEFINED += DOXYGEN_TEST_PAGES
-            PREDEFINED += DRACULA_IS_MAINPAGE
-            GENERATE_HTML = YES
-        """),
-        "verboseBuild": True})
-    @no_cleanup
-    def test_hierarchies_with_pages_dracula_is_mainpage(self):
-        """Verify the class, file, and page hierarchies when pages included."""
-        # TODO: test that page hierarchy is written and correct
-        #
-        # TODO: remove html build() call when the test is working to go back
-        #       to using just XML validation, this is here to help the humans.
-        self.app.build()
-        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
-        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
-
-    # TODO: delete no_cleanup before merge.  Generated files go in
-    # B = testing/projects/cpp_nesting/docs_CPPNestingPages_test_hierarchies_with_pages_dracula_not_mainpage/
-    # - Doxygen XML: $B/_doxygen
-    # - Sphinx html: $B/_build/html
-    @confoverrides(exhale_args={
-        "exhaleDoxygenStdin": dedent("""\
-            INPUT       = ../include
-            PREDEFINED += DOXYGEN_TEST_PAGES
-        """),
-        "verboseBuild": True})
-    @no_cleanup
-    @pytest.mark.page_town_rock
-    def test_hierarchies_with_pages_dracula_not_mainpage(self):
-        """Verify the class, file, and page hierarchies when pages included."""
-        # TODO: test that page hierarchy is written and correct
-        #
-        # TODO: remove html build() call when the test is working to go back
-        #       to using just XML validation, this is here to help the humans.
-        self.app.build()
         compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
         compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
