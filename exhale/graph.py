@@ -290,7 +290,7 @@ class ExhaleNode(object):
         """
         if self.kind == "function":
             return "{template}{return_type} {name}({parameters})".format(
-                template="template <{0}> ".format(", ".join(self.template)) if self.template else "",
+                template="template <{0}> ".format(", ".join(self.template)) if self.template is not None else "",
                 return_type=self.return_type,
                 name=self.name,
                 parameters=", ".join(self.parameters)
@@ -2522,8 +2522,11 @@ class ExhaleRoot(object):
                 #       problem: SFINAE -> death of readability
                 #
                 # SOLUTION? only include when overloads found?
-                if func.template:
-                    prefix = "Template Function"
+                if func.template is not None:
+                    if len(func.template) == 0:
+                        prefix = "Specialized Template Function"
+                    else:
+                        prefix = "Template Function"
                 else:
                     prefix = "Function"
 
