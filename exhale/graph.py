@@ -2807,16 +2807,6 @@ class ExhaleRoot(object):
                 # generate a link label for every generated file
                 link_declaration = ".. _{0}:".format(node.link_name)
 
-                # acquire the file this was originally defined in
-                if node.def_in_file:
-                    defined_in = "Defined in :ref:`{where}`".format(where=node.def_in_file.link_name)
-                else:
-                    defined_in = ".. did not find file this was defined in"
-                    sys.stderr.write(utils.critical(
-                        "Did not locate file that defined {0} [{1}]; no link generated.\n".format(node.kind,
-                                                                                                  node.name)
-                    ))
-
                 # Add the metadata if they requested it
                 if configs.pageLevelConfigMeta:
                     gen_file.write("{0}\n\n".format(configs.pageLevelConfigMeta))
@@ -2824,14 +2814,11 @@ class ExhaleRoot(object):
                 gen_file.write(textwrap.dedent('''\
                     {link}
 
-                    {defined_in}
-
                     {heading}
                     {heading_mark}
 
                 '''.format(
                     link=link_declaration,
-                    defined_in=defined_in,
                     heading=node.title,
                     heading_mark=utils.heading_mark(
                         node.title, configs.SECTION_HEADING_CHAR
