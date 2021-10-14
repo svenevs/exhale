@@ -9,14 +9,27 @@
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 project(cpp-func-overloads LANGUAGES CXX)
 
-# "Header only library": add tests and include the directory
+# Add the cpp-func-overloads library
+add_library(cpp-func-overloads "")
+target_sources(cpp-func-overloads
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/overload/overload.hpp
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/overload.cpp
+)
+target_include_directories(cpp-func-overloads
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# Add the tests and link against the cpp-func-overloads library.
 target_sources(exhale-projects-unit-tests
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tests.cpp
 )
-target_include_directories(exhale-projects-tests-interface
+target_link_libraries(exhale-projects-tests-interface
   INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    cpp-func-overloads
 )
 
 add_open_cpp_coverage_source_dirs(include src)

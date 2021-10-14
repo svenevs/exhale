@@ -28,6 +28,10 @@ class CPPFuncOverloads(ExhaleTestCase):
     def test_builds(self):
         """Test deliberately kept to serve as a perpetual reminder this is still broken."""
         self.app.build()
+        if False:  # set to True, and run: tox -e py -- -k cpp_func_overloads -s
+            import ipdb  #                 then you can view the results
+            ipdb.set_trace()
+            print("hi there")
 
     def test_file_hierarchy(self):
         """Verify the file hierarchy."""
