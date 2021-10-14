@@ -92,26 +92,32 @@ def with_page_hierarchy(f_path, page_hierarchy):
             with open(f_path, "w") as f:
                 f.write(dedent(r"""
                     /**
-                     * \file page_town_rock.hpp
-                     * yardy hardy har
+                     * \page first First Page
+                     * How interesting it is to be a page.  A super page.
+                     *
+                     * \section first_sec1 First Things First
+                     * It is the first of times, it is the worst of times.
+                     *
+                     * \section first_sec2 Second
+                     * It is the second of times, it is the worst of times.
                      */
                     /**
-                    * \page super Super
-                    * How interesting it is to be a page.  A super page.
-                    *
-                    * \section super_first First Things First
-                    * It is the first of times, it is the worst of times.
-                    *
-                    * \section super_second Second
-                    * It is the second of times, it is the worst of times.
-                    */
+                     * \page second Second Page
+                     * Super to be super.
+                     *
+                     * See also:
+                     *
+                     * - \subpage third
+                     * - \subpage fourth
+                     */
                     /**
-                    * \page super_super Super Super
-                    * Super to be super.
-                    *
-                    * \subpage super_super_super Super Super Super
-                    * Super super super.
-                    */
+                     * \page third Third Page
+                     * This is the third page.
+                     */
+                    /**
+                     * \page fourth Fourth Page
+                     * This is the fourth page.
+                     */
                 """))
             globals()["active_page_hierarchy"] = {"page": "hierarchy"}
 
@@ -152,9 +158,9 @@ class CPPNestingPages(ExhaleTestCase):
     @with_page_hierarchy(page_town_rock_hpp_path, {})
     def test_hierarchies_without_pages(self):
         """Verify the class, file, and page hierarchies with pages excluded."""
-        # import ipdb
-        # ipdb.set_trace()
         self.app.build()
+        import ipdb
+        ipdb.set_trace()
         page_hierarchy = self.get_page_hierarchy()
         print(page_hierarchy)
         # TODO: test that page hierarchy is not written (no pages included)
