@@ -29,7 +29,7 @@ class CPPFuncOverloads(ExhaleTestCase):
         """Test deliberately kept to serve as a perpetual reminder this is still broken."""
         self.app.build()
         if False:  # set to True, and run: tox -e py -- -k cpp_func_overloads -s
-            import ipdb  #                 then you can view the results
+            import ipdb  # then you can view the results
             ipdb.set_trace()
             print("hi there")
 
