@@ -95,15 +95,26 @@ namespace overload {
     }
 
     #if !defined(DOXYGEN_SHOULD_SKIP_THIS)
-        // NOTE: skip it to make cpp_func_overloads easier to test (don't intro a struct).
+        // NOTE: skip these to make cpp_func_overloads easier to test (don't intro structs).
+
         /// A super struct of structs for template specialization.
         struct SuperStruct {
             using type = int;///< The type for typing things.
         };
+
+        namespace nested {
+            /// A super struct of structs in a nested workspace for template specialization.
+            struct SuperStruct {
+                using type = int;///< The type for typing things.
+            };
+        }  // namespace nested
     #endif // DOXYGEN_SHOULD_SKIP_THIS
 
     /// A specialization of ``template <class C> typename C::type blargh``.
     template <> inline int blargh<SuperStruct>(int x) { return x; }
+
+    /// A specialization of ``template <class C> typename C::type blargh``.
+    template <> inline int blargh<nested::SuperStruct>(int x) { return x; }
 
     /// Returns parameter ``t`` converted to a ``T`` (enabled when ``std::is_convertible`` is ``true``).
     template <class C, typename T>

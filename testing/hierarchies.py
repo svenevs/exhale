@@ -230,11 +230,15 @@ class function(node):  # noqa: N801
         self.template = template
         # TODO: template specializations are *NOT* handled,
         # we're just hacking in one in cpp_func_overloads...
-        if template is not None and len(template) == 1 and \
-                template[0] == "overload::SuperStruct":
-            self.name = "blargh< SuperStruct >"
-            self.parameters = ["int"]
-            self.template = []
+        if template is not None and len(template) == 1:
+            if template[0] == "overload::SuperStruct":
+                self.name = "blargh< SuperStruct >"
+                self.parameters = ["int"]
+                self.template = []
+            elif template[0] == "overload::nested::SuperStruct":
+                self.name = "blargh< nested::SuperStruct >"
+                self.parameters = ["int"]
+                self.template = []
 
     def __str__(self):
         """

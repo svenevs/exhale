@@ -227,6 +227,11 @@ TEST_CASE( "template <> blargh<SuperStruct>(typename C::type)", "[cpp-func-overl
     REQUIRE( x == 111 );
 }
 
+TEST_CASE( "template <> blargh<nested::SuperStruct>(typename C::type)", "[cpp-func-overloads]" ) {
+    auto x = overload::blargh<overload::nested::SuperStruct>(111);
+    REQUIRE( x == 111 );
+}
+
 TEST_CASE( "template <class C, typename T> T blargh(typename C::type)", "[cpp-func-overloads]" ) {
     struct C_float { using type = float; };
 
