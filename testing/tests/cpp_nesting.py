@@ -11,17 +11,16 @@ Tests for the ``cpp_nesting`` project.
 
 from __future__ import unicode_literals
 
-import os
 import os.path as osp
 from textwrap import dedent
 
-import pytest
+from exhale.utils import heading_mark
 
-from testing import TEST_PROJECTS_ROOT
 from testing.base import ExhaleTestCase
-from testing.decorators import confoverrides, no_cleanup
+from testing.decorators import confoverrides
 from testing.hierarchies import                                                        \
-    class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, file_hierarchy
+    class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, file,            \
+    file_hierarchy
 
 
 # NOTE: See setUp / tearDown in CPPNestingPages below.  That file is being
@@ -31,7 +30,7 @@ from testing.hierarchies import                                                 
 @confoverrides(exhale_args={
     "exhaleDoxygenStdin": dedent("""\
         INPUT            = ../include
-        EXCLUDE_PATTERNS = */page_town_rock.hpp
+        EXCLUDE_PATTERNS = */page_town_rock*.hpp
     """)})
 class CPPNesting(ExhaleTestCase):
     """
@@ -45,6 +44,7 @@ class CPPNesting(ExhaleTestCase):
         """Verify the class and file hierarchies."""
         compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
         compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
+        assert len(self.app.exhale_root.pages) == 0  # pages got excluded
 
     @confoverrides(exhale_args={"doxygenStripFromPath": "../include"})
     def test_hierarchies_stripped(self):
@@ -61,108 +61,164 @@ class CPPNesting(ExhaleTestCase):
         compare_file_hierarchy(self, file_hierarchy(no_include))
 
 
-def with_page_hierarchy(f_path, page_hierarchy):
-    """
-    Return a function using a generated fixture creating a page hierarchy.
-
-    The generated fixture generates a fixture that will create ``f_path`` prior to the
-    test running (so Doxygen sees it) and then afterward deletes the file.  The comment
-    generated will follow the provided ``page_hierarchy``.
-
-    **Parameters**
-    ``f_path`` (:class:`python:str`)
-        The destination to generate the C++ documented file encoding the specified
-        ``page_hierarchy``.
-
-    ``page_hierarchy`` (:class:`python:dict`)
-        A dictionary of :ref:`~testing.hierarchies.mainpage`,
-        :ref:`~testing.hierarchies.page`, and/or :ref:`~testing.hierarchies.subpage`
-        keys that either map to a :ref:`~testing.hierarchies.page_contents` node, or
-        a subpage.
-
-    **Return**
-    The input ``func``, after executing ``pytest.mark.usefixtures``.
-    """
-    def actual_decorator(func):
-        # NOTE: this is only supposed to be used on test functions, *BUT* controlling
-        # order of fixtures is chaos and so I just cheat and force it to module scope
-        # so that it actually runs before sphinx (and therefore doxygen).
-        @pytest.fixture(scope="module")
-        def page_town_rock_fixture():
-            with open(f_path, "w") as f:
-                f.write(dedent(r"""
-                    /**
-                     * \page first First Page
-                     * How interesting it is to be a page.  A super page.
-                     *
-                     * \section first_sec1 First Things First
-                     * It is the first of times, it is the worst of times.
-                     *
-                     * \section first_sec2 Second
-                     * It is the second of times, it is the worst of times.
-                     */
-                    /**
-                     * \page second Second Page
-                     * Super to be super.
-                     *
-                     * See also:
-                     *
-                     * - \subpage third
-                     * - \subpage fourth
-                     */
-                    /**
-                     * \page third Third Page
-                     * This is the third page.
-                     */
-                    /**
-                     * \page fourth Fourth Page
-                     * This is the fourth page.
-                     */
-                """))
-            globals()["active_page_hierarchy"] = {"page": "hierarchy"}
-
-            yield
-
-            del globals()["active_page_hierarchy"]
-            if osp.isfile(f_path):
-                os.remove(f_path)
-            del globals()["page_town_rock_fixture"]
-
-        globals()["page_town_rock_fixture"] = page_town_rock_fixture
-        return pytest.mark.usefixtures("page_town_rock_fixture")(func)
-
-    return actual_decorator
-
-
-page_town_rock_hpp_path = osp.join(
-    TEST_PROJECTS_ROOT, "cpp_nesting", "include", "page_town_rock.hpp")
-r"""File path to generate for tests on ``\page`` / ``\subpage`` commands."""
-
-
 class CPPNestingPages(ExhaleTestCase):
     """
     Primary test class for project ``doxygenpage``.
+
+    .. note::
+
+        Setup for this test is particularly fickle.  There are only two test
+        cases because there are only two file paths we generate.  Order of tests
+        is not guaranteed, so each test needs to exclude it's alternate.  Eww.
     """
 
     test_project = "cpp_nesting"
     """.. testproject:: cpp_nesting"""
 
-    def get_page_hierarchy(self):
-        """
-        Return the ``page_hierarchy`` that was created in |with_page_hierarchy|.
+    def get_gen_page(self, page):
+        """Return the generated node's rst document text as a string."""
+        gen_file = osp.join(page.root_owner.root_directory, page.file_name)
+        with open(gen_file, "r") as f:
+            return f.read()
 
-        The decorator just stashes it in ``globals()["active_page_hierarchy"]``.
-        """
-        return globals()["active_page_hierarchy"]
+    def check_gen_page(self, page):
+        """Verify expected link, title, and directive are on the page."""
+        # NOTE: should *never* be called with p.refid == "indexpage", that is
+        # not generated.
+        page_contents = self.get_gen_page(page)
+        link = "_page_{refid}".format(refid=page.refid)
+        title = "{title}\n{underline}".format(
+            title=page.title, underline=heading_mark(page.title, "="))
+        directive = ".. doxygenpage:: {refid}".format(refid=page.refid)
+        assert link in page_contents
+        assert title in page_contents
+        assert directive in page_contents
 
-    @with_page_hierarchy(page_town_rock_hpp_path, {})
-    def test_hierarchies_without_pages(self):
-        """Verify the class, file, and page hierarchies with pages excluded."""
-        self.app.build()
-        import ipdb
-        ipdb.set_trace()
-        page_hierarchy = self.get_page_hierarchy()
-        print(page_hierarchy)
-        # TODO: test that page hierarchy is not written (no pages included)
-        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
+    def check_most_pages(self, uses_mainpage=True, main_refid="indexpage"):
+        r"""Check the majority of the page generation.
+
+        **Parameters**
+            uses_mainpage (:class:`python:bool`)
+                Whether or not ``\mainpage`` is used.
+
+            main_refid (:class:`python:str`)
+                If ``uses_mainpage`` is ``False``, then whatever ``\mainpage``
+                was replaced to ``\page {main_refid}``.
+        """
+        # Make sure nothing changed with the class / file hierarchies.
         compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
+        file_hierarchy_dict = self.file_hierarchy_dict()
+        include_dir = set(file_hierarchy_dict.keys()).pop()
+        # TODO: make this a parameter if we add more than two tests...
+        if uses_mainpage:
+            f_name = "page_town_rock.hpp"
+        else:
+            f_name = "page_town_rock_alt.hpp"
+        file_hierarchy_dict[include_dir][file(f_name)] = {}
+        compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict))
+
+        # Validate the misc page hierarchy details.
+        exhale_root = self.app.exhale_root
+        all_pages = [p for p in exhale_root.all_nodes if p.kind == "page"]
+        assert len(all_pages) == 7
+
+        # \mainpage A simple manual
+        # - \subpage intro
+        # - \subpage advanced "Advanced usage"
+        assert len(exhale_root.pages) == 1
+        index = exhale_root.pages[0]
+        assert index.refid == main_refid
+        if not uses_mainpage:
+            self.check_gen_page(index)
+        assert len(index.children) == 2
+        # NOTE: sort should keep intro in front of advanced.
+        index_children = sorted(index.children)
+        assert index_children[0].refid == "intro"
+        assert index_children[1].refid == "advanced"
+
+        # \page intro Introduction
+        # - \subpage more_nesting
+        # - \subpage more_nesting_redux
+        intro = index_children[0]
+        assert len(intro.children) == 2
+        assert intro.children[0].refid == "more_nesting"
+        assert intro.children[1].refid == "more_nesting_redux"
+        self.check_gen_page(intro)
+
+        # \page advanced Advanced Usage
+        advanced = index_children[1]
+        assert len(advanced.children) == 0
+        self.check_gen_page(advanced)
+
+        # \page more_nesting More Information
+        mn = intro.children[0]
+        assert len(mn.children) == 0
+        self.check_gen_page(mn)
+
+        # \page more_nesting_redux Even More Information
+        mnr = intro.children[1]
+        # - \subpage more_nesting_redux_again
+        # - \subpage more_nesting_redux_again_again
+        assert len(mnr.children) == 2
+        assert mnr.children[0].refid == "more_nesting_redux_again"
+        assert mnr.children[1].refid == "more_nesting_redux_again_again"
+        self.check_gen_page(mnr)
+
+        # \page more_nesting_redux_again Too Much Information
+        mnra = mnr.children[0]
+        assert len(mnra.children) == 0
+        self.check_gen_page(mnra)
+
+        # \page more_nesting_redux_again_again Way Too Much Information
+        mnraa = mnr.children[1]
+        assert len(mnraa.children) == 0
+        self.check_gen_page(mnraa)
+
+    @confoverrides(exhale_args={
+        "rootFileTitle": "",
+        "exhaleDoxygenStdin": dedent("""\
+            INPUT            = ../include
+            EXCLUDE_PATTERNS = */page_town_rock_alt.hpp
+        """)})
+    def test_hierarchies_primary_mainpage(self):
+        """Verify the class, file, and page hierarchies."""
+        self.check_most_pages(uses_mainpage=True)
+        # Last but not least, we expect the hierarchy to *not* have indexpage.
+        expected_page_hierarchy = dedent(r"""
+            Page Hierarchy
+            --------------
+
+            - :ref:`page_intro`
+                - :ref:`page_more_nesting`
+                - :ref:`page_more_nesting_redux`
+                    - :ref:`page_more_nesting_redux_again`
+                    - :ref:`page_more_nesting_redux_again_again`
+            - :ref:`page_advanced`
+        """)
+        with open(self.app.exhale_root.page_hierarchy_file, "r") as phf:
+            assert expected_page_hierarchy in phf.read()
+
+    @confoverrides(exhale_args={
+        "exhaleDoxygenStdin": dedent("""\
+            INPUT            = ../include
+            EXCLUDE_PATTERNS = */page_town_rock.hpp
+        """)})
+    def test_hierarchies_primary_no_mainpage(self):
+        """Verify the class, file, and page hierarchies."""
+        self.check_most_pages(uses_mainpage=False, main_refid="overview")
+
+        # Last but not least, we expect the hierarchy to *not* have indexpage.
+        expected_page_hierarchy = dedent(r"""
+            Page Hierarchy
+            --------------
+
+            - :ref:`page_overview`
+                - :ref:`page_intro`
+                    - :ref:`page_more_nesting`
+                    - :ref:`page_more_nesting_redux`
+                        - :ref:`page_more_nesting_redux_again`
+                        - :ref:`page_more_nesting_redux_again_again`
+                - :ref:`page_advanced`
+        """)
+        with open(self.app.exhale_root.page_hierarchy_file, "r") as phf:
+            assert expected_page_hierarchy in phf.read()

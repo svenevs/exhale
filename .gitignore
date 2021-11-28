@@ -8,9 +8,6 @@ docs/LANG_TO_LEX_value.rst
 # cpp_long_names python / cxx tests generate this on *nix
 testing/projects/cpp_long_names/include/directory/**
 
-# cpp_nesting \page and \subpage tests
-testing/projects/cpp_nesting/include/page_town_rock.hpp
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

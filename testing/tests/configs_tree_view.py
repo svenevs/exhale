@@ -442,7 +442,7 @@ Keys and what they represent:
 @confoverrides(exhale_args={
     "exhaleDoxygenStdin": dedent("""\
         INPUT            = ../include
-        EXCLUDE_PATTERNS = */page_town_rock.hpp
+        EXCLUDE_PATTERNS = */page_town_rock*.hpp
     """)})
 class TreeViewHierarchyTests(ExhaleTestCase):
     """

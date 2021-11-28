@@ -461,8 +461,15 @@ class ExhaleTestCase(unittest.TestCase):
         root = get_exhale_root(self)
         containmentFolder = self.getAbsContainmentFolder()
         for node in root.all_nodes:
-            if node.kind not in ["enumvalue", "group"]:
-                gen_file_path = os.path.join(containmentFolder, node.file_name)
+            if node.kind in ["enumvalue", "group"]:
+                continue
+            gen_file_path = os.path.join(containmentFolder, node.file_name)
+            if node.kind == "page" and node.refid == "indexpage":
+                self.assertFalse(
+                    os.path.isfile(gen_file_path),
+                    "File for page node with refid=[indexpage] should *NOT* have been generated!"
+                )
+            else:
                 self.assertTrue(
                     os.path.isfile(gen_file_path),
                     "File for {kind} node with refid=[{refid}] not generated to [{gen_file_path}]!".format(
@@ -521,12 +528,18 @@ class ExhaleTestCase(unittest.TestCase):
                 toctrees = full_api_toctrees
                 doc = unabridged_api_path
 
-            self.assertTrue(
-                node.file_name in toctrees,
-                "Node refid=[{refid}] and basename=[{file_name}] not found in [{doc}]!".format(
-                    refid=node.refid, file_name=node.file_name, doc=doc
+            if node.kind == "page" and node.refid == "indexpage":
+                self.assertFalse(
+                    node.file_name in orphan_toctrees or node.file_name in full_api_toctrees,
+                    "Node refid=[indexpage] should *NOT* be in an toctrees!"
                 )
-            )
+            else:
+                self.assertTrue(
+                    node.file_name in toctrees,
+                    "Node refid=[{refid}] and basename=[{file_name}] not found in [{doc}]!".format(
+                        refid=node.refid, file_name=node.file_name, doc=doc
+                    )
+                )
 
         # Some tests may want the toctree names afterward.
         return full_api_toctrees, orphan_toctrees

@@ -159,6 +159,7 @@ class ExhaleNode(object):
         self.name        = os.path.normpath(name) if kind == 'dir' else name
         self.kind        = kind
         self.refid       = refid
+        self.root_owner  = None  # the ExhaleRoot owner
 
         self.template_params = []  # only populated if found
 
@@ -211,7 +212,24 @@ class ExhaleNode(object):
         '''
         # allows alphabetical sorting within types
         if self.kind == other.kind:
-            return self.name.lower() < other.name.lower()
+            if self.kind != "page":
+                return self.name.lower() < other.name.lower()
+            else:
+                # Arbitrarily stuff "indexpage" refid to the front.  As doxygen presents
+                # things, it shows up last, but it does not matter since the sort we
+                # really care about will be with lists that do *NOT* have indexpage in
+                # them (for creating the page view hierarchy).
+                if self.refid == "indexpage":
+                    return True
+                elif other.refid == "indexpage":
+                    return False
+
+                # NOTE: kind of wasteful, but ordered_refs has ALL pages
+                # but realistically, there wont be *that* many pages. right? ;)
+                ordered_refs = [
+                    p.refid for p in self.root_owner.index_xml_page_ordering
+                ]
+                return ordered_refs.index(self.refid) < ordered_refs.index(other.refid)
         # treat structs and classes as the same type
         elif self.kind == "struct" or self.kind == "class":
             if other.kind != "struct" and other.kind != "class":
@@ -226,6 +244,11 @@ class ExhaleNode(object):
         # otherwise, sort based off the kind
         else:
             return self.kind < other.kind
+
+    def set_owner(self, root):
+        """Sets the :class:`~exhale.graph.ExhaleRoot` owner ``self.root_owner``."""
+        # needed to be able to track the page orderings as presented in index.xml
+        self.root_owner = root
 
     def breathe_identifier(self):
         """
@@ -743,6 +766,17 @@ class ExhaleNode(object):
 
         .. todo:: add thorough documentation of this
         '''
+        # NOTE: indexpage needs to be treated specially, you need to include the
+        # children at the *same* level, and not actually include indexpage.
+        if hierarchyType == "page" and self.refid == "indexpage":
+            nested_children = self.hierarchySortedDirectDescendants(hierarchyType)
+            last_child_index = len(nested_children) - 1
+            child_idx        = 0
+            for child in nested_children:
+                child.toHierarchy(
+                    hierarchyType, level, stream, child_idx == last_child_index)
+                child_idx += 1
+            return
         if self.inHierarchy(hierarchyType):
             # For the Tree Views, we need to know if there are nested children before
             # writing anything.  If there are, we need to open a new list
@@ -1053,6 +1087,11 @@ class ExhaleRoot(object):
         # doxygenpage      <-+-> "page"       |
         self.pages           = []           # |
         # -------------------+----------------+
+        # tracks the named ordering of pages as they show up in index.xml
+        # so that the page hierarchy can be presented in the same order.
+        # the only node not placed in here is "indexpage" since it is not
+        # included in the page view hierarchy (indexpage is dumped right above)
+        self.index_xml_page_ordering = []
 
     ####################################################################################
     #
@@ -1597,6 +1636,7 @@ class ExhaleRoot(object):
                 The node to begin tracking if not already present.
         '''
         if node not in self.all_nodes:
+            node.set_owner(self)
             self.all_nodes.append(node)
             self.node_by_refid[node.refid] = node
             if node.kind == "class" or node.kind == "struct":
@@ -1625,6 +1665,8 @@ class ExhaleRoot(object):
                 self.unions.append(node)
             elif node.kind == "page":
                 self.pages.append(node)
+                if node.refid != "indexpage":
+                    self.index_xml_page_ordering.append(node)
 
     def reparentAll(self):
         '''
@@ -2787,9 +2829,12 @@ class ExhaleRoot(object):
         '''
         Generates the reStructuredText document for every page.
         '''
-        for page in self.pages:
-            # generate this page
+        all_pages = [p for p in self.pages]
+        while len(all_pages) > 0:
+            page = all_pages.pop()
             self.generateSinglePageDocument(page)
+            for subpage in page.children:
+                all_pages.append(subpage)
 
     def generateSinglePageDocument(self, node):
         '''
@@ -2799,6 +2844,13 @@ class ExhaleRoot(object):
             ``node`` (ExhaleNode)
                 The "page" node being generated by this method.
         '''
+        # Do *NOT* generate a leaf document for the "indexpage", this comes from the
+        # \mainpage command in Doxygen and it gets extracted out onto the top of the
+        # main library root document.  Generating the "indexpage" would be redundant
+        # and nothing links to it.
+        if node.refid == "indexpage":
+            return
+
         try:
             with codecs.open(node.file_name, "w", "utf-8") as gen_file:
                 ########################################################################
@@ -3748,8 +3800,6 @@ class ExhaleRoot(object):
         page_view_stream = StringIO()
 
         for p in self.pages:
-            if p.refid == "indexpage":
-                continue
             p.toHierarchy("page", 0, page_view_stream)
 
         # extract the value from the stream and close it down
