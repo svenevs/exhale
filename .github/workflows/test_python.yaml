@@ -14,7 +14,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        # os: [macos-latest, ubuntu-latest, windows-latest]
+        # TODO: either obtain doxygen 1.8.20 on mac, or find out why everything
+        # breaks in doxygen 1.9.2.
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v2
       ##########################################################################
