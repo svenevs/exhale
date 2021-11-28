@@ -105,6 +105,13 @@ class CPPNestingPages(ExhaleTestCase):
                 If ``uses_mainpage`` is ``False``, then whatever ``\mainpage``
                 was replaced to ``\page {main_refid}``.
         """
+        # Checks that the right files are included or not included in the library
+        # root document.  Specifically, whether these are found:
+        #
+        #     - .. include:: page_index.rst from doxygen \mainpage
+        #     - .. include:: page_view_hierarchy.rst (from any \page not \mainpage)
+        self.test_common()
+
         # Make sure nothing changed with the class / file hierarchies.
         compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
         file_hierarchy_dict = self.file_hierarchy_dict()

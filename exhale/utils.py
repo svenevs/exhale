@@ -145,6 +145,13 @@ is everything in :data:`AVAILABLE_KINDS`, except for
 .. |generateSingleNodeRST| replace:: :class:`ExhaleRoot.generateSingleNodeRST <exhale.graph.ExhaleRoot.generateSingleNodeRST>`
 '''
 
+CLASS_LIKE_KINDS = [
+    "class",
+    "struct",
+    "interface"  # TODO: not currently supported or used
+]
+"""All kinds that are "class-like"."""
+
 
 def contentsDirectiveOrNone(kind):
     '''
