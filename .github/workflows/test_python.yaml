@@ -21,9 +21,10 @@ jobs:
       - name: Install Doxygen (macOS)
         if: contains(matrix.os, 'macos')
         run: |
-          brew tap-new $USER/local-doxygen
-          brew extract --version=1.8.20 doxygen $USER/local-doxygen
-          HOMEBREW_NO_AUTO_UPDATE=1 brew install -v doxygen@1.8.20
+          # brew tap-new $USER/local-doxygen
+          # brew extract --version=1.8.20 doxygen $USER/local-doxygen
+          # HOMEBREW_NO_AUTO_UPDATE=1 brew install -v doxygen@1.8.20
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install doxygen
       - name: Install Doxygen (Ubuntu)
         if: contains(matrix.os, 'ubuntu')
         run: |
