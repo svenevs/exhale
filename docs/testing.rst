@@ -152,5 +152,6 @@ Full Testing Suite Documentation
    testing/decorators
    testing/fixtures
    testing/hierarchies
+   testing/projects
    testing/utils
    testing/tests

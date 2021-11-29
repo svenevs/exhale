@@ -18,6 +18,7 @@ import re
 import shutil
 import textwrap
 import unittest
+from importlib import import_module
 
 import exhale
 import pytest
@@ -225,6 +226,25 @@ class ExhaleTestCaseMetaclass(type):
                     self.checkAllFilesIncluded()
 
             attrs["test_common"] = test_common
+
+            # Import the default hierarchy dictionaries from the testing/projects folder
+            # and make it available to the class directly.
+            proj_mod = import_module(
+                "testing.projects.{test_project}".format(test_project=test_project))
+
+            default_class_hierarchy_dict = proj_mod.default_class_hierarchy_dict
+
+            def class_hierarchy_wrapper(self):
+                return default_class_hierarchy_dict()
+            attrs["class_hierarchy_dict"] = class_hierarchy_wrapper
+
+            default_file_hierarchy_dict = proj_mod.default_file_hierarchy_dict
+
+            def file_hierarchy_wrapper(self):
+                return default_file_hierarchy_dict()
+            attrs["file_hierarchy_dict"] = file_hierarchy_wrapper
+
+            attrs["test_project_module"] = proj_mod  # In case it's ever needed...
 
         # applying the default configuration override, which is overridden using the
         # @confoverride decorator at class or method level

@@ -13,8 +13,7 @@ from __future__ import unicode_literals
 
 from testing.base import ExhaleTestCase
 from testing.decorators import no_cleanup
-from testing.hierarchies import compare_file_hierarchy, directory, file, \
-    file_hierarchy, function, namespace, parameters
+from testing.hierarchies import compare_file_hierarchy, file_hierarchy
 
 
 class CPPWithSpaces(ExhaleTestCase):
@@ -24,19 +23,6 @@ class CPPWithSpaces(ExhaleTestCase):
 
     test_project = "cpp with spaces"
     """.. testproject:: cpp with spaces"""
-
-    file_hierarchy_dict = {
-        directory("include"): {
-            directory("with spaces"): {
-                file("with spaces.hpp"): {
-                    namespace("with_spaces"): {
-                        function("int", "value"): parameters()
-                    }
-                }
-            }
-        }
-    }
-    """The file hierarchy for this project."""
 
     def test_hierarchies(self):
         """
@@ -48,7 +34,7 @@ class CPPWithSpaces(ExhaleTestCase):
             framework **as well as** stop emitting a "Class Hierarchy" on the root api
             page when it is empty.
         """
-        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict))
+        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
 
     @no_cleanup
     def test_build(self):
