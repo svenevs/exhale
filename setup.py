@@ -133,10 +133,6 @@ setup(
     include_package_data=True,
     # Because we are including non-python data files, it cannot be compressed
     zip_safe=False,
-    # Because Exhale hooks into / generates *BEFORE* any reading or writing occurs, it
-    # is parallel safe by default
-    parallel_read_safe=True,
-    parallel_write_safe=True,
     # Metadata for PyPI
     author="Stephen McDowell",
     author_email="exhale.hosted@gmail.com",

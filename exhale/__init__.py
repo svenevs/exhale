@@ -43,4 +43,10 @@ def setup(app):
     app.connect("builder-inited", environment_ready)
     # app.connect("env-purge-doc", cleanup_files)
 
-    return {"version": __version__}
+    return {
+        "version": __version__,
+        # Because Exhale hooks into / generates *BEFORE* any reading or writing occurs,
+        # it is parallel safe by default.
+        "parallel_read_safe": True,
+        "parallel_write_safe": True
+    }
