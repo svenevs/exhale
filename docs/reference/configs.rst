@@ -91,12 +91,16 @@ Users must provide the following values to ``exhale_args`` in their ``conf.py``.
 
 .. autodata:: exhale.configs.rootFileName
 
-.. autodata:: exhale.configs.rootFileTitle
-
 .. autodata:: exhale.configs.doxygenStripFromPath
 
 Optional Configuration Arguments
 ----------------------------------------------------------------------------------------
+
+Heavily Encouraged Optional Configuration
+****************************************************************************************
+
+.. autodata:: exhale.configs.rootFileTitle
+
 
 Build Process Logging, Colors, and Debugging
 ****************************************************************************************
@@ -135,8 +139,9 @@ that you will link to from your documentation is laid out as follows:
     | **9**      | {{ afterBodySummary }}                             | Section 8      |
     +------------+----------------------------------------------------+----------------+
 
-1. The title of the document will be the *required* key to ``"rootFileTitle"`` given to
-   ``exhale_args`` in ``conf.py``.  See :data:`~exhale.configs.rootFileTitle`.
+1. The title of the document will be the key to ``"rootFileTitle"`` given to
+   ``exhale_args`` in ``conf.py`` **unless** the ``\mainpage`` command is being used
+   on the doxygen side.  See :data:`~exhale.configs.rootFileTitle`.
 
 2. If provided, the value of the key ``"afterTitleDescription"`` given to
    ``exhale_args`` will be included.  See :data:`~exhale.configs.afterTitleDescription`.
@@ -153,6 +158,10 @@ that you will link to from your documentation is laid out as follows:
 
       This is performed by an ``.. include::`` directive.  The file for this section
       is ``"{containmentFolder}/page_view_hierarchy.rst"``.
+
+   .. tip::
+
+      Please also see the documentation for :data:`~exhale.configs.rootFileTitle`.
 
 4. Next, the Class Hierarchy is included.  If no class-like compounds are documented in
    the project (e.g., only free-standing functions), this section will not be included.

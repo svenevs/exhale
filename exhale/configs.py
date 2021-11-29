@@ -137,22 +137,6 @@ rootFileName = None
        </div>
 '''
 
-rootFileTitle = None
-'''
-**Optional**
-    The title to be written at the top of ``rootFileName``, which will appear in your
-    file including it in the ``toctree`` directive.
-
-**Value in** ``exhale_args`` (str)
-    The value of the key ``"rootFileTitle"`` should be a string that has the title of
-    the main library root document folder Exhale will be generating. For example, if
-    you are including the Exhale generated library root file in your ``index.rst``
-    top-level ``toctree`` directive, the title you supply here will show up on both
-    your main page, as well as in the navigation menus.
-
-    An example value could be ``"Library API"``.
-'''
-
 doxygenStripFromPath = None
 '''
 **Required**
@@ -213,6 +197,40 @@ doxygenStripFromPath = None
 ##                                                                                     #
 ## Additional configurations available to further customize the output of exhale.      #
 ##                                                                                     #
+########################################################################################
+# Heavily Encouraged Optional Configuration                                            #
+########################################################################################
+rootFileTitle = None
+r'''
+**Optional**
+    The title to be written at the top of ``rootFileName``, which will appear in your
+    file including it in the ``toctree`` directive.
+
+**Value in** ``exhale_args`` (str)
+    The value of the key ``"rootFileTitle"`` should be a string that has the title of
+    the main library root document folder Exhale will be generating. For example, if
+    you are including the Exhale generated library root file in your ``index.rst``
+    top-level ``toctree`` directive, the title you supply here will show up on both
+    your main page, as well as in the navigation menus.
+
+    An example value could be ``"Library API"``.
+
+.. danger::
+
+    If you are **not** using doxygen pages (``\mainpage``, ``\page``, and/or
+    ``\subpage`` commands), then you need to include this argument!  Exhale does not
+    have the ability to detect whether or not your project needs this.
+
+    **If** ``\mainpage`` **is used:**
+        The title is set to the ``\mainpage`` title unconditionally.
+    **Otherwise:**
+        The title is set to ``"rootFileTitle"`` (this config).
+
+    Since :data:`~exhale.configs.rootFileName` is ultimately going to be included in a
+    ``.. toctree::`` directive, this document needs a title in some way.  Projects
+    utilizing the ``\mainpage`` command should not be required to duplicate this title,
+    projects **not** using this command **need to supply a title**.
+'''
 ########################################################################################
 # Build Process Logging, Colors, and Debugging                                         #
 ########################################################################################

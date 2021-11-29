@@ -256,8 +256,9 @@ This structure is not required, but you'll need to change values accordingly.
        # These arguments are required
        "containmentFolder":     "./api",
        "rootFileName":          "library_root.rst",
-       "rootFileTitle":         "Library API",
        "doxygenStripFromPath":  "..",
+       # Heavily encouraged optional argument (see docs)
+       "rootFileTitle":         "Library API",
        # Suggested optional arguments
        "createTreeView":        True,
        # TIP: if using the sphinx-bootstrap-theme, you need
