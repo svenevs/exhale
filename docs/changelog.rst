@@ -12,6 +12,7 @@ v0.2.4
 
 - Use the correct PyPI name ``beautifulsoup4`` rather than ``bs4`` (:pr:`120`).
 - Fix deprecated ``MutableMapping`` import for python 3.10 support (:pr:`124`).
+- Enable parallel builds (use the right ``setup`` function...) (:pr:`126`).
 
 v0.2.3
 ----------------------------------------------------------------------------------------
