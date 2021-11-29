@@ -10,7 +10,11 @@ Utility functionality for the testing suite.
 """
 
 from __future__ import unicode_literals
-from collections import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:
+    # TODO: remove when dropping python 2.7
+    from collections import Mapping
 
 
 def deep_update(orig, override):

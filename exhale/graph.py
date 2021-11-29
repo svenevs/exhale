@@ -3639,7 +3639,11 @@ class ExhaleRoot(object):
         - Directories
         - Files
         '''
-        from collections import MutableMapping
+        try:
+            from collections.abc import MutableMapping
+        except ImportError:
+            # TODO: remove when dropping python 2.7
+            from collections import MutableMapping
         class UnabridgedDict(MutableMapping):
             def __init__(self):
                 self.items = {}
