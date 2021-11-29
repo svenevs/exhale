@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 import codecs
 import os
 import textwrap
+from copy import deepcopy
 
 from exhale.graph import ExhaleNode
 from testing import get_exhale_root
@@ -375,6 +376,33 @@ class variable(node):  # noqa: N801
 ########################################################################################
 # Doxygen index test classes (proxies to exhale.graph.ExhaleRoot).                     #
 ########################################################################################
+def deep_copy_hierarchy_dict(spec):
+    """
+    Produce a deep copy of the input specification of a hierarchy dictionary.
+
+    **Parameters**
+        ``spec`` (:class:`python:dict`)
+            The input specification dictionary of the hierarchy.
+
+    **Returns**
+    A copy of the dictionary with new underlying objects.
+    """
+    def traverse_copy(t_spec):
+        if isinstance(t_spec, dict):
+            t_spec_copy = {}
+            for s in t_spec:
+                v = t_spec[s]
+                s_copy = deepcopy(s)
+                if isinstance(v, dict):
+                    t_spec_copy[s_copy] = traverse_copy(v)
+                else:
+                    t_spec_copy[s_copy] = deepcopy(v)
+            return t_spec_copy
+        else:
+            return deepcopy(t_spec)
+    return traverse_copy(spec)
+
+
 class root(object):  # noqa: N801
     """
     Represent a class or file hierarchy to simulate an :class:`exhale.graph.ExhaleRoot`.
@@ -417,7 +445,10 @@ class root(object):  # noqa: N801
         self.top_level  = []
 
         # Initialize from the specified hierarchy and construct the graph.
-        self._init_from(hierarchy)
+        # NOTE: a deep copy of hierarchy is needed so that if a test wants to
+        # examine multiple tests against the same hierarchy dict (cpp_nesting)
+        # the manipulations here do not alter the original nodes.
+        self._init_from(deep_copy_hierarchy_dict(hierarchy))
         self._reparent_all()
 
     def _init_from(self, hierarchy):

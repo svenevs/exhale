@@ -14,9 +14,8 @@ import os
 
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides, no_run
-from testing.hierarchies import                                       \
-    class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, \
-    directory, file, file_hierarchy, function, parameters
+from testing.hierarchies import                                                        \
+    class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, file_hierarchy
 
 
 class CMathsTests(ExhaleTestCase):
@@ -36,17 +35,8 @@ class CMathsTests(ExhaleTestCase):
 
     def test_hierarchies(self):
         """Verify the class and file hierarchies."""
-        # verify the file hierarchy and file declaration relationships
-        file_hierarchy_dict = {
-            directory("include"): {
-                file("c_maths.h"): {
-                    function("int", "cm_add"): parameters("int", "int"),
-                    function("int", "cm_sub"): parameters("int", "int")
-                }
-            }
-        }
-        compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict))
-        compare_class_hierarchy(self, class_hierarchy({}))
+        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
+        compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
 
 
 @no_run

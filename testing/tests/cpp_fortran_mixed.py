@@ -17,9 +17,7 @@ import re
 from testing import get_exhale_root
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
-from testing.hierarchies import                                                   \
-    compare_file_hierarchy, directory, file, file_hierarchy, function, namespace, \
-    parameters, variable
+from testing.hierarchies import compare_file_hierarchy, file_hierarchy
 
 
 @confoverrides(exhale_args={
@@ -56,37 +54,6 @@ class CPPFortranMixed(ExhaleTestCase):
     test_project = "cpp_fortran_mixed"
     """.. testproject:: cpp_fortran_mixed"""
 
-    file_hierarchy_dict = {
-        directory("include"): {
-            directory("convert"): {
-                file("convert.hpp"): {
-                    namespace("convert"): {
-                        function("T", "to_degrees", template=["typename T"]): parameters("T"),
-                        function("T", "to_radians", template=["typename T"]): parameters("T")
-                    }
-                }
-            }
-        },
-        directory("src"): {
-            file("conversions.f90"): {
-                namespace("conversions"): {
-                    variable("real(c_float)", "pi_s"): {},
-                    variable("real(c_double)", "pi_d"): {},
-                    variable("real(c_float)", "s_180"): {},
-                    variable("real(c_double)", "d_180"): {},
-                    # NOTE: function parameters in fortran are a little weird.
-                    # 1. <type> has 'function', e.g. 'real(c_float) function'
-                    # 2. Parameters are names, not types?
-                    function("real(c_float) function", "degrees_to_radians_s"): parameters("degrees_s"),
-                    function("real(c_double) function", "degrees_to_radians_d"): parameters("degrees_d"),
-                    function("real(c_float) function", "radians_to_degrees_s"): parameters("radians_s"),
-                    function("real(c_double) function", "radians_to_degrees_d"): parameters("radians_d")
-                }
-            }
-        }
-    }
-    """The file hierarchy for this project."""
-
     def test_hierarchies(self):
         """
         Validate the class and file hierarchies.
@@ -103,8 +70,8 @@ class CPPFortranMixed(ExhaleTestCase):
             the ``cpp_nesting`` project).
         """
         if platform.system() != "Windows":
-            compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict))
             # compare_class_hierarchy(self, class_hierarchy({}))
+            compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
 
     def validate_pygments_lexers(self, exhale_root, node_map):
         """
