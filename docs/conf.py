@@ -22,7 +22,7 @@ needs_sphinx = '2.0'
 
 # General information about the project.
 project = u'Exhale'
-copyright = u'2019, Stephen McDowell'
+copyright = u'2017-2021, Stephen McDowell'
 author = u'Stephen McDowell'
 
 # Add any Sphinx extension module names here, as strings. They can be
