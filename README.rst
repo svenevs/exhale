@@ -131,7 +131,9 @@ Exhale Version Compatibility with Python, Sphinx, and Breathe
 +----------------+----------------+----------------+-----------------+
 | Exhale Version | Python Version | Sphinx Version | Breathe Version |
 +================+================+================+=================+
-| 0.2.1-0.2.3    | 2.7, 3.3+      | >=1.6.1        | "Any"           |
+| 0.3.0          | 3.6+           | Undecided      | >=Next Release  |
++----------------+----------------+----------------+-----------------+
+| 0.2.1-0.2.4    | 2.7, 3.3+      | >=1.6.1        | "Any"           |
 +----------------+----------------+----------------+-----------------+
 | <=0.2.0        | 2.7, 3.3+      | >=1.0          | "Any"           |
 +----------------+----------------+----------------+-----------------+
@@ -157,8 +159,8 @@ Implications:
     exhale
 
 **Order matters**, namely that ``sphinx`` and ``breathe`` appear / are installed before
-``exhale``.  Exhale 0.* releases will continue support Python 2.7, but users need to be
-aware of the dependencies between Python, Sphinx, and Breathe versions.
+``exhale``.  Exhale 0.2.* releases support Python 2.7, but users need to be aware of the
+dependencies between Python, Sphinx, and Breathe versions.
 
 .. end_version_compatibility
 
