@@ -39,6 +39,12 @@ Project Tests
 .. automodule:: testing.tests.cpp_long_names
    :members:
 
+``cpp_dir_underscores``
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.tests.cpp_dir_underscores
+   :members:
+
 ``cpp_nesting``
 ----------------------------------------------------------------------------------------
 
