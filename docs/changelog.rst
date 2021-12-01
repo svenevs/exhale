@@ -19,6 +19,7 @@ v0.2.4
       `@clalancette <https://github.com/clalancette>`_ for their efforts in improving
       the doxygen-breathe-exhale-sphinx ecosystem (and consequently, encouraging me to
       resume work on this project).
+- Escape ``*`` in template page titles (:pr:`118`).
 
 v0.2.3
 ----------------------------------------------------------------------------------------
