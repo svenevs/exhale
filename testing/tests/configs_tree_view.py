@@ -279,7 +279,7 @@ file_hierarchy_ground_truth = {
                     Directory <a href="dir_include_nested.html#dir-include-nested">nested</a>
                     <ul>
                     <li>
-                        Directory <a href="dir_include_nested_dual_nested.html#dir-include-nested-dual-nested">nested</a>
+                        Directory <a href="dir_include_nested_dual_nested.html#dir-include-nested-dual-nested">dual_nested</a>
                         <ul>
                         <li>
                             Directory <a href="dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one">one</a>
@@ -337,7 +337,7 @@ file_hierarchy_ground_truth = {
 
                     nodes: [
                     {
-                        text: "<span class=\"text-muted\">Directory</span> nested",
+                        text: "<span class=\"text-muted\">Directory</span> dual_nested",
                         href: "dir_include_nested_dual_nested.html#dir-include-nested-dual-nested",
                         selectable: false,
                         tags: ['2'],

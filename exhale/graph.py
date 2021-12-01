@@ -2378,7 +2378,8 @@ class ExhaleRoot(object):
             if node.kind == "namespace":
                 title = node.name.split("::")[-1]
             else:
-                title = os.path.basename(unique_id.replace("_", os.sep))
+                # NOTE: for files, node.name := basename(node.location) aka don't matter
+                title = os.path.basename(node.name)
         else:
             unique_id = node.refid
 

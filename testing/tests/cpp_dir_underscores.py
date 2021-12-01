@@ -30,7 +30,7 @@ class CPPDirUnderscores(ExhaleTestCase):
         compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
         compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
 
-    def check_title_link(self, name_map, node_map):
+    def check_title_link(self, name_map, node_map, t_type):
         """
         Verify the ``title`` and ``link_name`` of the specified nodes.
 
@@ -45,24 +45,30 @@ class CPPDirUnderscores(ExhaleTestCase):
 
             ``node_map`` : :class:`python:dict`
                 Mapping of "dirname/filename" => ExhaleNode objects
+
+            ``t_type`` : :class:`python:str`
+                For formatting the error message.  Should be ``"file"`` or
+                ``"directory"``.
         """
         for name, (title, link_name) in name_map.items():
             node = node_map[name]
             self.assertTrue(
                 node.title == title,
                 (
-                    "Wrong title for file {name}!  Expected {title}, but got "
+                    "Wrong title for {t_type} {name}!  Expected {title}, but got "
                     "{node_title}"
                 ).format(
+                    t_type=t_type,
                     name=node.name,
                     title=title,
                     node_title=node.title))
             self.assertTrue(
                 node.link_name == link_name,
                 (
-                    "Wrong link_name for file {name}!  Expected {link_name}, but got "
-                    "{node_link_name}"
+                    "Wrong link_name for {t_type} {name}!  Expected {link_name}, but "
+                    "got {node_link_name}"
                 ).format(
+                    t_type=t_type,
                     name=node.name,
                     link_name=link_name,
                     node_link_name=node.link_name))
@@ -100,7 +106,7 @@ class CPPDirUnderscores(ExhaleTestCase):
         node_map = {
             f.name: f for f in self.app.exhale_root.all_nodes if f.kind == "file"
         }
-        self.check_title_link(f_map, node_map)
+        self.check_title_link(f_map, node_map, "file")
 
     def test_directories(self):
         """Verify that file nodes have correct title and link."""
@@ -128,7 +134,7 @@ class CPPDirUnderscores(ExhaleTestCase):
                 "dir_include_interface_alpha___four_five_six__"
             ],
             "interface_beta": [
-                "Directory beta",
+                "Directory interface_beta",
                 "dir_include_interface_beta"
             ]
         }
@@ -137,4 +143,4 @@ class CPPDirUnderscores(ExhaleTestCase):
             os.path.basename(d.name): d
             for d in self.app.exhale_root.all_nodes if d.kind == "dir"
         }
-        self.check_title_link(d_map, node_map)
+        self.check_title_link(d_map, node_map, "directory")

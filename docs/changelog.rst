@@ -20,6 +20,7 @@ v0.2.4
       the doxygen-breathe-exhale-sphinx ecosystem (and consequently, encouraging me to
       resume work on this project).
 - Escape ``*`` in template page titles (:pr:`118`).
+- Fix titles / links for directories with underscores (:pr:`127`).
 
 v0.2.3
 ----------------------------------------------------------------------------------------
