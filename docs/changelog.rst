@@ -13,6 +13,12 @@ v0.2.4
 - Use the correct PyPI name ``beautifulsoup4`` rather than ``bs4`` (:pr:`120`).
 - Fix deprecated ``MutableMapping`` import for python 3.10 support (:pr:`124`).
 - Enable parallel builds (use the right ``setup`` function...) (:pr:`126`).
+- Add support for ``.. doxygenpage::`` (:pr:`114`).  **Huge** thanks to:
+    - `@hidmic <https://github.com/hidmic>`_ for the initial implementiation, and
+    - `@2bndy5 <https://github.com/2bndy5>`_ and
+      `@clalancette <https://github.com/clalancette>`_ for their efforts in improving
+      the doxygen-breathe-exhale-sphinx ecosystem (and consequently, encouraging me to
+      resume work on this project).
 
 v0.2.3
 ----------------------------------------------------------------------------------------
