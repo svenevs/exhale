@@ -91,12 +91,16 @@ Users must provide the following values to ``exhale_args`` in their ``conf.py``.
 
 .. autodata:: exhale.configs.rootFileName
 
-.. autodata:: exhale.configs.rootFileTitle
-
 .. autodata:: exhale.configs.doxygenStripFromPath
 
 Optional Configuration Arguments
 ----------------------------------------------------------------------------------------
+
+Heavily Encouraged Optional Configuration
+****************************************************************************************
+
+.. autodata:: exhale.configs.rootFileTitle
+
 
 Build Process Logging, Colors, and Debugging
 ****************************************************************************************
@@ -120,34 +124,56 @@ that you will link to from your documentation is laid out as follows:
     +============+====================================================+================+
     | **2**      | {{ afterTitleDescription }}                        | Section 1      |
     +------------+----------------------------------------------------+----------------+
-    | **3**      | Class Hierarchy                                    | Section 2      |
+    | **3**      | Page Hierarchy                                     | Section 2      |
     +------------+----------------------------------------------------+----------------+
-    | **4**      | File Hierarchy                                     | Section 3      |
+    | **4**      | Class Hierarchy                                    | Section 3      |
     +------------+----------------------------------------------------+----------------+
-    | **5**      | {{ afterHierarchyDescription }}                    | Section 4      |
+    | **5**      | File Hierarchy                                     | Section 4      |
     +------------+----------------------------------------------------+----------------+
-    | **6**      | {{ fullApiSubSectionTitle }}                       | Section 5      |
+    | **6**      | {{ afterHierarchyDescription }}                    | Section 5      |
     +------------+----------------------------------------------------+----------------+
-    | **7**      | Unabridged API                                     | Section 6      |
+    | **7**      | {{ fullApiSubSectionTitle }}                       | Section 6      |
     +------------+----------------------------------------------------+----------------+
-    | **8**      | {{ afterBodySummary }}                             | Section 7      |
+    | **8**      | Unabridged API                                     | Section 7      |
+    +------------+----------------------------------------------------+----------------+
+    | **9**      | {{ afterBodySummary }}                             | Section 8      |
     +------------+----------------------------------------------------+----------------+
 
-1. The title of the document will be the *required* key to ``"rootFileTitle"`` given to
-   ``exhale_args`` in ``conf.py``.  See :data:`~exhale.configs.rootFileTitle`.
+1. The title of the document will be the key to ``"rootFileTitle"`` given to
+   ``exhale_args`` in ``conf.py`` **unless** the ``\mainpage`` command is being used
+   on the doxygen side.  See :data:`~exhale.configs.rootFileTitle`.
 
 2. If provided, the value of the key ``"afterTitleDescription"`` given to
    ``exhale_args`` will be included.  See :data:`~exhale.configs.afterTitleDescription`.
 
-3. The Class Hierarchy will be included next.  By default this is a bulleted list; see
-   the :ref:`usage_creating_the_treeview` section.
+3. The Page Hierarchy will be included.  This section is only included if the project is
+   using the ``\page`` / ``\subpage`` doxygen commands in its documentation.  If those
+   commands are not present, this section is not included.  By default this is a
+   bulleted list; see the :ref:`usage_creating_the_treeview` section. The default title
+   for this section is ``"Page Hierarchy"``, but can be changed using the key
+   ``"pageHierarchySubSectionTitle"`` in ``exhale_args``.  See
+   :data:`~exhale.configs.pageHierarchySubSectionTitle`.
+
+   .. note::
+
+      This is performed by an ``.. include::`` directive.  The file for this section
+      is ``"{containmentFolder}/page_view_hierarchy.rst"``.
+
+   .. tip::
+
+      Please also see the documentation for :data:`~exhale.configs.rootFileTitle`.
+
+4. Next, the Class Hierarchy is included.  If no class-like compounds are documented in
+   the project (e.g., only free-standing functions), this section will not be included.
+   By default this is a bulleted list; see the :ref:`usage_creating_the_treeview`
+   section.
 
    .. note::
 
       This is performed by an ``.. include::`` directive.  The file for this section
       is ``"{containmentFolder}/class_view_hierarchy.rst"``.
 
-4. Next, the File Hierarchy is included.  By default this is a bulleted list; see the
+5. Next, the File Hierarchy is included.  By default this is a bulleted list; see the
    :ref:`usage_creating_the_treeview` section.
 
    .. note::
@@ -155,16 +181,16 @@ that you will link to from your documentation is laid out as follows:
       This is performed by an ``.. include::`` directive.  The file for this section
       is ``"{containmentFolder}/file_view_hierarchy.rst"``.
 
-5. If provided, the value of the key ``"afterHierarchyDescription"`` given to
+6. If provided, the value of the key ``"afterHierarchyDescription"`` given to
    ``exhale_args`` will be included.  See
    :data:`~exhale.configs.afterHierarchyDescription`.
 
-6. After the Class and File Hierarchies, the unabridged API index is generated.  The
+7. After the Class and File Hierarchies, the unabridged API index is generated.  The
    default title for this section is ``"Full API"``, but can be changed using the key
    ``"fullApiSubSectionTitle"`` in ``exhale_args``.  See
    :data:`~exhale.configs.fullApiSubSectionTitle`.
 
-7. After the title or default value for (6), the full API is included.  This includes
+8. After the title or default value for (6), the full API is included.  This includes
    links to things such as defines, functions, typedefs, etc. that are not included in
    the hierarchies.
 
@@ -185,12 +211,12 @@ that you will link to from your documentation is laid out as follows:
       Use :data:`~exhale.configs.unabridgedOrphanKinds` to exclude entire sections from
       the full API listing.
 
-8. If provided, the value of the key ``"afterBodySummary"`` will be included at the
+9. If provided, the value of the key ``"afterBodySummary"`` will be included at the
    bottom of the document.  See :data:`~exhale.configs.afterBodySummary`.
 
 .. tip::
 
-   Where numbers (3), (4), and (7) are concerned, you should be able to happily ignore
+   Where numbers (4), (5), and (8) are concerned, you should be able to happily ignore
    that an ``.. include::`` is being performed.  The URL for the page is strictly
    determined by what you specified with the *required* arguments
    ``"containmentFolder"`` and ``"rootFileName"``.  However, if things are not working
@@ -201,6 +227,8 @@ that you will link to from your documentation is laid out as follows:
 .. end_root_api_document_layout
 
 .. autodata:: exhale.configs.afterTitleDescription
+
+.. autodata:: exhale.configs.pageHierarchySubSectionTitle
 
 .. autodata:: exhale.configs.afterHierarchyDescription
 
@@ -294,10 +322,13 @@ Neither library should produce any legal gray areas for you, but I'm not a lawye
 
 .. autodata:: exhale.configs._file_hierarchy_id
 
+.. autodata:: exhale.configs._page_hierarchy_id
+
 .. autodata:: exhale.configs._bstrap_class_hierarchy_fn_data_name
 
 .. autodata:: exhale.configs._bstrap_file_hierarchy_fn_data_name
 
+.. autodata:: exhale.configs._bstrap_page_hierarchy_fn_data_name
 
 Page Level Customization
 ****************************************************************************************

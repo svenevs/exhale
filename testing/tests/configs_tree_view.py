@@ -438,6 +438,12 @@ Keys and what they represent:
 """
 
 
+# NOTE: See cpp_nesting.CPPNestingPages.{setUp,tearDown} (creates page_town_rock.hpp).
+@confoverrides(exhale_args={
+    "exhaleDoxygenStdin": dedent("""\
+        INPUT            = ../include
+        EXCLUDE_PATTERNS = */page_town_rock*.hpp
+    """)})
 class TreeViewHierarchyTests(ExhaleTestCase):
     """
     Naive tests on raw "reStructuredText" generated for tree views.

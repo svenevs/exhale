@@ -137,24 +137,6 @@ rootFileName = None
        </div>
 '''
 
-rootFileTitle = None
-'''
-**Required**
-    The title to be written at the top of ``rootFileName``, which will appear in your
-    file including it in the ``toctree`` directive.
-
-**Value in** ``exhale_args`` (str)
-    The value of the key ``"rootFileTitle"`` should be a string that has the title of
-    the main library root document folder Exhale will be generating.  The user is
-    required to supply this value because its value directly affects the overall
-    presentation of your documentation.  For example, if you are including the Exhale
-    generated library root file in your ``index.rst`` top-level ``toctree`` directive,
-    the title you supply here will show up on both your main page, as well as in the
-    navigation menus.
-
-    An example value could be ``"Library API"``.
-'''
-
 doxygenStripFromPath = None
 '''
 **Required**
@@ -215,6 +197,40 @@ doxygenStripFromPath = None
 ##                                                                                     #
 ## Additional configurations available to further customize the output of exhale.      #
 ##                                                                                     #
+########################################################################################
+# Heavily Encouraged Optional Configuration                                            #
+########################################################################################
+rootFileTitle = None
+r'''
+**Optional**
+    The title to be written at the top of ``rootFileName``, which will appear in your
+    file including it in the ``toctree`` directive.
+
+**Value in** ``exhale_args`` (str)
+    The value of the key ``"rootFileTitle"`` should be a string that has the title of
+    the main library root document folder Exhale will be generating. For example, if
+    you are including the Exhale generated library root file in your ``index.rst``
+    top-level ``toctree`` directive, the title you supply here will show up on both
+    your main page, as well as in the navigation menus.
+
+    An example value could be ``"Library API"``.
+
+.. danger::
+
+    If you are **not** using doxygen pages (``\mainpage``, ``\page``, and/or
+    ``\subpage`` commands), then you need to include this argument!  Exhale does not
+    have the ability to detect whether or not your project needs this.
+
+    **If** ``\mainpage`` **is used:**
+        The title is set to the ``\mainpage`` title unconditionally.
+    **Otherwise:**
+        The title is set to ``"rootFileTitle"`` (this config).
+
+    Since :data:`~exhale.configs.rootFileName` is ultimately going to be included in a
+    ``.. toctree::`` directive, this document needs a title in some way.  Projects
+    utilizing the ``\mainpage`` command should not be required to duplicate this title,
+    projects **not** using this command **need to supply a title**.
+'''
 ########################################################################################
 # Build Process Logging, Colors, and Debugging                                         #
 ########################################################################################
@@ -317,6 +333,16 @@ afterTitleDescription = None
               Python or may perform different actions.
            \'\'\')
        }
+'''
+
+pageHierarchySubSectionTitle = "Page Hierarchy"
+'''
+**Optional**
+    The title for the subsection that comes before the Page hierarchy.
+
+**Value in** ``exhale_args`` (str)
+    The default value is simply ``"Page Hierarchy"``.  Change this to be something else if you
+    so desire.
 '''
 
 afterHierarchyDescription = None
@@ -433,7 +459,7 @@ listingExclude = []
 # TODO: moves into config object
 _compiled_listing_exclude = []
 
-unabridgedOrphanKinds = {"dir", "file"}
+unabridgedOrphanKinds = {"dir", "file", "page"}
 """
 **Optional**
     The list of node kinds to **exclude** from the unabridged API listing beneath the
@@ -441,10 +467,11 @@ unabridgedOrphanKinds = {"dir", "file"}
 
 **Value in** ``exhale_args`` (list or set of strings)
     The list of kinds (see :data:`~exhale.utils.AVAILABLE_KINDS`) that will **not** be
-    included in the unabridged API listing.  The default is to exclude directories and
-    files (which are already in the file hierarchy).  Note that if this variable is
-    provided, it will overwrite the default  ``{"dir", "file"}``, meaning if you want
-    to exclude something in addition you need to include ``"dir"`` and ``"file"``:
+    included in the unabridged API listing.  The default is to exclude pages (which are
+    already in the page hierarhcy), directories and files (which are already in the file
+    hierarchy).  Note that if this variable is provided, it will overwrite the default
+    ``{"dir", "file", "page"}``, meaning if you want to exclude something in addition
+    you need to include ``"page"``,  ``"dir"``, and ``"file"``:
 
     .. code-block:: py
 
@@ -452,8 +479,8 @@ unabridgedOrphanKinds = {"dir", "file"}
         exhale_args = {
             # Case 1: _only_ exclude union
             "unabridgedOrphanKinds": {"union"}
-            # Case 2: exclude union in addition to dir / file.
-            "unabridgedOrphanKinds": {"dir", "file", "union"}
+            # Case 2: exclude union in addition to dir / file / page.
+            "unabridgedOrphanKinds": {"dir", "file", "page", union"}
         }
 
     .. tip::
@@ -716,6 +743,17 @@ The ``id`` attribute of the HTML element associated with the **Class** Hierarchy
    anchor point for the ``bootstrap-treeview`` library.
 '''
 
+_page_hierarchy_id = "page-treeView"
+'''
+The ``id`` attribute of the HTML element associated with the **Page** Hierarchy when
+:data:`~exhale.configs.createTreeView` is ``True``.
+
+1. When :data:`~exhale.configs.treeViewIsBootstrap` is ``False``, this ``id`` is attached
+   to the outer-most ``ul``.
+2. For bootstrap, an empty ``div`` is inserted with this ``id``, which will be the
+   anchor point for the ``bootstrap-treeview`` library.
+'''
+
 _bstrap_class_hierarchy_fn_data_name = "getClassHierarchyTree"
 '''
 The name of the JavaScript function that returns the ``json`` data associated with the
@@ -727,6 +765,13 @@ _bstrap_file_hierarchy_fn_data_name = "getFileHierarchyTree"
 '''
 The name of the JavaScript function that returns the ``json`` data associated with the
 **File** Hierarchy when :data:`~exhale.configs.createTreeView` is ``True`` **and**
+:data:`~exhale.configs.treeViewIsBootstrap` is ``True``.
+'''
+
+_bstrap_page_hierarchy_fn_data_name = "getPageHierarchyTree"
+'''
+The name of the JavaScript function that returns the ``json`` data associated with the
+**Page** Hierarchy when :data:`~exhale.configs.createTreeView` is ``True`` **and**
 :data:`~exhale.configs.treeViewIsBootstrap` is ``True``.
 '''
 
@@ -1310,7 +1355,6 @@ def apply_sphinx_configurations(app):
     req_kv = [
         ("containmentFolder",    six.string_types,  True),
         ("rootFileName",         six.string_types, False),
-        ("rootFileTitle",        six.string_types, False),
         ("doxygenStripFromPath", six.string_types,  True)
     ]
     for key, expected_type, make_absolute in req_kv:
@@ -1402,12 +1446,14 @@ def apply_sphinx_configurations(app):
     ####################################################################################
     # TODO: `list` -> `(list, tuple)`, update docs too.
     opt_kv = [
+        ("rootFileTitle",                   six.string_types),
         # Build Process Logging, Colors, and Debugging
         ("verboseBuild",                                bool),
         ("alwaysColorize",                              bool),
         ("generateBreatheFileDirectives",               bool),
         # Root API Document Customization and Treeview
         ("afterTitleDescription",           six.string_types),
+        ("pageHierarchySubSectionTitle",    six.string_types),
         ("afterHierarchyDescription",       six.string_types),
         ("fullApiSubSectionTitle",          six.string_types),
         ("afterBodySummary",                six.string_types),

@@ -461,14 +461,15 @@ class ExhaleTestCase(unittest.TestCase):
         root = get_exhale_root(self)
         containmentFolder = self.getAbsContainmentFolder()
         for node in root.all_nodes:
-            if node.kind not in ["enumvalue", "group"]:
-                gen_file_path = os.path.join(containmentFolder, node.file_name)
-                self.assertTrue(
-                    os.path.isfile(gen_file_path),
-                    "File for {kind} node with refid=[{refid}] not generated to [{gen_file_path}]!".format(
-                        kind=node.kind, refid=node.refid, gen_file_path=gen_file_path
-                    )
+            if node.kind in ["enumvalue", "group"]:
+                continue
+            gen_file_path = os.path.join(containmentFolder, node.file_name)
+            self.assertTrue(
+                os.path.isfile(gen_file_path),
+                "File for {kind} node with refid=[{refid}] not generated to [{gen_file_path}]!".format(
+                    kind=node.kind, refid=node.refid, gen_file_path=gen_file_path
                 )
+            )
 
     def checkAllFilesIncluded(self):
         """
@@ -508,8 +509,16 @@ class ExhaleTestCase(unittest.TestCase):
                         orphan_toctrees.append(line.strip())
 
         # Scan all nodes and make sure they were found in the toctrees above.
+        doxygen_mainpage_was_used = False
         for node in root.all_nodes:
             if node.kind in {"enumvalue", "group"}:
+                continue
+
+            # When doxygen \mainpage command is used, the .. doxygenpage:: index
+            # is .. include::'ed in the root file document.  Those checks come
+            # after this loop.
+            if node.kind == "page" and node.refid == "indexpage":
+                doxygen_mainpage_was_used = True
                 continue
 
             if node.kind in unabridgedOrphanKinds or \
@@ -527,6 +536,61 @@ class ExhaleTestCase(unittest.TestCase):
                     refid=node.refid, file_name=node.file_name, doc=doc
                 )
             )
+
+        # Make sure every document expected to be .. include::'ed in the library root
+        # has actually been included.
+        full_root_file_path = root.full_root_file_path
+        root_file_includes = []
+        with open(full_root_file_path, "r") as full_root_f:
+            for line in full_root_f:
+                include_mark = ".. include::"
+                if line.startswith(include_mark):
+                    root_file_includes.append(line.split(include_mark)[-1].strip())
+
+        index_include = False  # page_index.rst comes from doxygen \mainpage
+        page_hierarchy_include = False  # page_view_hierarchy.rst
+        class_hierarchy_include = False  # class_view_hierarchy.rst
+        file_hierarchy_include = False  # file_view_hierarchy.rst
+        unabridged_api_include = True  # unabridged_api.rst.  Always included.
+        orphan_api_include = False  # unabridged_orphan.rst.  Never included.
+        for node in root.all_nodes:
+            if node.kind == "page":
+                if node.refid == "indexpage":
+                    index_include = True
+                else:
+                    page_hierarchy_include = True
+            elif node.kind in exhale.utils.CLASS_LIKE_KINDS:
+                class_hierarchy_include = True
+            elif node.kind in {"dir", "file"}:
+                file_hierarchy_include = True
+
+        self.assertTrue(
+            doxygen_mainpage_was_used == index_include,
+            "Mismatch: doxygen_mainpage_was_used != index_include!")
+
+        include_map = {
+            "page_index.rst": index_include,
+            os.path.basename(root.page_hierarchy_file): page_hierarchy_include,
+            os.path.basename(root.class_hierarchy_file): class_hierarchy_include,
+            os.path.basename(root.file_hierarchy_file): file_hierarchy_include,
+            os.path.basename(root.unabridged_api_file): unabridged_api_include,
+            os.path.basename(root.unabridged_orphan_file): orphan_api_include
+        }
+        root_file_base = os.path.basename(full_root_file_path)
+        for key, val in include_map.items():
+            if val:
+                check = getattr(self, "assertTrue")
+                msg = "*WAS* expected in {root_file_base}, but was *NOT* found!".format(
+                    root_file_base=root_file_base
+                )
+            else:
+                check = getattr(self, "assertFalse")
+                msg = "was *NOT* expected in {root_file_base}, but *WAS* found!".format(
+                    root_file_base=root_file_base
+                )
+            check(
+                key in root_file_includes,
+                "Page '{key}' {msg}".format(key=key, msg=msg))
 
         # Some tests may want the toctree names afterward.
         return full_api_toctrees, orphan_toctrees
