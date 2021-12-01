@@ -2487,7 +2487,8 @@ class ExhaleRoot(object):
                 title=title
             )
         if node.template_params or template_special:
-            node.title = "Template {title}".format(title=node.title)
+            node.title = "Template {title}".format(
+                title=node.title.replace('*', '\*'))
 
     def adjustFunctionTitles(self):
         # keys: string (func.name)
