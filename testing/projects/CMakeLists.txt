@@ -118,6 +118,7 @@ set(EXHALE_PROJECTS
   c_maths
   cpp_func_overloads
   cpp_long_names
+  cpp_dir_underscores
   cpp_nesting
   cpp_pimpl
   "cpp with spaces"
