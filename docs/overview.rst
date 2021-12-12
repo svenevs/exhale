@@ -5,8 +5,8 @@ Overview
 
 Exhale is an automatic C++ library API generation utility.  It attempts to port the
 Doxygen hierarchy view presentations for classes and files into the Sphinx domain.  See
-the :ref:`usage_quickstart_guide` for the bare minimum you need to give to integrate it
-into your project.
+the :ref:`quickstart_guide` for the bare minimum you need to give to integrate it into
+your project.
 
 What does it do?
 ----------------------------------------------------------------------------------------
@@ -73,4 +73,4 @@ list is more like this:
    documentation, Exhale requires you to make these arguments explicitly so you are
    conscious of where they are getting put.
 
-See the :ref:`usage_quickstart_guide` for getting everything up and running.
+See the :ref:`quickstart_guide` for getting everything up and running.

@@ -16,11 +16,11 @@ what you need is:
    :local:
    :backlinks: none
 
-.. _usage_quickstart_guide:
+.. tip::
 
-.. include:: ../README.rst
-   :start-after: begin_quickstart_guide
-   :end-before:  end_quickstart_guide
+    Don't know how to get started?  That's ok!  There's a lot of tools involved here,
+    and it can be quite confusing to know what's what.  Please see the
+    :ref:`quickstart_guide` for getting started with Sphinx, Breathe, and Exhale.
 
 .. _usage_advanced_usage:
 
@@ -70,7 +70,7 @@ Suggested reStructuredText Linking Strategy
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Assuming you have set ``primary_domain = 'cpp'`` (as shown in the
-:ref:`usage_quickstart_guide`), you should be able to use the linking strategies
+:ref:`quickstart_guide`), you should be able to use the linking strategies
 `provided by Sphinx itself`__ *without* needing to prefix everything with ``cpp:``.
 Some examples:
 
@@ -346,7 +346,7 @@ Executing Doxygen Independently
 ****************************************************************************************
 
 This is another option, just make sure that Doxygen is run **before** Exhale is.  See
-the note at the bottom of the :ref:`usage_quickstart_guide`.
+the note at the bottom of the :ref:`quickstart_guide`.
 
 .. _doxygen_documentaion_specifics:
 
@@ -444,7 +444,7 @@ Now we are ready to begin.
 
       $ ~/my_repo/docs> echo 'exhale' > requirements.txt
 
-4. Follow the :ref:`usage_quickstart_guide`.
+4. Follow the :ref:`quickstart_guide`.
 
 5. Edit ``conf.py`` to use the RTD Theme or whichever theme you like.  From the RTD
    Theme README, you would do
@@ -482,7 +482,7 @@ add the ``_build`` directory to your git repository.
 
       docs/_build
       # wherever you told breathe_projects to look
-      docs/doxyoutput
+      docs/_doxygen
       # wherever you told Exhale containmentFolder is
       docs/api
 

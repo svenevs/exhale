@@ -220,6 +220,12 @@ htmlhelp_basename = 'ExhaleDoc'
 
 
 def setup(app):
+    # https://github.com/sphinx-doc/sphinx/issues/5562#issuecomment-434296574
+    # So that I can link to e.g., :ref:`sphinx:html_static_path` confval.
+    app.add_object_type('confval', 'confval',
+                        objname='configuration value',
+                        indextemplate='pair: %s; configuration value')
+
     # Style overrides.  See _static/custom.css.
     app.add_css_file("custom.css")
 

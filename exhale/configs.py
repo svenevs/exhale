@@ -959,8 +959,8 @@ inserted to help enforce that Exhale made the dictionary going into
 _doxygen_xml_output_directory = None
 '''
 The absolute path the the root level of the doxygen xml output.  If the path to the
-``index.xml`` file created by doxygen was ``./doxyoutput/xml/index.xml``, then this
-would simply be ``./doxyoutput/xml``.
+``index.xml`` file created by doxygen was ``./_doxygen/xml/index.xml``, then this would
+simply be ``./_doxygen/xml``.
 
 .. note::
 

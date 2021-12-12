@@ -102,9 +102,9 @@ started.
 
 ``OUTPUT_DIRECTORY = ./a/different/path``
     This tells Doxygen where to store the output of the documentation it is generating.
-    Supposing you specified ``OUTPUT_DIRECTORY = ./doxyoutput``, and you specified to
+    Supposing you specified ``OUTPUT_DIRECTORY = ./_doxygen``, and you specified to
     Doxygen ``GENERATE_HTML = YES``, ``GENERATE_LATEX = YES``, and
-    ``GENERATE_XML = YES``, it would create the folder ``./doxyoutput``, with
+    ``GENERATE_XML = YES``, it would create the folder ``./_doxygen``, with
     subdirectories such as ``html`` or ``xml``.
 
     For Exhale, since you already needed to supply the path to the ``xml`` output
