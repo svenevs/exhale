@@ -6,9 +6,6 @@
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 
-import os
-import sys
-
 # NOTE: full `setuptools` is required for this project
 from setuptools import find_packages, setup
 setup(
