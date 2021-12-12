@@ -221,7 +221,7 @@ htmlhelp_basename = 'ExhaleDoc'
 
 def setup(app):
     # https://github.com/sphinx-doc/sphinx/issues/5562#issuecomment-434296574
-    # So that I can link to e.g., :ref:`sphinx:html_static_path` confval.
+    # So that I can link to e.g., :confval:`sphinx:html_static_path`.
     app.add_object_type('confval', 'confval',
                         objname='configuration value',
                         indextemplate='pair: %s; configuration value')
