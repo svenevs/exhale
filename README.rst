@@ -150,13 +150,13 @@ If you need python 3.5 support, pin your documentation requirements to::
 
     sphinx>=2.0
     breathe>=4.13.0
-    exhale
+    exhale<0.3.0
 
 For Python 2.7, you should pin your documentation requirements to::
 
     sphinx==1.8.5
     breathe==4.12.0
-    exhale
+    exhale<0.3.0
 
 **Order matters**, namely that ``sphinx`` and ``breathe`` appear / are installed before
 ``exhale``.  Exhale 0.2.* releases support Python 2.7, but users need to be aware of the
