@@ -398,6 +398,8 @@ class ExhaleNode(object):
 
             # Create the link, if possible
             # TODO: how to do intersphinx links here?
+            # NOTE: refid is *NOT* guaranteed to be in nodeByRefid
+            #       https://github.com/svenevs/exhale/pull/103
             if refid and refid in nodeByRefid:
                 # TODO: why are these links not working????????????????????????????????
                 ###########flake8breaks :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/ :/
