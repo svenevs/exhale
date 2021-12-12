@@ -1,9 +1,0 @@
-# See: http://docs.readthedocs.io/en/latest/yaml-config.html
-# Only build html and json
-formats:
-    - none
-
-requirements_file: requirements-docs.txt
-python:
-    version: 3
-    pip_install: true

@@ -1,49 +1,25 @@
-Exhale
-========================================================================================
-
 .. include:: ../README.rst
-   :start-after: begin_exhale_brief_desc
-   :end-before:  end_exhale_brief_desc
+   :end-before: end_intro
 
-.. include:: ../README.rst
-   :start-after: begin_exhale_long_desc
-   :end-before:  end_exhale_long_desc
+Please read the :ref:`overview` section if you are new to documenting code with either
+Doxygen, Sphinx, or Breathe.  A :ref:`quickstart_guide` gives the bare minimum needed to
+get things working.
 
 .. contents:: Contents
    :local:
    :backlinks: none
 
-See it in Action
+.. include:: ../README.rst
+   :start-after: _is_it_for_me:
+
+Full Documentation
 ----------------------------------------------------------------------------------------
-
-.. include:: ../README.rst
-   :start-after: begin_in_action
-   :end-before:  end_in_action
-
-.. include:: ../README.rst
-   :start-after: begin_installation
-   :end-before:  end_installation
-
-.. include:: ../README.rst
-   :start-after: begin_version_compatibility
-   :end-before: end_version_compatibility
-
-Getting Started
-----------------------------------------------------------------------------------------
-
-A :ref:`usage_quickstart_guide` gives the bare minimum needed to get things working,
-please read the :ref:`overview` section if you are new to documenting code with either
-Doxygen, Sphinx, or Breathe.
-
-.. tip::
-   .. include:: ../README.rst
-      :start-after: begin_exhale_is_it_for_me
-      :end-before:  end_exhale_is_it_for_me
 
 .. toctree::
    :maxdepth: 2
 
    overview
+   quickstart
    usage
    reference
    mastering_doxygen
@@ -51,18 +27,3 @@ Doxygen, Sphinx, or Breathe.
    testing
    todo
    changelog
-
-.. _index_credit:
-
-Credit
-========================================================================================
-
-.. include:: ../README.rst
-   :start-after: begin_credit
-   :end-before:  end_credit
-
-Legacy
-========================================================================================
-
-Legacy documentation is `available here <http://exhale.readthedocs.io/en/legacy_docs/>`_
-for if you chanced upon this library when it was a single file.

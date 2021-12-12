@@ -16,11 +16,11 @@ what you need is:
    :local:
    :backlinks: none
 
-.. _usage_quickstart_guide:
+.. tip::
 
-.. include:: ../README.rst
-   :start-after: begin_quickstart_guide
-   :end-before:  end_quickstart_guide
+    Don't know how to get started?  That's ok!  There's a lot of tools involved here,
+    and it can be quite confusing to know what's what.  Please see the
+    :ref:`quickstart_guide` for getting started with Sphinx, Breathe, and Exhale.
 
 .. _usage_advanced_usage:
 
@@ -70,7 +70,7 @@ Suggested reStructuredText Linking Strategy
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Assuming you have set ``primary_domain = 'cpp'`` (as shown in the
-:ref:`usage_quickstart_guide`), you should be able to use the linking strategies
+:ref:`quickstart_guide`), you should be able to use the linking strategies
 `provided by Sphinx itself`__ *without* needing to prefix everything with ``cpp:``.
 Some examples:
 
@@ -346,7 +346,7 @@ Executing Doxygen Independently
 ****************************************************************************************
 
 This is another option, just make sure that Doxygen is run **before** Exhale is.  See
-the note at the bottom of the :ref:`usage_quickstart_guide`.
+the note at the bottom of the :ref:`quickstart_guide`.
 
 .. _doxygen_documentaion_specifics:
 
@@ -393,98 +393,3 @@ section.
 .. _cross: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#cross-referencing-syntax
 
 .. _intersphinx: http://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
-
-
-Start to finish for Read the Docs
-----------------------------------------------------------------------------------------
-
-Assuming you already had the code that you are generating the API for documented,
-navigate to the top-level folder of your repository.  Read the Docs (RTD) will be
-looking for a folder named either ``doc`` or ``docs`` at the root of your repository
-by default::
-
-    $ cd ~/my_repo/
-    $ mkdir docs
-
-Now we are ready to begin.
-
-1. Generate your sphinx code by using the ``sphinx-quickstart`` utility.  It may look
-   something like the following:
-
-   .. code-block:: console
-
-      $ ~/my_repo/docs> sphinx-quickstart
-      Welcome to the Sphinx 1.6.3 quickstart utility.
-
-      Please enter values for the following settings (just press Enter to
-      accept a default value, if one is given in brackets).
-
-      Enter the root path for documentation.
-      > Root path for the documentation [.]:
-
-      You have two options for placing the build directory for Sphinx output.
-      Either, you use a directory "_build" within the root path, or you separate
-      "source" and "build" directories within the root path.
-      > Separate source and build directories (y/n) [n]:
-
-      Inside the root directory, two more directories will be created; "_templates"
-      for custom HTML templates and "_static" for custom stylesheets and other static
-      files. You can enter another prefix (such as ".") to replace the underscore.
-      > Name prefix for templates and static dir [_]:
-
-      ... and a whole lot more ...
-
-2. This will create the files ``conf.py``, ``index.rst``, ``Makefile``, and ``make.bat``
-   if you are supporting Windows.  It will also create the directories ``_static`` and
-   ``_templates`` for customizing the sphinx output.
-
-3. Create a ``requirements.txt`` file with the line ``exhale`` so RTD will install it:
-
-   .. code-block:: bash
-
-      $ ~/my_repo/docs> echo 'exhale' > requirements.txt
-
-4. Follow the :ref:`usage_quickstart_guide`.
-
-5. Edit ``conf.py`` to use the RTD Theme or whichever theme you like.  From the RTD
-   Theme README, you would do
-
-   .. code-block:: py
-
-      # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
-      on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-      if not on_rtd:  # only import and set the theme if we're building docs locally
-          import sphinx_rtd_theme
-          html_theme = 'sphinx_rtd_theme'
-          html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
-6. Go to the admin page of your RTD website and select the *Advanced Settings* tab.
-   Make sure the *Install your project inside a virtualenv using* ``setup.py install``
-   button is **NOT** checked (unless you have a ``setup.py`` at the root of your
-   repository).  In the *Requirements file* box below, enter ``docs/requirements.txt``
-   assuming you followed the steps above.
-
-   I personally prefer to keep the ``requirements.txt`` hidden in the ``docs`` folder
-   so that it is implicit that those are only requirements for building the docs, and
-   not the actual project itself.
-
-And you are done.  Make sure you ``git add`` all of the files in your new ``docs``
-directory, RTD will clone your repository / update when you push commits.  You can
-build it locally using ``make html`` in the current directory, but make sure you do not
-add the ``_build`` directory to your git repository.
-
-.. tip::
-
-   While you are at it, you should probably add to your ``.gitignore``:
-
-   .. code-block:: bash
-
-      docs/_build
-      # wherever you told breathe_projects to look
-      docs/doxyoutput
-      # wherever you told Exhale containmentFolder is
-      docs/api
-
-I hope that the above is successful for you, it looks like a lot but it's not too bad...
-right?

@@ -38,14 +38,14 @@ Breathe as your *default* project.  The two arguments that must be present in yo
         - Values: strings that are (absolute or relative) paths to where the Doxygen XML
           output has been generated.
 
-        So if the Doxygen documentation was generated to the path ``./doxyoutput/xml``,
+        So if the Doxygen documentation was generated to the path ``./_doxygen/xml``,
         and your project was called ``"My Project"``, you would include the following in
         your ``conf.py``:
 
         .. code-block:: py
 
            breathe_projects = {
-               "My Project": "./doxyoutput/xml"
+               "My Project": "./_doxygen/xml"
            }
 
         .. tip::
@@ -289,7 +289,7 @@ theme.  Basically
       :data:`~exhale.configs.treeViewBootstrapOnhoverColor` for your color options.  The
       links are defined by your bootstrap theme's ``a`` tag color.
 
-See the :ref:`index_credit` section for information on the licensing of these libraries.
+See the :ref:`credit` section for information on the licensing of these libraries.
 Neither library should produce any legal gray areas for you, but I'm not a lawyer.
 
 .. todo:: add some pictures of the different hierarchies once this is packaged
@@ -666,8 +666,8 @@ get confused by.
 
 **Suggested Approach**
     Provide a (multiline) string to :data:`~exhale.configs.exhaleDoxygenStdin`.  In the
-    :ref:`usage_quickstart_guide`, the bare minimum needed to get things off the ground
-    was used: ``INPUT`` must be set to tell Doxygen where to look.
+    :ref:`quickstart_guide`, the bare minimum needed to get things off the ground was
+    used: ``INPUT`` must be set to tell Doxygen where to look.
 
     .. tip::
 

@@ -1,8 +1,6 @@
 Changelog
 ========================================================================================
 
-*See also:* :ref:`version_compatibility`.
-
 .. contents:: Release Notes
    :local:
    :backlinks: none

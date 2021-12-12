@@ -1,6 +1,0 @@
-# RTD will only support one requirements file, so just include
-# both from this file.
-sphinx_rtd_theme
-sphinx-issues
--r requirements.txt
--r requirements-dev.txt
