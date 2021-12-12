@@ -1,2 +1,33 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools >= 42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+########################################################################################
+[tool.pytest.ini_options]
+cache_dir = "testing/.cache"
+norecursedirs = [
+    ".git/",
+    "docs/",
+    "exhale/",
+]
+python_files = [
+    "testing/tests/**.py",
+]
+filterwarnings = [
+    "default::DeprecationWarning",
+    "default::PendingDeprecationWarning",
+    # Bypass docutils warning: DeprecationWarning: 'U' mode is deprecated
+    "ignore::DeprecationWarning:docutils.io",
+    # Bypass breathe bug:
+    #   RemovedInSphinx30Warning: function based directive support is now deprecated.
+    #                             Use class based directive instead.
+    "ignore::PendingDeprecationWarning:sphinx.util.docutils",
+]
+
+########################################################################################
+[tool.coverage.run]
+data_file = ".coverage"
+include = [
+    "exhale/**",
+    "testing/**",
+]

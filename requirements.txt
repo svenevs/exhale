@@ -1,5 +1,0 @@
-beautifulsoup4  # BeautifulSoup!
-lxml            # We need the lxml backend for BeautifulSoup.
-sphinx>=1.6.1   # Exhale is a Sphinx extension.  1.6 introduces logging API.
-breathe         # The directives used for documentation come from the excellent Breathe.
-six             # Primarily for Unicode string types

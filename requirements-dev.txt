@@ -1,4 +1,0 @@
-pytest
-pytest-cov
-pytest-raises>=0.10
-ipdb
