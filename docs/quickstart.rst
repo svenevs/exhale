@@ -344,3 +344,14 @@ the paths specified above):
 
    The above code **must** appear **before** the ``%: Makefile`` "catch-all" target that
    Sphinx produced by default.  Otherwise...well the catch-all target catches all!
+
+Hosting your Documentation Online
+----------------------------------------------------------------------------------------
+
+Now that you have a sphinx project able to build your documentation, you will want to
+find a home to host your project online.  If you just want to get documentation out
+the door, try `Read the Docs <https://docs.readthedocs.io/en/stable/tutorial/>`_.  You
+can also do something like `GitHub Pages <https://pages.github.com/>`_, but that process
+is a little bit more involved since you'll need to deploy to a ``gh-pages`` branch.
+Search online for ``sphinx github pages``, hopefully over time somebody will create a
+better GitHub action that allows e.g., versioned hosting of docs.
