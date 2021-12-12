@@ -1,0 +1,11 @@
+sphinx==4.3.1
+sphinx_rtd_theme==1.0.0
+sphinx-issues
+# exhale requirements
+beautifulsoup4
+lxml
+breathe
+six
+# test imports
+pytest
+pytest-raises>=0.10
