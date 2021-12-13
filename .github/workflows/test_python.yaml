@@ -41,27 +41,6 @@ jobs:
       - name: Doxygen Version Dump
         run: doxygen --version
       ##########################################################################
-      - name: Use Python 2.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: '2.7'
-      - name: Install Python Tools
-        run: pip install -U tox codecov coverage
-      - name: Test Python 2.7
-        env:
-          SPHINX_VERSION: '==1.8.5'
-          BREATHE_VERSION: '==4.12.0'
-        run: tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python 2.7
-        run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py2.7"
-      - name: Cleanup Python 2.7
-        run: |
-          mv .gitignore nolongerignored
-          git clean -n
-          git clean -f
-          git reset --hard
-      ##########################################################################
       - name: Use Python 3.6
         uses: actions/setup-python@v2
         with:
@@ -69,9 +48,6 @@ jobs:
       - name: Install Python Tools
         run: pip install -U tox codecov coverage
       - name: Test Python 3.6
-        env:
-          SPHINX_VERSION: '==1.8.5'
-          BREATHE_VERSION: '==4.12.0'
         run: tox -e py -- --cov-report xml:coverage.xml --cov
       - name: Upload Code Coverage for Python 3.6
         run: |
@@ -90,9 +66,6 @@ jobs:
       - name: Install Python Tools
         run: pip install -U tox codecov coverage
       - name: Test Python 3.7
-        env:
-          SPHINX_VERSION: '==2.0.0'
-          BREATHE_VERSION: '==4.14.0'
         run: tox -e py -- --cov-report xml:coverage.xml --cov
       - name: Upload Code Coverage for Python 3.7
         run: |

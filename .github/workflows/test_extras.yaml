@@ -19,13 +19,11 @@ jobs:
       - name: Use Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: '3.9'
       - name: Install Tools
         run: |
           pip install -U tox
           sudo apt-get install -y graphviz
-      - name: Install Tools
-        run: pip install -U tox
       - name: Test Docs
         run: |
           tox -e docs
@@ -41,11 +39,10 @@ jobs:
       - name: Use Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: '3.9'
       - name: Install Tools
         run: |
           pip install -U tox
-          sudo apt-get install -y graphviz
       - name: Test Linkcheck
         run: |
           tox -e linkcheck
@@ -61,11 +58,30 @@ jobs:
       - name: Use Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: '3.9'
       - name: Install Tools
         run: |
           pip install -U tox
-          sudo apt-get install -y graphviz
       - name: Test Flake8
         run: |
           tox -e flake8
+
+  build_dist:
+    name: Packaging
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      # Use minimum version of python needed for this project in setup.cfg.
+      - name: Use Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+      - name: Install Tools
+        run: |
+          pip install -U tox
+      - name: Test Packaging
+        run: |
+          tox -e dist
