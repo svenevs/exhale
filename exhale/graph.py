@@ -3773,8 +3773,8 @@ class ExhaleRoot(object):
 
         # write everything to file to be incorporated with `.. include::` later
         try:
-            with codecs.open(file_name, "w", "utf-8") as hierarchy_file:
-                if final_data_string:
+            if final_data_string:
+                with codecs.open(file_name, "w", "utf-8") as hierarchy_file:
                     file_title = hierarchy_config["file_title"]
                     hierarchy_file.write(textwrap.dedent('''
                         {heading}
