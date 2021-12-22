@@ -2856,7 +2856,10 @@ class ExhaleRoot(object):
                 ########################################################################
                 # Page header / linking.                                               #
                 ########################################################################
-                # generate a link label for every generated file
+                # Generate a link label for every generated file except for the indexpage.
+                # Sphinx doesn't like it when a page is included but also has the same
+                # link label at the top of the file.  Since the indexpage will be
+                # included later on (see generateAPIRootBody), just skip the label.
                 if node.refid == "indexpage":
                     link_declaration = ""
                 else:
