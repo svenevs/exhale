@@ -1,15 +1,26 @@
-name: Test Python
+name: Python
+
 on:
   push:
     branches:
       - master
+    paths:
+      - 'exhale'
+      - 'testing'
+      - 'tox.ini'
+      - '.github/workflows/test_python.yaml'
   pull_request:
     branches:
       - master
+    paths:
+      - 'exhale'
+      - 'testing'
+      - 'tox.ini'
+      - '.github/workflows/test_python.yaml'
 
 jobs:
   build:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} / ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -18,6 +29,7 @@ jobs:
         # TODO: either obtain doxygen 1.8.20 on mac, or find out why everything
         # breaks in doxygen 1.9.2.
         os: [ubuntu-latest, windows-latest]
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@v2
       ##########################################################################
@@ -41,98 +53,37 @@ jobs:
       - name: Doxygen Version Dump
         run: doxygen --version
       ##########################################################################
-      - name: Use Python 3.6
+      - name: Use Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: '3.6'
+          python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
-        run: pip install -U tox codecov coverage
-      - name: Test Python 3.6
-        run: tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python 3.6
         run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py3.6"
-      - name: Cleanup Python 3.6
-        run: |
-          mv .gitignore nolongerignored
-          git clean -n
-          git clean -f
-          git reset --hard
-      ##########################################################################
-      - name: Use Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-      - name: Install Python Tools
-        run: pip install -U tox codecov coverage
-      - name: Test Python 3.7
-        run: tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python 3.7
-        run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py3.7"
-      - name: Cleanup Python 3.7
-        run: |
-          mv .gitignore nolongerignored
-          git clean -n
-          git clean -f
-          git reset --hard
-      ##########################################################################
-      - name: Use Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-      - name: Install Python Tools
-        run: pip install -U tox codecov coverage
-      - name: Test Python 3.8
+          pip install -U tox codecov coverage
+      - name: Test Python ${{ matrix.python-version }} / sphinx==3.0.0
         env:
+          # NOTE: in the future, we may want to use a larger matrix with more
+          # combinations of sphinx and breathe, but for now it is not necessary.
           SPHINX_VERSION: '==3.0.0'
-        run: tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python 3.8
         run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py3.8"
-      - name: Cleanup Python 3.8
+          tox -e py -- --cov-report xml:coverage.xml --cov
+      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx==3.0.0
+        run: |
+          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx3.0.0"
+      # Don't let code coverage utilities share anything, force clean it all.
+      - name: Cleanup Python ${{ matrix.python-version }} / sphinx==3.0.0 Artifacts
         run: |
           mv .gitignore nolongerignored
           git clean -n
           git clean -f
           git reset --hard
-      ##########################################################################
-      - name: Use Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - name: Install Python Tools
-        run: pip install -U tox codecov coverage
-      - name: Test Python 3.9
+      - name: Test Python ${{ matrix.python-version }} / sphinx 4.x
         env:
-          SPHINX_VERSION: '>=4.0.0'
-        run: tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python 3.9
+          # NOTE: in the future, we may want to use a larger matrix with more
+          # combinations of sphinx and breathe, but for now it is not necessary.
+          SPHINX_VERSION: '>=4<5'
         run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py3.9"
-      - name: Cleanup Python 3.9
+          tox -e py -- --cov-report xml:coverage.xml --cov
+      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 4.x
         run: |
-          mv .gitignore nolongerignored
-          git clean -n
-          git clean -f
-          git reset --hard
-      ##########################################################################
-      - name: Use Python 3.10
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
-      - name: Install Python Tools
-        run: pip install -U tox codecov coverage
-      - name: Test Python 3.10
-        env:
-          SPHINX_VERSION: '>=4.0.0'
-        run: tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python 3.10
-        run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py3.10"
-      - name: Cleanup Python 3.10
-        run: |
-          mv .gitignore nolongerignored
-          git clean -n
-          git clean -f
-          git reset --hard
+          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx4.x"

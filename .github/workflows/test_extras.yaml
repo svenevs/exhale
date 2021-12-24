@@ -1,15 +1,38 @@
-name: Test Extras
+name: Extras
+
 on:
   push:
     branches:
       - master
+    paths:
+      - 'exhale'
+      - 'testing'
+      - 'docs'
+      - 'README.rst'
+      - 'setup.py'
+      - 'setup.cfg'
+      - 'MANIFEST.in'
+      - 'pyproject.toml'
+      - 'tox.ini'
+      - '.github/workflows/test_extras.yaml'
   pull_request:
     branches:
       - master
+    paths:
+      - 'exhale'
+      - 'testing'
+      - 'docs'
+      - 'README.rst'
+      - 'setup.py'
+      - 'setup.cfg'
+      - 'MANIFEST.in'
+      - 'pyproject.toml'
+      - 'tox.ini'
+      - '.github/workflows/test_extras.yaml'
 
 jobs:
-  build_docs:
-    name: Docs
+  build_docs_linkcheck:
+    name: Docs / Linkcheck
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -22,31 +45,18 @@ jobs:
           python-version: '3.9'
       - name: Install Tools
         run: |
-          pip install -U tox
           sudo apt-get install -y graphviz
+          pip install -U tox
+      # NOTE: the RTD PR build is enabled to view docs, this tests with nitpicky
+      # flags that will catch non-critical warnings.
       - name: Test Docs
         run: |
           tox -e docs
-
-  build_linkcheck:
-    name: Linkcheck
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - name: Install Tools
-        run: |
-          pip install -U tox
       - name: Test Linkcheck
         run: |
           tox -e linkcheck
 
+  # TODO: this will become `lint` which will have more checks.
   build_flake8:
     name: Flake8
     runs-on: ubuntu-latest
