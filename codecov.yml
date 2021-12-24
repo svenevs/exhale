@@ -1,2 +1,28 @@
-# https://docs.codecov.io/v4.3.6/docs/pull-request-comments
+# .github/workflows/*.yaml conditionally enable / disable tests.
+# https://docs.codecov.com/docs/commit-status#excluding-tests-example
+coverage:
+  status:
+    project:
+      default: false
+      tests:
+        # At this time we don't care about coverage changes as far as status
+        # blockers go.  Code coverage is nice, but not a requirement, reviewers
+        # should use their best judgement...
+        target: auto
+        threshold: 99%
+        paths:
+          - "exhale/"
+          - "testing/*.py"
+          - "testing/tests/*.py"
+          - "!testing/projects/"
+      projects:
+        target: auto
+        threshold: 99%
+        paths:
+          - "!exhale/"
+          - "!testing/*.py"
+          - "!testing/tests/*.py"
+          - "testing/projects/"
+
+# https://docs.codecov.com/docs/pull-request-comments
 comment: false
