@@ -60,7 +60,7 @@ def get_projects_baseurl():
         user = https_match.groups()[0]
 
     # SSH url:   git@github.com:svenevs/exhale.git
-    ssh_re   = r"git@github\.com:(.*)/exhale\.git"
+    ssh_re   = r"git@github\.com:(.*)/exhale(\.git)?"
     ssh_match = re.match(ssh_re, git_remote_out)
     if ssh_match:
         user = ssh_match.groups()[0]
