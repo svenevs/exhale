@@ -4,19 +4,9 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'exhale'
-      - 'testing'
-      - 'tox.ini'
-      - '.github/workflows/test_python.yaml'
   pull_request:
     branches:
       - master
-    paths:
-      - 'exhale'
-      - 'testing'
-      - 'tox.ini'
-      - '.github/workflows/test_python.yaml'
 
 jobs:
   build:

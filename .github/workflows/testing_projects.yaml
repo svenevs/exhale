@@ -4,17 +4,9 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'exhale'
-      - 'testing'
-      - '.github/workflows/testing_projects.yaml'
   pull_request:
     branches:
       - master
-    paths:
-      - 'exhale'
-      - 'testing'
-      - '.github/workflows/testing_projects.yaml'
 
 jobs:
   build_linux:

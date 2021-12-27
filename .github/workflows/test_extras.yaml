@@ -4,31 +4,9 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'exhale'
-      - 'testing'
-      - 'docs'
-      - 'README.rst'
-      - 'setup.py'
-      - 'setup.cfg'
-      - 'MANIFEST.in'
-      - 'pyproject.toml'
-      - 'tox.ini'
-      - '.github/workflows/test_extras.yaml'
   pull_request:
     branches:
       - master
-    paths:
-      - 'exhale'
-      - 'testing'
-      - 'docs'
-      - 'README.rst'
-      - 'setup.py'
-      - 'setup.cfg'
-      - 'MANIFEST.in'
-      - 'pyproject.toml'
-      - 'tox.ini'
-      - '.github/workflows/test_extras.yaml'
 
 jobs:
   build_docs_linkcheck:
