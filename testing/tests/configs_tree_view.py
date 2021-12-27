@@ -461,16 +461,18 @@ class TreeViewHierarchyTests(ExhaleTestCase):
     """
 
     def class_view_hierarchy_file(self):
-        """Path to ``class_view_hierarchy.rst`` for this test."""
-        return os.path.join(self.getAbsContainmentFolder(), "class_view_hierarchy.rst")
+        """Path to ``class_view_hierarchy.rst.include`` for this test."""
+        return os.path.join(
+            self.getAbsContainmentFolder(), "class_view_hierarchy.rst.include")
 
     def file_view_hierarchy_file(self):
-        """Path to ``file_view_hierarchy.rst`` for this test."""
-        return os.path.join(self.getAbsContainmentFolder(), "file_view_hierarchy.rst")
+        """Path to ``file_view_hierarchy.rst.include`` for this test."""
+        return os.path.join(
+            self.getAbsContainmentFolder(), "file_view_hierarchy.rst.include")
 
     def raw_hierarchies(self):
         """
-        Raw contents of ``class_view_hierarchy.rst`` and ``file_view_hierarchy.rst``.
+        Raw contents of ``{class,file}_view_hierarchy.rst.include``.
 
         **Return** (Length ``2`` :class:`python:tuple` of :class:`python:str`)
             The string contents of ``(class_view, file_view)``, in that order.
@@ -500,7 +502,7 @@ class TreeViewHierarchyTests(ExhaleTestCase):
 
     def html_hierarchies(self):
         """
-        Hierarchy text from ``class_view_hierarchy.rst`` and ``file_view_hierarchy.rst``.
+        Hierarchy text from ``{class,file}_view_hierarchy.rst``.
 
         When ``createTreeView=True``, the generated page has something like:
 

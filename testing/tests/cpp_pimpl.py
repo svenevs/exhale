@@ -252,7 +252,7 @@ class CPPPimpl(ExhaleTestCase):
             The exclusion that is currently being tested.
         """
         class_hierarchy_path = os.path.join(
-            self.getAbsContainmentFolder(), "class_view_hierarchy.rst"
+            self.getAbsContainmentFolder(), "class_view_hierarchy.rst.include"
         )
         expected_class_hierarchy = self.expected_class_hierarchy(exclusions)
         with open(class_hierarchy_path) as class_hierarchy:
