@@ -2857,10 +2857,7 @@ class ExhaleRoot(object):
                 # Page header / linking.                                               #
                 ########################################################################
                 # generate a link label for every generated file
-                if node.refid == "indexpage":
-                    link_declaration = ""
-                else:
-                    link_declaration = ".. _{0}:".format(node.link_name)
+                link_declaration = ".. _{0}:".format(node.link_name)
 
                 # Add the metadata if they requested it
                 if configs.pageLevelConfigMeta:
