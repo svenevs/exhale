@@ -1035,10 +1035,23 @@ class ExhaleRoot(object):
         self.root_directory         = configs.containmentFolder
         self.root_file_name         = configs.rootFileName
         self.full_root_file_path    = os.path.join(self.root_directory, self.root_file_name)
-        self.page_hierarchy_file    = os.path.join(self.root_directory, "page_view_hierarchy.rst")
-        self.class_hierarchy_file   = os.path.join(self.root_directory, "class_view_hierarchy.rst")
-        self.file_hierarchy_file    = os.path.join(self.root_directory, "file_view_hierarchy.rst")
-        self.unabridged_api_file    = os.path.join(self.root_directory, "unabridged_api.rst")
+        # The {page,class,file}_view_hierarchy files are all `.. include::`ed in the
+        # root library document.  Though we are generating rst, we will want to use a
+        # file extension `.rst.include` to bypass the fact that the sphinx builder will
+        # process them separately if we leave them as .rst (via the source_suffix
+        # configuration of the sphinx app).  If users are getting warnings about it
+        # then we can actually check for `.include` in app.config.source_suffix, but
+        # it is very unlikely this is going to be a problem.
+        # See https://github.com/sphinx-doc/sphinx/issues/1668
+        self.page_hierarchy_file    = os.path.join(self.root_directory, "page_view_hierarchy.rst.include")
+        self.class_hierarchy_file   = os.path.join(self.root_directory, "class_view_hierarchy.rst.include")
+        self.file_hierarchy_file    = os.path.join(self.root_directory, "file_view_hierarchy.rst.include")
+        self.unabridged_api_file    = os.path.join(self.root_directory, "unabridged_api.rst.include")
+        # NOTE: do *NOT* do .rst.include for the unabridged orphan kinds, the purpose of
+        # that document is to have it be processed by sphinx with its corresponding
+        # .. toctree:: calls to kinds that the user has asked to be excluded.  Sphinx
+        # processing this document directly is desired (it is also marked :orphan: to
+        # avoid a warning on the fact that it is *NOT* included in any exhale toctree).
         self.unabridged_orphan_file = os.path.join(self.root_directory, "unabridged_orphan.rst")
 
         # whether or not we should generate the raw html tree view
@@ -2420,6 +2433,13 @@ class ExhaleRoot(object):
         if node.kind in SPECIAL_CASES:
             node.link_name = "{kind}_{id}".format(kind=node.kind, id=unique_id)
             node.file_name = "{link_name}.rst".format(link_name=node.link_name)
+            # Like the tree view documents, we want to .. include:: the indexpage on
+            # the root library document without having sphinx generate html for the page
+            # that is being included (otherwise there are duplicate label warnings).
+            #
+            # Unless a user has `.include` in their source_suffix, this skips this.
+            if node.refid == "indexpage":
+                node.file_name += ".include"
         else:
             # The node.link_name is the internal reference for exhale to link to in the
             # library API listing.  We cannot use unique_id in "non-special-cases"
