@@ -42,6 +42,12 @@ complete its import.
 .. automodule:: testing.projects.cpp_dir_underscores
    :members:
 
+``testing.projects.cpp_meta`` Project
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.projects.cpp_meta
+   :members:
+
 ``testing.projects.cpp_nesting`` Project
 ----------------------------------------------------------------------------------------
 
