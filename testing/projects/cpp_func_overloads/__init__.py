@@ -24,10 +24,12 @@ def default_file_hierarchy_dict():
                         function("int", "blargh"): parameters("int"),
                         function("int", "blargh"): parameters("int", "int"),
                         function("int", "blargh"): parameters("int", "int", "int"),
+                        function("int", "blargh"): parameters("int", "int", "int", "int"),
                         # "pure" float overloads
                         function("float", "blargh"): parameters("float"),
                         function("float", "blargh"): parameters("float", "float"),
                         function("float", "blargh"): parameters("float", "float", "float"),
+                        function("float", "blargh"): parameters("float", "float", "float", "float"),
                         # "pure" std::string overloads
                         function("std::string", "blargh"): parameters("const std::string&"),
                         function("std::string", "blargh"): parameters(
@@ -35,6 +37,10 @@ def default_file_hierarchy_dict():
                         ),
                         function("std::string", "blargh"): parameters(
                             "const std::string&", "const std::string&", "const std::string&"
+                        ),
+                        function("std::string", "blargh"): parameters(
+                            "const std::string&", "const std::string&", "const std::string&",
+                            "const std::string&"
                         ),
                         # absurd mixtures
                         function("std::size_t", "blargh"): parameters("std::size_t", "const std::string&"),
@@ -50,6 +56,11 @@ def default_file_hierarchy_dict():
                         ),
                         # templates
                         function("C::type", "blargh", template=["class C"]): parameters("typename C::type"),
+                        # NOTE: vvv not really a thing, but its for template specialization.
+                        #       AKA broken
+                        function("int", "blargh", template=["overload::SuperStruct"]): parameters("int"),
+                        function(
+                            "int", "blargh", template=["overload::nested::SuperStruct"]): parameters("int"),
                         # SFINAE is really pretty yeah?
                         function(
                             "std::enable_if<std::is_convertible<typename C::type, T>::value, T>::type",

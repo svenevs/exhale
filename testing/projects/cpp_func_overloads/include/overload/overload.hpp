@@ -31,6 +31,9 @@ namespace overload {
     /// Returns the integer ``x + y + z``.
     inline int blargh(int x, int y, int z) { return x + y + z; }
 
+    /// Returns the sum of the input parameters.  Params unnamed for internal testing.
+    int blargh(int, int, int, int);
+
     /// Returns the float ``-1.0f * x``.
     inline float blargh(float x) { return -1.0f * x; }
 
@@ -39,6 +42,9 @@ namespace overload {
 
     /// Returns the float ``-1.0f * (x + y + z)``.
     inline float blargh(float x, float y, float z) { return -1.0f * (x + y + z); }
+
+    /// Returns the float ``-1.0f * (sum of parameters)``.  Params unnamed for internal testing.
+    float blargh(float, float, float, float);
 
     /// Returns a copy of the string ``x``.
     inline std::string blargh(const std::string &x) { return x; }
@@ -50,6 +56,12 @@ namespace overload {
     inline std::string blargh(const std::string &x, const std::string &y, const std::string &z) {
         return x + y + z;
     }
+
+    /// Returns a concatenation of the input parameters.  Params unnamed for internal testing.
+    std::string blargh(const std::string&,
+                       const std::string&,
+                       const std::string&,
+                       const std::string&);
 
     /// Returns ``x + s.length()``.
     inline std::size_t blargh(std::size_t x, const std::string &s) {
@@ -81,6 +93,28 @@ namespace overload {
     typename C::type blargh(typename C::type t) {
         return t;
     }
+
+    #if !defined(DOXYGEN_SHOULD_SKIP_THIS)
+        // NOTE: skip these to make cpp_func_overloads easier to test (don't intro structs).
+
+        /// A super struct of structs for template specialization.
+        struct SuperStruct {
+            using type = int;///< The type for typing things.
+        };
+
+        namespace nested {
+            /// A super struct of structs in a nested workspace for template specialization.
+            struct SuperStruct {
+                using type = int;///< The type for typing things.
+            };
+        }  // namespace nested
+    #endif // DOXYGEN_SHOULD_SKIP_THIS
+
+    /// A specialization of ``template <class C> typename C::type blargh``.
+    template <> inline int blargh<SuperStruct>(int x) { return x; }
+
+    /// A specialization of ``template <class C> typename C::type blargh``.
+    template <> inline int blargh<nested::SuperStruct>(int x) { return x; }
 
     /// Returns parameter ``t`` converted to a ``T`` (enabled when ``std::is_convertible`` is ``true``).
     template <class C, typename T>

@@ -33,6 +33,11 @@ TEST_CASE( "int blargh(int, int, int)", "[cpp-func-overloads]" ) {
     REQUIRE( xyz == 6 );
 }
 
+TEST_CASE( "int blargh(int, int, int, int)", "[cpp-func-overloads]" ) {
+    int xyzw = overload::blargh(1, 2, 3, 4);
+    REQUIRE( xyzw == 10 );
+}
+
 /* ================================================================================== */
 
 TEST_CASE( "float blargh(float)", "[cpp-func-overloads]" ) {
@@ -50,6 +55,11 @@ TEST_CASE( "float blargh(float, float, float)", "[cpp-func-overloads]" ) {
     REQUIRE( neg_xyz == -6.0f );
 }
 
+TEST_CASE( "float blargh(float, float, float, float)", "[cpp-func-overloads]" ) {
+    float neg_xyzw = overload::blargh(1.0f, 2.0f, 3.0f, 4.0f);
+    REQUIRE( neg_xyzw == -10.0f );
+}
+
 /* ================================================================================== */
 
 TEST_CASE( "std::string blargh(const std::string &)", "[cpp-func-overloads]" ) {
@@ -65,6 +75,11 @@ TEST_CASE( "std::string blargh(const std::string &, const std::string &)", "[cpp
 TEST_CASE( "std::string blargh(const std::string &, const std::string &, const std::string &)", "[cpp-func-overloads]" ) {
     auto xyz = overload::blargh("blargh ", "blargh ", "blargh");
     REQUIRE( xyz == "blargh blargh blargh" );
+}
+
+TEST_CASE( "std::string blargh(const std::string &, const std::string &, const std::string &, const std::string &)", "[cpp-func-overloads]" ) {
+    auto xyzw = overload::blargh("blargh ", "blargh ", "blargh ", "blargh");
+    REQUIRE( xyzw == "blargh blargh blargh blargh" );
 }
 
 /* ================================================================================== */
@@ -205,6 +220,16 @@ TEST_CASE( "template <class C> typename C::type blargh(typename C::type)", "[cpp
     v_Blargh = overload::blargh<C_Blargh>(b);
     REQUIRE( v_Blargh.name == "Snow, John" );
     REQUIRE( &v_Blargh != &b );
+}
+
+TEST_CASE( "template <> blargh<SuperStruct>(typename C::type)", "[cpp-func-overloads]" ) {
+    auto x = overload::blargh<overload::SuperStruct>(111);
+    REQUIRE( x == 111 );
+}
+
+TEST_CASE( "template <> blargh<nested::SuperStruct>(typename C::type)", "[cpp-func-overloads]" ) {
+    auto x = overload::blargh<overload::nested::SuperStruct>(111);
+    REQUIRE( x == 111 );
 }
 
 TEST_CASE( "template <class C, typename T> T blargh(typename C::type)", "[cpp-func-overloads]" ) {
