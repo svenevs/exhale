@@ -157,7 +157,7 @@ that you will link to from your documentation is laid out as follows:
    .. note::
 
       This is performed by an ``.. include::`` directive.  The file for this section
-      is ``"{containmentFolder}/page_view_hierarchy.rst"``.
+      is ``"{containmentFolder}/page_view_hierarchy.rst.include"``.
 
    .. tip::
 
@@ -171,7 +171,7 @@ that you will link to from your documentation is laid out as follows:
    .. note::
 
       This is performed by an ``.. include::`` directive.  The file for this section
-      is ``"{containmentFolder}/class_view_hierarchy.rst"``.
+      is ``"{containmentFolder}/class_view_hierarchy.rst.include"``.
 
 5. Next, the File Hierarchy is included.  By default this is a bulleted list; see the
    :ref:`usage_creating_the_treeview` section.
@@ -179,7 +179,7 @@ that you will link to from your documentation is laid out as follows:
    .. note::
 
       This is performed by an ``.. include::`` directive.  The file for this section
-      is ``"{containmentFolder}/file_view_hierarchy.rst"``.
+      is ``"{containmentFolder}/file_view_hierarchy.rst.include"``.
 
 6. If provided, the value of the key ``"afterHierarchyDescription"`` given to
    ``exhale_args`` will be included.  See
@@ -197,7 +197,7 @@ that you will link to from your documentation is laid out as follows:
    .. note::
 
       This is performed by an ``.. include::`` directive.  The file for this section
-      is ``"{containmentFolder}/unabridged_api.rst"``.
+      is ``"{containmentFolder}/unabridged_api.rst.include"``.
 
    .. tip::
 

@@ -483,7 +483,7 @@ class ExhaleTestCase(unittest.TestCase):
         # build path to unabridged api document that adds all toctree directives
         root = get_exhale_root(self)
         containmentFolder = self.getAbsContainmentFolder()
-        unabridged_api_path = os.path.join(containmentFolder, "unabridged_api.rst")
+        unabridged_api_path = os.path.join(containmentFolder, "unabridged_api.rst.include")
         unabridged_orphan_path = os.path.join(containmentFolder, "unabridged_orphan.rst")
 
         # gather lines that match the indented part of the toctree
@@ -569,7 +569,7 @@ class ExhaleTestCase(unittest.TestCase):
             "Mismatch: doxygen_mainpage_was_used != index_include!")
 
         include_map = {
-            "page_index.rst": index_include,
+            "page_index.rst.include": index_include,
             os.path.basename(root.page_hierarchy_file): page_hierarchy_include,
             os.path.basename(root.class_hierarchy_file): class_hierarchy_include,
             os.path.basename(root.file_hierarchy_file): file_hierarchy_include,
