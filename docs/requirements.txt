@@ -9,3 +9,5 @@ six
 # test imports
 pytest
 pytest-raises>=0.10
+# multiproject hack, see issue #27
+-e git+https://github.com/mithro/sphinx-contrib-mithro#egg=sphinx-contrib-exhale-multiproject&subdirectory=sphinx-contrib-exhale-multiproject

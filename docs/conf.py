@@ -7,9 +7,12 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup ------------------------------------------------------------------------
-import os
 import sys
-sys.path.insert(0, os.path.abspath(".."))  # path to `exhale`
+from pathlib import Path
+from textwrap import dedent
+
+repo_root = Path(__file__).parent.absolute().parent
+sys.path.insert(0, str(repo_root))  # path to `exhale`
 
 import exhale
 
@@ -32,7 +35,9 @@ extensions = [
     # NOTE: viewcode isn't working, probably because of how my docs are setup
     #       and the lack of __all__ definitions?
     "sphinx.ext.viewcode",
-    "sphinx_issues"
+    "sphinx_issues",
+    "breathe",
+    "exhale"
 ]
 # make linkcheck does not support GitHub README.md anchors (they are synthetic anchors)
 linkcheck_ignore = [
@@ -83,6 +88,46 @@ intersphinx_mapping = {
     )
 }
 
+# -- Multiproject monkeypatch ----------------------------------------------------------
+# Generate a test project for everything under ../testing/projects
+# https://github.com/mithro/sphinx-contrib-mithro/tree/master/sphinx-contrib-exhale-multiproject
+import exhale_multiproject_monkeypatch
+
+test_projects = [
+    d for d in sorted((repo_root / "testing" / "projects").iterdir())
+    if d.is_dir() and d.name != "__pycache__"
+]
+
+breathe_projects = {}
+breathe_projects_source = {}
+exhale_projects_args = {}
+breathe_default_project = str(test_projects[0])
+test_projects_docs = repo_root / "docs" / "testing" / "projects"
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-nitpick_ignore_regex
+# TODO(warnings) neither work, don't understand, removed -W from tox.ini (NOT ideal)
+# could not identify a way to ignore specific warnings on specific files in sphinx
+nitpick_ignore_regex = [(r".*", r"testing.projects.*")]
+suppress_warnings = [
+    "Duplicate C++ declaration"
+]
+for d in test_projects:
+    breathe_projects[d.name] = f"_doxygen/{d.name}/xml"
+    breathe_projects_source[d.name] = str(d)
+    exhale_projects_args[d.name] = {
+        "exhaleDoxygenStdin": dedent(f"INPUT = {str(d / 'include')}"),
+        "doxygenStripFromPath": str(d),
+        "containmentFolder": str(test_projects_docs / d.name.replace(" ", "_")),
+        "rootFileTitle": f"{d.name} Test Project Build",
+    }
+
+exhale_args = {
+    "rootFileTitle": "Unknown",
+    "containmentFolder": "unknown",
+    "rootFileName": "library_root.rst",
+    "createTreeView": True,
+    "exhaleExecutesDoxygen": True,
+}
+
 
 def setup(app):
     # https://github.com/sphinx-doc/sphinx/issues/5562#issuecomment-434296574
@@ -92,7 +137,7 @@ def setup(app):
                         indextemplate="pair: %s; configuration value")
 
     # Add on the various extensions.
-    sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), "_extensions"))
+    sys.path.insert(0, str(repo_root / "docs" / "_extensions"))
     from autotested import autotested, visit_autotested_node, depart_autotested_node, AutoTestedDirective
     app.add_node(autotested, html=(visit_autotested_node, depart_autotested_node))
     app.add_directive("autotested", AutoTestedDirective)

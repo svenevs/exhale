@@ -2,6 +2,10 @@
 docs/DEFAULT_DOXYGEN_STDIN_BASE_value.rst
 docs/LANG_TO_LEX_value.rst
 
+# Generated during build of documentation
+docs/_doxygen
+docs/testing/projects
+
 # Visual Studio Code settings
 .vscode/
 
