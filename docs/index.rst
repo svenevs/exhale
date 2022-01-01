@@ -5,6 +5,8 @@ Please read the :ref:`overview` section if you are new to documenting code with 
 Doxygen, Sphinx, or Breathe.  A :ref:`quickstart_guide` gives the bare minimum needed to
 get things working.
 
+.. exhaleversion::
+
 .. contents:: Contents
    :local:
    :backlinks: none
