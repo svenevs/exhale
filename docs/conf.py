@@ -17,7 +17,7 @@ import exhale
 needs_sphinx = "4.3.1"
 
 project = "Exhale"
-copyright = "2017-2021, Stephen McDowell"
+copyright = "2017-2022, Stephen McDowell"
 author = "Stephen McDowell"
 version = exhale.__version__
 release = exhale.__version__
