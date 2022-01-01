@@ -191,3 +191,21 @@ elseif (MSVC)
     DEPENDS exhale-projects-unit-tests
   )
 endif()
+
+# One of the above clears out compile flags which is an issue, we want to
+# disable some intentional warnings coming out of cpp_meta project.
+#     warning: 'carries_dependency' attribute directive ignored [-Wattributes]
+#     warning: maybe_unused attribute ignored [-Wattributes]
+#     warning: 'meta::deprecated::ground_truth is deprecated [-Wdeprecated-declarations]
+include(CheckCXXCompilerFlag)
+foreach (flag -Wno-attributes -Wno-deprecated-declarations)
+  check_cxx_compiler_flag(${flag} has_flag)
+  if (has_flag)
+    set_property(
+      SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp_meta/src/tests.cpp
+      APPEND
+      PROPERTY
+        COMPILE_OPTIONS ${flag})
+  endif()
+endforeach()

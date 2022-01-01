@@ -15,15 +15,11 @@ target_sources(exhale-projects-unit-tests
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tests.cpp
 )
 
-# Ignore some warnings e.g. intentional use of [[ deprecated ]] things.
-# TODO: not sure how to disable... flag isn't found.
-# warning: ‘bool meta::deprecated::this_is_fine()’ is deprecated [-Wdeprecated-declarations]
-# include(CheckCXXCompilerFlag)
-# check_cxx_compiler_flag("-Wdeprecated-declarations" no_deprecated)
-
 target_include_directories(exhale-projects-tests-interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 add_open_cpp_coverage_source_dirs(include src)
+
+# NOTE: see bottom of parent CMakeLists.txt for excluding intentional warnings.
