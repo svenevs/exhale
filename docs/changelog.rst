@@ -12,8 +12,6 @@ v0.3.0
 - Support specialized template functions (:pr:`117`).
 - Prevent sphinx from processing files that are incorporated via a ``.. include::``
   directive by renaming them to ``.rst.include`` suffix (:pr:`136`).
-- Add ``:project: {app.config.breathe_default_project}`` to every breathe directive
-  to make the monkeypatch (:issue:`27`) work (:pr:`139`).
 
 v0.2.4
 ----------------------------------------------------------------------------------------

@@ -555,23 +555,15 @@ def specificationsForKind(kind):
         The correctly formatted specifier(s) for the given ``kind``.  If no specifier(s)
         are necessary or desired, the empty string is returned.
     '''
-    # TODO: this is to support the monkeypatch
-    # https://github.com/svenevs/exhale/issues/27
-    ret = []
-
     # use the custom directives function
     if configs.customSpecificationsMapping:
-        ret = configs.customSpecificationsMapping[kind]
+        return configs.customSpecificationsMapping[kind]
 
     # otherwise, just provide class and struct
     if kind == "class" or kind == "struct":
-        ret = [":members:", ":protected-members:", ":undoc-members:"]
+        return [":members:", ":protected-members:", ":undoc-members:"]
 
-    # the monkeypatch re-configures breathe_default_project each time which was
-    # foolishly relied on elsewhere and undoing that blunder requires undoing
-    # all of the shenanigans that is configs.py...
-    ret.insert(0, ":project: " + configs._the_app.config.breathe_default_project)
-    return ret
+    return []  # use breathe defaults
 
 
 class AnsiColors:

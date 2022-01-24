@@ -17,7 +17,7 @@ from textwrap import dedent
 from exhale.utils import heading_mark
 
 from testing.base import ExhaleTestCase
-from testing.decorators import confoverrides, no_cleanup
+from testing.decorators import confoverrides
 from testing.hierarchies import                                                        \
     class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, file,            \
     file_hierarchy
@@ -229,20 +229,3 @@ class CPPNestingPages(ExhaleTestCase):
         """)
         with open(self.app.exhale_root.page_hierarchy_file, "r") as phf:
             assert expected_page_hierarchy in phf.read()
-
-    @no_cleanup
-    @confoverrides(exhale_args={
-        "rootFileTitle": "",
-        "exhaleDoxygenStdin": dedent("""\
-            INPUT            = ../include
-            EXCLUDE_PATTERNS = */page_town_rock_alt.hpp
-        """)})
-    def test_html_output(self):
-        """
-        Verify exhale builds a project.
-
-        This is not really a test.  But it can be helpful to view a test project build,
-        in the ``testing/projects/cpp_nesting`` folder you can open
-        ``docs_CPPNestingPages_test_html_output/_build/html/index.html`` to view.
-        """
-        self.app.build()
