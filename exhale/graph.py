@@ -3535,17 +3535,20 @@ class ExhaleRoot(object):
                         break
                 # Include the page, class, and file hierarchies
                 if any(node.kind == "page" for node in self.all_nodes):
-                    generated_index.write(".. include:: {0}\n\n".format(
-                        os.path.basename(self.page_hierarchy_file)
-                    ))
+                    if os.path.exists(self.page_hierarchy_file):
+                        generated_index.write(".. include:: {0}\n\n".format(
+                            os.path.basename(self.page_hierarchy_file)
+                        ))
                 if any(node.kind in utils.CLASS_LIKE_KINDS for node in self.all_nodes):
-                    generated_index.write(".. include:: {0}\n\n".format(
-                        os.path.basename(self.class_hierarchy_file)
-                    ))
+                    if os.path.exists(self.class_hierarchy_file):
+                        generated_index.write(".. include:: {0}\n\n".format(
+                            os.path.basename(self.class_hierarchy_file)
+                        ))
                 if any(node.kind in {"dir", "file"} for node in self.all_nodes):
-                    generated_index.write(".. include:: {0}\n\n".format(
-                        os.path.basename(self.file_hierarchy_file)
-                    ))
+                    if os.path.exists(self.file_hierarchy_file):
+                        generated_index.write(".. include:: {0}\n\n".format(
+                            os.path.basename(self.file_hierarchy_file)
+                        ))
 
                 # Add the afterHierarchyDescription if provided
                 if configs.afterHierarchyDescription:
