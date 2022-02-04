@@ -570,7 +570,8 @@ def specificationsForKind(kind):
     # the monkeypatch re-configures breathe_default_project each time which was
     # foolishly relied on elsewhere and undoing that blunder requires undoing
     # all of the shenanigans that is configs.py...
-    ret.insert(0, ":project: " + configs._the_app.config.breathe_default_project)
+    if not any(":project:" in spec for spec in ret):
+        ret.insert(0, ":project: " + configs._the_app.config.breathe_default_project)
     return ret
 
 
