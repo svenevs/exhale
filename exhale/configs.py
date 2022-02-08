@@ -1093,7 +1093,7 @@ exhaleSilentDoxygen = False
 # Programlisting Customization                                                         #
 ########################################################################################
 lexerMapping = {}
-'''
+r'''
 **Optional**
     When specified, and ``XML_PROGRAMLISTING`` is set to ``YES`` in Doxygen (either via
     your ``Doxyfile`` or :data:`exhaleDoxygenStdin <exhale.configs.exhaleDoxygenStdin>`),
