@@ -7,9 +7,12 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup ------------------------------------------------------------------------
-import os
 import sys
-sys.path.insert(0, os.path.abspath(".."))  # path to `exhale`
+from pathlib import Path
+from textwrap import dedent
+
+repo_root = Path(__file__).parent.absolute().parent
+sys.path.insert(0, str(repo_root))  # path to `exhale`
 
 import exhale
 
@@ -23,7 +26,6 @@ version = exhale.__version__
 release = exhale.__version__
 
 # -- General configuration -------------------------------------------------------------
-
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
@@ -42,7 +44,6 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build"]
 
 # -- Options for HTML output -----------------------------------------------------------
-
 html_title = "Exhale: Automatic C++ Library API Generation"
 html_short_title = "Exhale"
 html_theme = "sphinx_rtd_theme"
@@ -53,25 +54,20 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 # -- sphinx.ext.autodoc Extension Configuration ----------------------------------------
-
 autodoc_member_order = "bysource"
 
 # -- sphinx.ext.todo Extension Configuration -------------------------------------------
-
 todo_include_todos = True
 todo_link_only = True
 
 # -- sphinx.ext.viewcode Extension Configuration ---------------------------------------
-
 viewcode_follow_imported_members = True
 
 # -- sphinx_issues Extension Configuration ---------------------------------------------
-
 # See: https://github.com/sloria/sphinx-issues
 issues_github_path = "svenevs/exhale"
 
 # -- Intersphinx Extension Configuration -----------------------------------------------
-
 intersphinx_mapping = {
     "python": ("http://docs.python.org/", None),
     "sphinx": ("http://www.sphinx-doc.org/en/master", None),
@@ -83,7 +79,6 @@ intersphinx_mapping = {
     )
 }
 
-
 def setup(app):
     # https://github.com/sphinx-doc/sphinx/issues/5562#issuecomment-434296574
     # So that I can link to e.g., :confval:`sphinx:html_static_path`.
@@ -91,16 +86,19 @@ def setup(app):
                         objname="configuration value",
                         indextemplate="pair: %s; configuration value")
 
-    # testproject.py defines these classes (they cannot be defined in conf.py)
-    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-    from testproject import testproject, visit_testproject_node, depart_testproject_node, TestProjectDirective
-    app.add_node(testproject, html=(visit_testproject_node, depart_testproject_node))
-    app.add_directive("testproject", TestProjectDirective)
-
-    sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), "_extensions"))
+    # Add on the various extensions.
+    sys.path.insert(0, str(repo_root / "docs" / "_extensions"))
     from autotested import autotested, visit_autotested_node, depart_autotested_node, AutoTestedDirective
     app.add_node(autotested, html=(visit_autotested_node, depart_autotested_node))
     app.add_directive("autotested", AutoTestedDirective)
+
+    from exhaleversion import exhaleversion, visit_exhaleversion_node, depart_exhaleversion_node, ExhaleVersionDirective
+    app.add_node(exhaleversion, html=(visit_exhaleversion_node, depart_exhaleversion_node))
+    app.add_directive("exhaleversion", ExhaleVersionDirective)
+
+    from testproject import testproject, visit_testproject_node, depart_testproject_node, TestProjectDirective
+    app.add_node(testproject, html=(visit_testproject_node, depart_testproject_node))
+    app.add_directive("testproject", TestProjectDirective)
     ####################################################################################
     # Multiline string documentation                                                   #
     ####################################################################################

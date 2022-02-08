@@ -1,34 +1,16 @@
-
 import re
-import textwrap
-
 from subprocess import Popen, PIPE
-from docutils import nodes
-from docutils.parsers.rst import Directive
-from sphinx.locale import _
+
+github_base_url = None
 
 
-def visit_testproject_node(self, node):
-    self.visit_admonition(node)
-
-
-def depart_testproject_node(self, node):
-    self.depart_admonition(node)
-
-
-class testproject(nodes.Admonition, nodes.Element):
-    pass
-
-
-projects_baseurl = None
-
-# get a github specific URL to where the test projects live using the current commit
-def get_projects_baseurl():
-    global projects_baseurl
+# get a github specific URL to where the root of the project on current commit
+def get_github_base_url():
+    global github_base_url
 
     # just making sure this only needs to run once
-    if projects_baseurl:
-        return projects_baseurl
+    if github_base_url:
+        return github_base_url
 
     # otherwise, first execution so grab it, set it, and return it
 
@@ -84,37 +66,8 @@ def get_projects_baseurl():
 
     git_rev_parse_out = git_rev_parse_out.decode("ascii")
 
-    projects_baseurl = "https://github.com/{user}/exhale/tree/{sha}/testing/projects".format(
+    github_base_url = "https://github.com/{user}/exhale/tree/{sha}".format(
         user=user.strip(), sha=git_rev_parse_out.strip()
     )
 
-    return projects_baseurl
-
-
-class TestProjectDirective(Directive):
-    has_content = True
-
-    def run(self):
-        if len(self.content) != 1:
-            raise ValueError(
-                "`testproject` directive needs exactly one argument (the name of the test folder).  "
-                "Example: .. testproject:: c_maths"
-            )
-        self.content[0] = textwrap.dedent('''\
-            The ``{project}`` test project.
-
-            - Additional documentation: :mod:`testing.projects.{project_fixed}`.
-            - Source code for `{project} available here <{baseurl}/{project_dir}>`_.
-
-            See also: :data:`ExhaleTestCase.test_project <testing.base.ExhaleTestCase.test_project>`.
-        '''.format(
-            project=self.content[0],
-            project_dir=self.content[0].replace(" ", "\\ "),
-            project_fixed=self.content[0].replace(" ", "_"),  # cpp with spaces project
-            baseurl=get_projects_baseurl()
-        ))
-        project_node = testproject("\n".join(self.content))
-        project_node += nodes.title(_("Test Project Source"), _("Test Project Source"))
-        self.state.nested_parse(self.content, self.content_offset, project_node)
-
-        return [project_node]
+    return github_base_url

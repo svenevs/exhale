@@ -45,6 +45,7 @@ from __future__ import unicode_literals
 import os
 import six
 import textwrap
+from pathlib import Path
 
 from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util import logging
@@ -94,12 +95,6 @@ containmentFolder = None
        ``"./source/api"`` if you have separate source and build directories with Sphinx.
        When the html is eventually generated, this will make for a more human friendly
        url being generated.
-
-    .. warning::
-
-       The verbiage subdirectory means **direct** subdirectory.  So the path
-       ``"./library/api"`` will be rejected.  This is because I make the assumption that
-       ``containmentFolder`` is "owned" by Exhale / is safe to delete.
 '''
 
 rootFileName = None
@@ -1394,25 +1389,17 @@ def apply_sphinx_configurations(app):
     global _the_app
     _the_app = app
 
-    # Make sure they know this is a bad idea.  The order of these checks is important.
-    # This assumes the path given was not the empty string (3 will break if it is).
-    #
-    # 1. If containmentFolder and app.srcdir are the same, problem.
-    # 2. If app.srcdir is not at the beginning of containmentFolder, problem.
-    # 3. If the first two checks have not raised a problem, the final check is to make
-    #    sure that a subdirectory was actually used, as opposed to something that just
-    #    starts with the same path.
-    #
-    #    Note for the third check lazy evaluation is the only thing that makes checking
-    #    _parts[1] acceptable ;)
-    _one     = containmentFolder == app.srcdir
-    _two     = not containmentFolder.startswith(app.srcdir)
-    _parts   = containmentFolder.split(app.srcdir)
-    _three   = _parts[0] != "" or len(_parts[1].split(os.path.sep)) > 2 or \
-                   os.path.join(app.srcdir, _parts[1].replace(os.path.sep, "", 1)) != containmentFolder  # noqa
-    # If they are equal, containmentFolder points somewhere entirely differently, or the
-    # relative path (made absolute again) does not have the srcdir
-    if _one or _two or _three:
+    # Require that containmentFolder is a subpath of the sphinx application source
+    # directory (otherwise Sphinx will not process the generated documents).
+    containment_folder_parent = Path(containmentFolder).absolute()
+    app_srcdir = Path(app.srcdir).absolute()
+    try:
+        # relative_to will raise if it is not a subchild
+        containment_folder_parent.relative_to(app_srcdir)
+        # but if it is the same path (docs/ directory) relative_to succeeds
+        if containment_folder_parent == app_srcdir:
+            raise ValueError
+    except:
         raise ConfigError(
             "The given `containmentFolder` [{0}] must be a *SUBDIRECTORY* of [{1}].".format(
                 containmentFolder, app.srcdir
@@ -1867,27 +1854,35 @@ def apply_sphinx_configurations(app):
         # sphinx to the correct _static/ location, but stylesheets and javascript need
         # to be added explicitly
         logger.info(utils.info("Exhale: adding tree view css / javascript."))
-        app.config.html_static_path.append(collapse_data)
 
-        # In Sphinx 1.8+ these have been renamed.
-        # - app.add_stylesheet -> app.add_css_file
-        # - app.add_javascript -> app.add_js_file
-        #
-        # RemovedInSphinx40Warning:
-        # - The app.add_stylesheet() is deprecated. Please use app.add_css_file() instead.
-        # - The app.add_javascript() is deprecated. Please use app.add_js_file() instead.
-        #
-        # So we'll need to keep this funky `getattr` chain for a little while ;)
-        # Or else pin min sphinx version to 1.8 or higher.  Probably when 2.0 is out?
-        add_css_file = getattr(app, "add_css_file", getattr(app, "add_stylesheet", None))
-        add_js_file  = getattr(app, "add_js_file",  getattr(app, "add_javascript", None))
+        # TODO: hack for multiproj
+        if collapse_data not in app.config.html_static_path:
+            app.config.html_static_path.append(collapse_data)
 
-        # Add the stylesheets
+        # TODO: dubious hack on multiproj monkeypatch calling this method multiple times
+        # resulting in the css / js files being added multiple times (which is a problem
+        # so we have to bypass).  Probably it is an upstream bug that adding the same
+        # file multiple times is allowed, but it's also definitely operator error.
+        #
+        # app.add_css_files -> look at the source, it registers first and then it adds
+        # to the html builder, so we want to check if it is already there first before
+        # trying to add it again.
         for css in tree_data_css:
-            add_css_file(css)
+            already_there = False
+            for filename, attributes in app.registry.css_files:
+                if css == filename:
+                    already_there = True
+                    break
+            if not already_there:
+                app.add_css_file(css)
 
-        # Add the javascript
         for js in tree_data_js:
-            add_js_file(js)
+            already_there = False
+            for filename, attributes in app.registry.js_files:
+                if js == filename:
+                    already_there = True
+                    break
+            if not already_there:
+                app.add_js_file(js)
 
         logger.info(utils.progress("Exhale: added tree view css / javascript."))
