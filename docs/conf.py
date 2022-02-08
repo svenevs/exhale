@@ -26,7 +26,6 @@ version = exhale.__version__
 release = exhale.__version__
 
 # -- General configuration -------------------------------------------------------------
-
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
@@ -35,9 +34,7 @@ extensions = [
     # NOTE: viewcode isn't working, probably because of how my docs are setup
     #       and the lack of __all__ definitions?
     "sphinx.ext.viewcode",
-    "sphinx_issues",
-    "breathe",
-    "exhale"
+    "sphinx_issues"
 ]
 # make linkcheck does not support GitHub README.md anchors (they are synthetic anchors)
 linkcheck_ignore = [
@@ -47,7 +44,6 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build"]
 
 # -- Options for HTML output -----------------------------------------------------------
-
 html_title = "Exhale: Automatic C++ Library API Generation"
 html_short_title = "Exhale"
 html_theme = "sphinx_rtd_theme"
@@ -58,25 +54,20 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 # -- sphinx.ext.autodoc Extension Configuration ----------------------------------------
-
 autodoc_member_order = "bysource"
 
 # -- sphinx.ext.todo Extension Configuration -------------------------------------------
-
 todo_include_todos = True
 todo_link_only = True
 
 # -- sphinx.ext.viewcode Extension Configuration ---------------------------------------
-
 viewcode_follow_imported_members = True
 
 # -- sphinx_issues Extension Configuration ---------------------------------------------
-
 # See: https://github.com/sloria/sphinx-issues
 issues_github_path = "svenevs/exhale"
 
 # -- Intersphinx Extension Configuration -----------------------------------------------
-
 intersphinx_mapping = {
     "python": ("http://docs.python.org/", None),
     "sphinx": ("http://www.sphinx-doc.org/en/master", None),
@@ -87,47 +78,6 @@ intersphinx_mapping = {
         "_intersphinx/bs4_objects.inv"
     )
 }
-
-# -- Multiproject monkeypatch ----------------------------------------------------------
-# Generate a test project for everything under ../testing/projects
-# https://github.com/mithro/sphinx-contrib-mithro/tree/master/sphinx-contrib-exhale-multiproject
-import exhale_multiproject_monkeypatch
-
-test_projects = [
-    d for d in sorted((repo_root / "testing" / "projects").iterdir())
-    if d.is_dir() and d.name != "__pycache__"
-]
-
-breathe_projects = {}
-breathe_projects_source = {}
-exhale_projects_args = {}
-breathe_default_project = str(test_projects[0])
-test_projects_docs = repo_root / "docs" / "testing" / "projects"
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-nitpick_ignore_regex
-# TODO(warnings) neither work, don't understand, removed -W from tox.ini (NOT ideal)
-# could not identify a way to ignore specific warnings on specific files in sphinx
-nitpick_ignore_regex = [(r".*", r"testing.projects.*")]
-suppress_warnings = [
-    "Duplicate C++ declaration"
-]
-for d in test_projects:
-    breathe_projects[d.name] = f"_doxygen/{d.name}/xml"
-    breathe_projects_source[d.name] = str(d)
-    exhale_projects_args[d.name] = {
-        "exhaleDoxygenStdin": dedent(f"INPUT = {str(d / 'include')}"),
-        "doxygenStripFromPath": str(d),
-        "containmentFolder": str(test_projects_docs / d.name.replace(" ", "_")),
-        "rootFileTitle": f"{d.name} Test Project Build",
-    }
-
-exhale_args = {
-    "rootFileTitle": "Unknown",
-    "containmentFolder": "unknown",
-    "rootFileName": "library_root.rst",
-    "createTreeView": True,
-    "exhaleExecutesDoxygen": True,
-}
-
 
 def setup(app):
     # https://github.com/sphinx-doc/sphinx/issues/5562#issuecomment-434296574

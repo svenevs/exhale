@@ -1391,13 +1391,13 @@ def apply_sphinx_configurations(app):
 
     # Require that containmentFolder is a subpath of the sphinx application source
     # directory (otherwise Sphinx will not process the generated documents).
-    cf_p = Path(containmentFolder).absolute()
+    containment_folder_parent = Path(containmentFolder).absolute()
     app_srcdir = Path(app.srcdir).absolute()
     try:
         # relative_to will raise if it is not a subchild
-        cf_p.relative_to(app_srcdir)
+        containment_folder_parent.relative_to(app_srcdir)
         # but if it is the same path (docs/ directory) relative_to succeeds
-        if cf_p == app_srcdir:
+        if containment_folder_parent == app_srcdir:
             raise ValueError
     except:
         raise ConfigError(
@@ -1405,11 +1405,6 @@ def apply_sphinx_configurations(app):
                 containmentFolder, app.srcdir
             )
         )
-
-    try:
-        cf_p.mkdir(parents=True, exist_ok=True)
-    except Exception as e:
-        raise ConfigError(f"Could not create directory tree {str(cf_p)}: {e}")
 
     global _app_src_dir
     _app_src_dir = os.path.abspath(app.srcdir)

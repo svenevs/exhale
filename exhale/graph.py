@@ -18,6 +18,7 @@ import sys
 import codecs
 import hashlib
 import itertools
+from pathlib import Path
 import platform
 import textwrap
 
@@ -2269,11 +2270,12 @@ class ExhaleRoot(object):
         ``configs.afterTitleDescription``.
         '''
         try:
-            if not os.path.isdir(self.root_directory):
-                os.mkdir(self.root_directory)
-        except:
+            # TODO: update to pathlib everywhere...
+            root_directory_path = Path(self.root_directory)
+            root_directory_path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
             utils.fancyError(
-                "Cannot create the directory: {0}".format(self.root_directory)
+                "Cannot create the directory {0} {1}".format(self.root_directory, e)
             )
         try:
             with codecs.open(self.full_root_file_path, "w", "utf-8") as generated_index:
