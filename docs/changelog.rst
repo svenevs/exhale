@@ -8,7 +8,7 @@ Changelog
 v0.3.0
 ----------------------------------------------------------------------------------------
 
-- Do not write source files for empty hierarchies (:pr:`134`).
+- Do not write source files for empty hierarchies (:pr:`134`, :pr:`147`).
 - Support specialized template functions (:pr:`117`).
 - Prevent sphinx from processing files that are incorporated via a ``.. include::``
   directive by renaming them to ``.rst.include`` suffix (:pr:`136`).
