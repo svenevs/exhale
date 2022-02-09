@@ -16,6 +16,10 @@ sys.path.insert(0, str(repo_root))  # path to `exhale`
 
 import exhale
 
+import shutil
+dot = shutil.which("dot")
+raise RuntimeError(f"Dot: {dot}")
+
 # -- Project information ---------------------------------------------------------------
 needs_sphinx = "4.3.1"
 
