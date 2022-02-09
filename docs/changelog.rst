@@ -13,7 +13,7 @@ v0.3.0
 - Prevent sphinx from processing files that are incorporated via a ``.. include::``
   directive by renaming them to ``.rst.include`` suffix (:pr:`136`).
 - Add ``:project: {app.config.breathe_default_project}`` to every breathe directive
-  to make the monkeypatch (:issue:`27`) work (:pr:`139`).
+  to make the monkeypatch (:issue:`27`) work (:pr:`139`, :pr:`148`).
 - Do not require :data:`~exhale.configs.containmentFolder` to be a "direct"
   subdirectory of ``app.srcdir``, allow any arbitrary subdirectory (:pr:`144`).
 - Update how css and js are added using a dubious check into the sphinx internals before
