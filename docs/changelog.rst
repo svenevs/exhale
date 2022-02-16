@@ -5,6 +5,13 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.1
+----------------------------------------------------------------------------------------
+
+- Fix regression introduced by :pr:`139` where custom ``"class"`` and ``"struct"``
+  :data:`~exhale.configs.customSpecificationsMapping` were being overwritten
+  (:pr:`154`).
+
 v0.3.0
 ----------------------------------------------------------------------------------------
 
