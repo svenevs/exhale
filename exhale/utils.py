@@ -562,9 +562,8 @@ def specificationsForKind(kind):
     # use the custom directives function
     if configs.customSpecificationsMapping:
         ret = configs.customSpecificationsMapping[kind]
-
     # otherwise, just provide class and struct
-    if kind == "class" or kind == "struct":
+    elif kind == "class" or kind == "struct":
         ret = [":members:", ":protected-members:", ":undoc-members:"]
 
     # the monkeypatch re-configures breathe_default_project each time which was
