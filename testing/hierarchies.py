@@ -990,10 +990,14 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
                     exhale_grand_child = candidate
                     break
         else:
+            identifier = test_grand_child.breathe_identifier()
             for candidate in exhale_child.children:
-                if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:
+                if candidate.kind == test_grand_child.kind and \
+                        candidate.breathe_identifier() == identifier:
                     exhale_grand_child = candidate
         if not exhale_grand_child:
+            import ipdb
+            ipdb.set_trace()
             raise RuntimeError("Matching child for [{0}] '{1}' not found!".format(
                 test_grand_child.kind, test_grand_child.name
             ))

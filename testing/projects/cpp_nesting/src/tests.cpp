@@ -7,6 +7,7 @@
  * License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode           *
  **************************************************************************************/
 #include <catch2/catch.hpp>
+#include <type_traits>
 
 /* ================================================================================== */
 
@@ -14,6 +15,75 @@
 TEST_CASE( "top_level", "[cpp-nesting]" ) {
     top_level tl("hiya");
     REQUIRE( tl.mName == "hiya" );
+}
+
+/* ================================================================================== */
+
+#include <nesting_specializations.hpp>
+TEST_CASE( "nesting_specializations", "[cpp-nesting]" ) {
+    REQUIRE(special::Normal().id() == "Normal");
+    REQUIRE(special::Normal::Nested().id() == "Nested");
+    REQUIRE(special::Normal::Nested::Like().id() == "Like");
+    REQUIRE(special::Normal::Nested::Like::Usual().id() == "Usual");
+
+    using VGA = special::Image<640, 480>;
+    REQUIRE(VGA::width == 640);
+    REQUIRE(VGA::height == 480);
+
+    // 2 channels is just awkward.
+    using WeirdBuffer = special::ImageBuffer<VGA, float, 2>;
+    REQUIRE(std::is_same_v<WeirdBuffer::Image_t, VGA>);
+    REQUIRE(WeirdBuffer::width == 640);
+    REQUIRE(WeirdBuffer::height == 480);
+    REQUIRE(std::is_same_v<WeirdBuffer::data_t, float>);
+    REQUIRE(WeirdBuffer::channels == 2);
+    WeirdBuffer::Data weird_data;// compilation test for changing Data
+    weird_data.vals[0] = 111.111f;
+    weird_data.vals[1] = 222.222f;
+    REQUIRE(std::abs(weird_data.vals[0] - 111.111f) < 1e-6);
+    REQUIRE(std::abs(weird_data.vals[1] - 222.222f) < 1e-6);
+    REQUIRE(WeirdBuffer::SomeThing<3>().id() == "3");
+    REQUIRE(WeirdBuffer().size() == 640 * 480 * 2 * sizeof(float));
+
+    // what a name!
+    using PngVgaRgba = special::ImageBuffer<VGA, uint8_t, 4>;
+    REQUIRE(std::is_same_v<PngVgaRgba::Image_t, VGA>);
+    REQUIRE(PngVgaRgba::width == 640);
+    REQUIRE(PngVgaRgba::height == 480);
+    REQUIRE(std::is_same_v<PngVgaRgba::data_t, uint8_t>);
+    REQUIRE(PngVgaRgba::channels == 4);
+    PngVgaRgba::Data pix{1, 2, 3, 4};// compilation test for changing Data
+    REQUIRE(pix.r == 1);
+    REQUIRE(pix.g == 2);
+    REQUIRE(pix.b == 3);
+    REQUIRE(pix.a == 4);
+    REQUIRE(PngVgaRgba::SomeThing().id() == "I AM SPECIAL!");
+    REQUIRE(PngVgaRgba().size() == 640 * 480 * 4);
+
+    // fully special
+    using Wow = special::ImageBuffer<special::Image<1920, 1080>, float, 128>;
+    REQUIRE(std::is_same_v<Wow::Image_t, special::Image<1920, 1080>>);
+    REQUIRE(Wow::width == 1920);
+    REQUIRE(Wow::height == 1080);
+    REQUIRE(std::is_same_v<Wow::data_t, float>);
+    Wow::Data wow_data;
+    wow_data.samples.emplace_back(0.0f);
+    REQUIRE(std::abs(wow_data.samples[0]) < 1e-6);
+    REQUIRE(Wow::SomeThing().id() == "Spectral");
+    REQUIRE(Wow().size() == 88);
+
+    // Base without specialization.
+    #if 0
+    REQUIRE(special::Base<1>().size() == 1);
+
+    // Base with specialization.
+    using B2 = special::Base<2>;
+    REQUIRE(B2().size() == 42);
+    REQUIRE(B2::InnerStruct().a() == 3);
+    REQUIRE(B2::AnotherNestedStruct().b() == 4);
+    REQUIRE(B2::InnerTemplatedStruct<3>().s() == '{');
+    REQUIRE(B2::InnerTemplatedStruct<4>().s() == '}');
+    #endif // 0
 }
 
 /* ================================================================================== */
