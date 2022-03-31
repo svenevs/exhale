@@ -20,7 +20,7 @@ from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides, no_cleanup
 from testing.hierarchies import                                                        \
     class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, file,            \
-    file_hierarchy
+    file_hierarchy, page
 
 
 # NOTE: See setUp / tearDown in CPPNestingPages below.  That file is being
@@ -119,9 +119,23 @@ class CPPNestingPages(ExhaleTestCase):
         # TODO: make this a parameter if we add more than two tests...
         if uses_mainpage:
             f_name = "page_town_rock.hpp"
+            outer_page = "index"
         else:
             f_name = "page_town_rock_alt.hpp"
-        file_hierarchy_dict[include_dir][file(f_name)] = {}
+            outer_page = "overview"
+
+        file_hierarchy_dict[include_dir][file(f_name)] = {
+            page(outer_page): {
+                page("intro"): {
+                    page("more_nesting"): {},
+                    page("more_nesting_redux"): {
+                        page("more_nesting_redux_again"): {},
+                        page("more_nesting_redux_again_again"): {}
+                    }
+                },
+                page("advanced"): {}
+            },
+        }
         compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict))
 
         # Validate the misc page hierarchy details.
