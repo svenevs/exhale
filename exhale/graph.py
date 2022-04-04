@@ -2401,10 +2401,10 @@ class ExhaleRoot(object):
             unique_id = node.refid
 
             # special treatment for templates
-            first_lt = node.name.find("<")
+            last_lt = node.name.rfind("<")
             last_gt  = node.name.rfind(">")
             # dealing with a template when this is true
-            if first_lt > -1 and last_gt > -1:
+            if last_lt > -1 and last_gt > -1:
                 # NOTE: this has to happen for partial / full template specializations
                 #       When specializations occur, the "<param1, param2>" etc show up
                 #       in `node.name`.
@@ -2412,10 +2412,23 @@ class ExhaleRoot(object):
                 #flake8failhere
                 # TODO: when specializations occur, can you find a way to link to them
                 # in the title?  Issue: nested templates prevent splitting on ','
-                title = "{cls}{templates}".format(
-                    cls=node.name[:first_lt].split("::")[-1],  # remove namespaces
-                    templates=node.name[first_lt:last_gt + 1]  # template params
-                )
+                if node.name[-1] == ">":  # this node ends on a template
+                    title = "{cls}{templates}".format(
+                        cls=node.name[:last_lt].split("::")[-1],  # remove namespaces
+                        templates=node.name[last_lt:last_gt + 1]  # template params
+                    )
+                else:
+                    last_lt = node.name.rfind('<')
+                    last_member = node.name.rfind('::')
+                    if last_lt > last_member:  # template belongs to last type
+                        title = "{cls}{templates}".format(
+                            cls=node.name.split("::")[-1],  # remove namespaces
+                            templates=node.name[last_lt:last_gt + 1]  # template params
+                        )
+                    else:  # template doesn't belong to nested type
+                        title = "{cls}".format(
+                            cls=node.name.split("::")[-1]  # remove the namespace
+                        )
             else:
                 title = node.name.split("::")[-1]
 
