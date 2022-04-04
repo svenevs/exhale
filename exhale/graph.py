@@ -246,6 +246,12 @@ class ExhaleNode(object):
         else:
             return self.kind < other.kind
 
+    def __str__(self):
+        return f"{self.kind}: {self.name}"
+
+    def __repr__(self):
+        return self.__str__()
+
     def set_owner(self, root):
         """Sets the :class:`~exhale.graph.ExhaleRoot` owner ``self.root_owner``."""
         # needed to be able to track the page orderings as presented in index.xml

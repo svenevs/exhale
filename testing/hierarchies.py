@@ -79,6 +79,9 @@ class node(ExhaleNode):  # noqa: N801
         """
         return "{0}: {1}".format(self.kind, self.name)
 
+    def __repr__(self):
+        return self.__str__()
+
     def toConsole(self, level):
         """
         Print this node to the console, and call ``toConsole`` for all children.
@@ -1038,10 +1041,10 @@ def compare_class_hierarchy(test, test_root):
 
     # Run some preliminary tests
     exhale_root = get_exhale_root(test)
-    test.assertEqual(len(test_root.class_like), len(exhale_root.class_like))
-    test.assertEqual(len(test_root.enums), len(exhale_root.enums))
-    test.assertEqual(len(test_root.namespaces), len(exhale_root.namespaces))
-    test.assertEqual(len(test_root.unions), len(exhale_root.unions))
+    test.assertEqual(len(test_root.class_like), len(exhale_root.class_like), msg="Classes don't match")
+    test.assertEqual(len(test_root.enums), len(exhale_root.enums), msg="Enums don't match")
+    test.assertEqual(len(test_root.namespaces), len(exhale_root.namespaces), msg="Namespaces don't match")
+    test.assertEqual(len(test_root.unions), len(exhale_root.unions), msg="Unions don't match")
 
     for test_obj in test_root.top_level:
         exhale_obj = None
@@ -1108,8 +1111,8 @@ def compare_file_hierarchy(test, test_root):
 
     # Run some preliminary tests
     exhale_root = get_exhale_root(test)
-    test.assertEqual(len(test_root.dirs), len(exhale_root.dirs))
-    test.assertEqual(len(test_root.files), len(exhale_root.files))
+    test.assertEqual(len(test_root.dirs), len(exhale_root.dirs), msg="Root dirs don't match")
+    test.assertEqual(len(test_root.files), len(exhale_root.files), msg="Root files don't match")
     for test_obj in test_root.top_level:
         exhale_obj = None
         if test_obj.kind == "dir":
@@ -1130,7 +1133,7 @@ def compare_file_hierarchy(test, test_root):
         _compare_children("file", test, test_obj, exhale_obj)
 
     # Functions needs to be checked explicitly (overloaded function names are same...)
-    test.assertEqual(len(test_root.functions), len(exhale_root.functions))
+    test.assertEqual(len(test_root.functions), len(exhale_root.functions), msg="functions don't match")
 
     def find_overloads(root):
         # keys: string function names
