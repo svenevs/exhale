@@ -834,3 +834,67 @@ def fancyError(critical_msg=None, lex="py3tb", singleton_hook=None):
             ))
 
     os._exit(1)
+
+
+def groupsFromBalancedBrackets(string : str, left_bracket : str, right_bracket : str):
+    """Returns a (nested) list of characters with their corresponding children (if any)"""
+    def push(obj, l, depth):
+        while depth:
+            l = l[-1]
+            depth -= 1
+        l.append(obj)
+
+    groups = []
+    depth = 0
+    try:
+        for idx, char in enumerate(string):
+            if char == left_bracket:
+                push([], groups, depth)
+                depth += 1
+            elif char == right_bracket:
+                depth -= 1
+            else:
+                push(char, groups, depth)
+    except IndexError:
+        raise ValueError('Parentheses mismatch')
+    if depth > 0:
+        raise ValueError('Parentheses mismatch')
+    else:
+        return groups
+
+
+def groupsToNamedGroups(groups, outer_group):
+    """Turns the output of groupsFromBalancedBrackets into a list of strings"""
+    current_string = ""
+    for char in groups:
+        if type(char) is type([]):
+            outer_group.append(current_string)
+            outer_group.append([])
+            groupsToNamedGroups(char, outer_group[-1])
+            current_string = ""
+        else:
+            if char == ' ':
+                continue
+            elif char == ',':
+                if current_string != '':
+                    outer_group.append(current_string)
+                    current_string = ''
+            else:
+                current_string += char
+    if current_string != '':
+        outer_group.append(current_string)
+
+
+def templateListToNodeName(template_list):
+    return_str = ''
+    for elem in template_list:
+        if type(elem) is type([]):
+            return_str = return_str.rstrip(' ,')
+            return_str += "<"
+            return_str += templateListToNodeName(elem)
+            return_str += '>'
+        else:
+            return_str += str(elem)
+            return_str += ', '
+    return_str = return_str.rstrip(' ,')
+    return return_str

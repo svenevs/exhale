@@ -23,27 +23,27 @@ def default_class_hierarchy_dict():
                 clike("struct", "Data"): {},
                 clike("struct", "SomeThing", template=["int Tnested"]): {}
             },
-            clike("class", "ImageBuffer", template=[
+            clike("class", "ImageBuffer< TImage, Tdata_t, 4 >", template=[
                 "class TImage", "typename Tdata_t"]): {
                 clike("struct", "Data"): {},
                 clike("struct", "SomeThing"): {}
             },
-            clike("class", "ImageBuffer"): {
+            clike("class", "ImageBuffer< Image< 1920, 1080 >, float, 128 >"): {
                 clike("struct", "Data"): {},
                 clike("struct", "SomeThing"): {}
             },
             # TODO: undo #if 0 in nesting_specializations.hpp
-            # clike("struct", "Base", template=["size_t N"]): {
-            #     clike("struct", "A"): {}
-            # },
-            # clike("struct", "Base"): {
-            #     clike("struct", "InnerStruct"): {},
-            #     clike("struct", "AnotherNestedStruct"): {},
-            #     clike("struct", "InnerTemplatedStruct", template=[
-            #         "size_t M", "typename no_use_this = void"]): {},
-            #     clike("struct", "InnerTempaltedStruct", template=[
-            #         "typename dont_use_this"]): {}
-            # }
+            clike("struct", "Base", template=["size_t N"]): {
+                clike("struct", "A"): {}
+            },
+            clike("struct", "Base< 2 >", template=["2"]): {
+                clike("struct", "InnerStruct"): {},
+                clike("struct", "AnotherNestedStruct"): {},
+                clike("struct", "InnerTemplatedStruct", template=[
+                    "size_t M", "typename no_use_this = void"]): {},
+                clike("struct", "InnerTemplatedStruct< 4, dont_use_this >", template=[
+                    "typename dont_use_this"]): {}
+            }
         },
         namespace("nested"): {
             clike("struct", "one"): {
@@ -95,27 +95,27 @@ def default_file_hierarchy_dict():
                         clike("struct", "Data"): {},
                         clike("struct", "SomeThing", template=["int Tnested"]): {}
                     },
-                    clike("class", "ImageBuffer", template=[
+                    clike("class", "ImageBuffer< TImage, Tdata_t, 4 >", template=[
                         "class TImage", "typename Tdata_t"]): {
                         clike("struct", "Data"): {},
                         clike("struct", "SomeThing"): {}
                     },
-                    clike("class", "ImageBuffer"): {
+                    clike("class", "ImageBuffer< Image< 1920, 1080 >, float, 128 >"): {
                         clike("struct", "Data"): {},
                         clike("struct", "SomeThing"): {}
                     },
                     # TODO: undo #if 0 in nesting_specializations.hpp
-                    # clike("struct", "Base", template=["size_t N"]): {
-                    #     clike("struct", "A"): {}
-                    # },
-                    # clike("struct", "Base"): {
-                    #     clike("struct", "InnerStruct"): {},
-                    #     clike("struct", "AnotherNestedStruct"): {},
-                    #     clike("struct", "InnerTemplatedStruct", template=[
-                    #         "size_t M", "typename no_use_this = void"]): {},
-                    #     clike("struct", "InnerTempaltedStruct", template=[
-                    #         "typename dont_use_this"]): {}
-                    # }
+                    clike("struct", "Base", template=["size_t N"]): {
+                        clike("struct", "A"): {}
+                    },
+                    clike("struct", "Base< 2 >", template=["2"]): {
+                        clike("struct", "InnerStruct"): {},
+                        clike("struct", "AnotherNestedStruct"): {},
+                        clike("struct", "InnerTemplatedStruct", template=[
+                            "size_t M", "typename no_use_this = void"]): {},
+                        clike("struct", "InnerTemplatedStruct< 4, dont_use_this >", template=[
+                            "typename dont_use_this"]): {}
+                    }
                 }
             },
             directory("nested"): {

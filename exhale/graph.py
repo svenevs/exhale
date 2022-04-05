@@ -197,7 +197,8 @@ class ExhaleNode(object):
         if self.kind == "function":
             self.return_type = None # string (void, int, etc)
             self.parameters = [] # list of strings: ["int", "int"] for foo(int x, int y)
-            self.template = None # list of strings
+        if self.kind in ["function", "class", "struct"]:
+            self.template = [] # list of strings
 
     def __lt__(self, other):
         '''
@@ -2408,33 +2409,29 @@ class ExhaleRoot(object):
 
             # special treatment for templates
             last_lt = node.name.rfind("<")
-            last_gt  = node.name.rfind(">")
+            last_gt = node.name.rfind(">")
             # dealing with a template when this is true
             if last_lt > -1 and last_gt > -1:
                 # NOTE: this has to happen for partial / full template specializations
                 #       When specializations occur, the "<param1, param2>" etc show up
                 #       in `node.name`.
                 template_special = True
+                try:
+                    groups = utils.groupsFromBalancedBrackets(node.name, '<', '>')
+                    templates = []
+                    utils.groupsToNamedGroups(groups, templates)
+                    if type(templates[-1]) is type(str):  # it isn't a parameter list.
+                        title = templates[-1].split('::')[-1]
+                    else:
+                        template = utils.templateListToNodeName(templates)
+                        title = template.split('::')[-1]
+                except ValueError:
+                    sys.stderr.write(utils.critical(
+                        textwrap.dedent('''
+                            Mismatched template brackets for node {title}
+                        '''.format(title=node.name))
+                    ))
                 #flake8failhere
-                # TODO: when specializations occur, can you find a way to link to them
-                # in the title?  Issue: nested templates prevent splitting on ','
-                if node.name[-1] == ">":  # this node ends on a template
-                    title = "{cls}{templates}".format(
-                        cls=node.name[:last_lt].split("::")[-1],  # remove namespaces
-                        templates=node.name[last_lt:last_gt + 1]  # template params
-                    )
-                else:
-                    last_lt = node.name.rfind('<')
-                    last_member = node.name.rfind('::')
-                    if last_lt > last_member:  # template belongs to last type
-                        title = "{cls}{templates}".format(
-                            cls=node.name.split("::")[-1],  # remove namespaces
-                            templates=node.name[last_lt:last_gt + 1]  # template params
-                        )
-                    else:  # template doesn't belong to nested type
-                        title = "{cls}".format(
-                            cls=node.name.split("::")[-1]  # remove the namespace
-                        )
             else:
                 title = node.name.split("::")[-1]
 

@@ -998,7 +998,7 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
                 if candidate.kind == test_grand_child.kind and \
                         candidate.breathe_identifier() == identifier:
                     exhale_grand_child = candidate
-        if not exhale_grand_child:
+        if exhale_grand_child is None:
             import ipdb
             ipdb.set_trace()
             raise RuntimeError("Matching child for [{0}] '{1}' not found!".format(
