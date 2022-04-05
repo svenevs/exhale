@@ -20,7 +20,7 @@ from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides, no_cleanup
 from testing.hierarchies import                                                        \
     class_hierarchy, compare_class_hierarchy, compare_file_hierarchy, file,            \
-    file_hierarchy
+    file_hierarchy, page
 
 
 # NOTE: See setUp / tearDown in CPPNestingPages below.  That file is being
@@ -119,10 +119,42 @@ class CPPNestingPages(ExhaleTestCase):
         # TODO: make this a parameter if we add more than two tests...
         if uses_mainpage:
             f_name = "page_town_rock.hpp"
+            # Not sure why, but when it's a mainpage it's called "index" and when it's not it's called "overview"
+            # this is a bit hacky but seems to fix it.
+            custom_page = "index"
         else:
             f_name = "page_town_rock_alt.hpp"
-        file_hierarchy_dict[include_dir][file(f_name)] = {}
-        compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict))
+            custom_page = "overview"
+        file_hierarchy_dict[include_dir][file(f_name)] = {
+            page(custom_page): {
+                page("intro"): {
+                    page("more_nesting"): {},
+                    page("more_nesting_redux"): {
+                        page("more_nesting_redux_again"): {},
+                        page("more_nesting_redux_again_again"): {},
+                    },
+                },
+                page("advanced"): {}
+            },
+        }
+        file_hierarchy_temp = file_hierarchy(file_hierarchy_dict)
+
+        def flattenHierarchyFile(file):
+            # Exhale makes separate files for everything, this flattens the children of nested files
+            # and makes it into one list, allowing for the tests to only define the nested structure
+            children = file.children
+            new_children = []
+            for child in children:
+                if child.kind == 'page' and len(child.children) > 0:
+                    for subchild in flattenHierarchyFile(child):
+                        new_children.append(subchild)
+            return children + new_children
+        # Fix for doxygen pages, the hierarchy in the tests needs to be flattened to get the same
+        # result as the normal graph does.
+        for i, f in enumerate(file_hierarchy_temp.files):
+            file_hierarchy_temp.files[i].children = flattenHierarchyFile(f)
+
+        compare_file_hierarchy(self, file_hierarchy_temp)
 
         # Validate the misc page hierarchy details.
         exhale_root = self.app.exhale_root

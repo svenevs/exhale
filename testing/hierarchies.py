@@ -43,6 +43,7 @@ __all__ = [
     "typedef",
     "variable",
     "file",
+    "page",
     "directory",
     "union",
     "compare_file_hierarchy", "compare_class_hierarchy"
@@ -191,6 +192,30 @@ class file(node):  # noqa: N801
         Return ``"{self.kind}: {self.location}"``.
         """
         return "{0}: {1}".format(self.kind, self.location)
+
+
+class page(node):  # noqa: N801
+    """
+    Represent a ``page``.
+
+    .. note::
+
+       This class may only appear in a file hierarchy, not a class hierarchy.
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the page being represented.
+    """
+
+    def __init__(self, name):
+        super(page, self).__init__(name, "page")
+        self.location = None
+
+    def __str__(self):
+        """
+        Return ``"{self.kind}: {self.name}"``.
+        """
+        return "{0}: {1}".format(self.kind, self.name)
 
 
 class function(node):  # noqa: N801
@@ -449,6 +474,7 @@ class root(object):  # noqa: N801
         self.functions  = []
         self.dirs       = []
         self.files      = []
+        self.pages      = []
         self.groups     = []
         self.namespaces = []
         self.typedefs   = []
@@ -535,6 +561,8 @@ class root(object):  # noqa: N801
             lst_name = "dirs"
         elif kind == "file":
             lst_name = "files"
+        elif kind == "page":
+            lst_name = "pages"
         elif kind == "namespace":
             lst_name = "namespaces"
         elif kind == "typedef":
@@ -581,6 +609,7 @@ class root(object):  # noqa: N801
                     )
 
             # make sure children of files have 'def_in_file' set
+            # same goes for doxygen pages/subpages
             if parent.kind == "file":
                 if child.kind == "namespace":
                     parent.namespaces_used.append(child)
@@ -591,6 +620,9 @@ class root(object):  # noqa: N801
                 child.def_in_file = parent
             else:
                 child.parent = parent
+                if child.kind == 'page' and parent.kind == 'page':
+                    # Doxygen can have subpages which will be defined in whatever the parent page is.
+                    child.def_in_file = parent.def_in_file
 
             if child not in parent.children:
                 if not (parent.kind == "file" and child.kind == "namespace"):

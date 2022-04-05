@@ -131,7 +131,7 @@ namespace special {
         constexpr int size() const { return 88; }
     };
 
-#if 0
+#if 1
     /** The original example expanded a bit. Thanks florian for making it
      * copy-pasteable :) */
     template <size_t N>
