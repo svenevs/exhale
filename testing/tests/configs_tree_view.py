@@ -34,202 +34,428 @@ class_hierarchy_ground_truth = {
                 - :ref:`exhale_struct_structnested_1_1two_1_1params`
                     - :ref:`exhale_union_unionnested_1_1two_1_1params_1_1four__bytes`
             - :ref:`exhale_union_unionnested_1_1four__bytes`
+        - :ref:`namespace_special`
+            - :ref:`exhale_struct_structspecial_1_1_base`
+                - :ref:`exhale_struct_structspecial_1_1_base_1_1_a`
+            - :ref:`exhale_struct_structspecial_1_1_base_3_012_01_4`
+                - :ref:`exhale_struct_structspecial_1_1_base_3_012_01_4_1_1_another_nested_struct`
+                - :ref:`exhale_struct_structspecial_1_1_base_3_012_01_4_1_1_inner_struct`
+                - :ref:`exhale_struct_structspecial_1_1_base_3_012_01_4_1_1_inner_templated_struct`
+                - :ref:`exhale_struct_structspecial_1_1_base_3_012_01_4_1_1_inner_templated_struct_3_014_00_01dont__use__this_01_4`
+            - :ref:`exhale_struct_structspecial_1_1_image`
+            - :ref:`exhale_struct_structspecial_1_1_normal`
+                - :ref:`exhale_struct_structspecial_1_1_normal_1_1_nested`
+                    - :ref:`exhale_struct_structspecial_1_1_normal_1_1_nested_1_1_like`
+                        - :ref:`exhale_struct_structspecial_1_1_normal_1_1_nested_1_1_like_1_1_usual`
+            - :ref:`exhale_class_classspecial_1_1_image_buffer`
+                - :ref:`exhale_struct_structspecial_1_1_image_buffer_1_1_data`
+                - :ref:`exhale_struct_structspecial_1_1_image_buffer_1_1_some_thing`
+            - :ref:`exhale_class_classspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4`
+                - :ref:`exhale_struct_structspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_data`
+                - :ref:`exhale_struct_structspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_some_thing`
+            - :ref:`exhale_class_classspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4`
+                - :ref:`exhale_struct_structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_data`
+                - :ref:`exhale_struct_structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_some_thing`
         - :ref:`exhale_struct_structtop__level`
     '''),
     "collapsible_lists": dedent(r'''
         <ul class="treeView" id="class-treeView">
-        <li>
-            <ul class="collapsibleList">
-            <li>
-                Namespace <a href="namespace_nested.html#namespace-nested">nested</a>
-                <ul>
-                <li>
-                    Namespace <a href="namespace_nested__dual_nested.html#namespace-nested-dual-nested">nested::dual_nested</a>
-                    <ul>
-                    <li>
-                        Struct <a href="structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one">one</a>
-                        <ul>
-                        <li class="lastChild">
-                            Struct <a href="structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params">one::params</a>
-                            <ul>
-                            <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                            </ul>
-                        </li>
-                        </ul>
-                    </li>
-                    <li class="lastChild">
-                        Struct <a href="structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two">two</a>
-                        <ul>
-                        <li class="lastChild">
-                            Struct <a href="structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params">two::params</a>
-                            <ul>
-                            <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                            </ul>
-                        </li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li>
-                    Struct <a href="structnested_1_1one.html#exhale-struct-structnested-1-1one">one</a>
-                    <ul>
-                    <li class="lastChild">
-                        Struct <a href="structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params">one::params</a>
-                        <ul>
-                        <li class="lastChild">Union <a href="unionnested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li>
-                    Struct <a href="structnested_1_1two.html#exhale-struct-structnested-1-1two">two</a>
-                    <ul>
-                    <li class="lastChild">
-                        Struct <a href="structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params">two::params</a>
-                        <ul>
-                        <li class="lastChild">Union <a href="unionnested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li class="lastChild">Union <a href="unionnested_1_1four__bytes.html#exhale-union-unionnested-1-1four-bytes">four_bytes</a></li>
-                </ul>
-            </li>
-            <li class="lastChild">Struct <a href="structtop__level.html#exhale-struct-structtop-level">top_level</a></li>
+     <li>
+       <ul class="collapsibleList">
+         <li>
+           Namespace <a href="namespace_nested.html#namespace-nested">nested</a>
+           <ul>
+             <li>
+               Namespace <a href="namespace_nested__dual_nested.html#namespace-nested-dual-nested">nested::dual_nested</a>
+               <ul>
+                 <li>
+                   Struct <a href="structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one">one</a>
+                   <ul>
+                     <li class="lastChild">
+                       Struct <a href="structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params">one::params</a>
+                       <ul>
+                         <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                       </ul>
+                     </li>
+                   </ul>
+                 </li>
+                 <li class="lastChild">
+                   Struct <a href="structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two">two</a>
+                   <ul>
+                     <li class="lastChild">
+                       Struct <a href="structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params">two::params</a>
+                       <ul>
+                         <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                       </ul>
+                     </li>
+                   </ul>
+                 </li>
+               </ul>
+             </li>
+             <li>
+               Struct <a href="structnested_1_1one.html#exhale-struct-structnested-1-1one">one</a>
+               <ul>
+                 <li class="lastChild">
+                   Struct <a href="structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params">one::params</a>
+                   <ul>
+                     <li class="lastChild">Union <a href="unionnested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                   </ul>
+                 </li>
+               </ul>
+             </li>
+             <li>
+               Struct <a href="structnested_1_1two.html#exhale-struct-structnested-1-1two">two</a>
+               <ul>
+                 <li class="lastChild">
+                   Struct <a href="structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params">two::params</a>
+                   <ul>
+                     <li class="lastChild">Union <a href="unionnested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                   </ul>
+                 </li>
+               </ul>
+             </li>
+             <li class="lastChild">Union <a href="unionnested_1_1four__bytes.html#exhale-union-unionnested-1-1four-bytes">four_bytes</a></li>
+           </ul>
+         </li>
+         <li>
+           Namespace <a href="namespace_special.html#namespace-special">special</a>
+           <ul>
+             <li>
+               Template Struct <a href="structspecial_1_1_base.html#exhale-struct-structspecial-1-1-base">Base</a>
+               <ul>
+                 <li class="lastChild">Struct <a href="structspecial_1_1_base_1_1_a.html#exhale-struct-structspecial-1-1-base-1-1-a">Base::A</a></li>
+               </ul>
+             </li>
+             <li>
+               Template <a href="structspecial_1_1_base_3_012_01_4.html#exhale-struct-structspecial-1-1-base-3-012-01-4">Struct Base&lt;2&gt;</a>
+               <ul>
+                 <li>Template <a href="structspecial_1_1_base_3_012_01_4_1_1_another_nested_struct.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-another-nested-struct">Struct Base&lt; 2 &gt;::AnotherNestedStruct</a></li>
+                 <li>Template <a href="structspecial_1_1_base_3_012_01_4_1_1_inner_struct.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-inner-struct">Struct Base&lt; 2 &gt;::InnerStruct</a></li>
+                 <li>Template <a href="structspecial_1_1_base_3_012_01_4_1_1_inner_templated_struct.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-inner-templated-struct">Struct Base&lt; 2 &gt;::InnerTemplatedStruct</a></li>
+                 <li class="lastChild">Template <a href="structspecial_1_1_base_3_012_01_4_1_1_inner_templated_struct_3_014_00_01dont__use__this_01_4.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-inner-templated-struct-3-014-00-01dont-use-this-01-4">Struct Base&lt; 2 &gt;::InnerTemplatedStruct&lt;4, dont_use_this&gt;</a></li>
+               </ul>
+             </li>
+             <li>Template Struct <a href="structspecial_1_1_image.html#exhale-struct-structspecial-1-1-image">Image</a></li>
+             <li>
+               Struct <a href="structspecial_1_1_normal.html#exhale-struct-structspecial-1-1-normal">Normal</a>
+               <ul>
+                 <li class="lastChild">
+                   Struct <a href="structspecial_1_1_normal_1_1_nested.html#exhale-struct-structspecial-1-1-normal-1-1-nested">Normal::Nested</a>
+                   <ul>
+                     <li class="lastChild">
+                       Struct <a href="structspecial_1_1_normal_1_1_nested_1_1_like.html#exhale-struct-structspecial-1-1-normal-1-1-nested-1-1-like">Nested::Like</a>
+                       <ul>
+                         <li class="lastChild">Struct <a href="structspecial_1_1_normal_1_1_nested_1_1_like_1_1_usual.html#exhale-struct-structspecial-1-1-normal-1-1-nested-1-1-like-1-1-usual">Like::Usual</a></li>
+                       </ul>
+                     </li>
+                   </ul>
+                 </li>
+               </ul>
+             </li>
+             <li>
+               Template Class <a href="classspecial_1_1_image_buffer.html#exhale-class-classspecial-1-1-image-buffer">ImageBuffer</a>
+               <ul>
+                 <li>Struct <a href="structspecial_1_1_image_buffer_1_1_data.html#exhale-struct-structspecial-1-1-image-buffer-1-1-data">ImageBuffer::Data</a></li>
+                 <li class="lastChild">Template Struct <a href="structspecial_1_1_image_buffer_1_1_some_thing.html#exhale-struct-structspecial-1-1-image-buffer-1-1-some-thing">ImageBuffer::SomeThing</a></li>
+               </ul>
+             </li>
+             <li>
+               Template <a href="classspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4.html#exhale-class-classspecial-1-1-image-buffer-3-01-image-3-011920-00-011080-01-4-00-01float-00-01128-01-4">Class ImageBuffer&lt;Image&lt;1920, 1080&gt;float, 128&gt;</a>
+               <ul>
+                 <li>Template <a href="structspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_data.html#exhale-struct-structspecial-1-1-image-buffer-3-01-image-3-011920-00-011080-01-4-00-01float-00-01128-01-4-1-1-data">Struct ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;::Data</a></li>
+                 <li class="lastChild">Template <a href="structspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_some_thing.html#exhale-struct-structspecial-1-1-image-buffer-3-01-image-3-011920-00-011080-01-4-00-01float-00-01128-01-4-1-1-some-thing">Struct ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;::SomeThing</a></li>
+               </ul>
+             </li>
+             <li class="lastChild">
+               Template Class <a href="classspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4.html#exhale-class-classspecial-1-1-image-buffer-3-01-t-image-00-01-tdata-t-00-014-01-4">ImageBuffer&lt;TImage, Tdata_t, 4&gt;</a>
+               <ul>
+                 <li>Template <a href="structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_data.html#exhale-struct-structspecial-1-1-image-buffer-3-01-t-image-00-01-tdata-t-00-014-01-4-1-1-data">Struct ImageBuffer&lt; TImage, Tdata_t, 4 &gt;::Data</a></li>
+                 <li class="lastChild">Template <a href="structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_some_thing.html#exhale-struct-structspecial-1-1-image-buffer-3-01-t-image-00-01-tdata-t-00-014-01-4-1-1-some-thing">Struct ImageBuffer&lt; TImage, Tdata_t, 4 &gt;::SomeThing</a></li>
+               </ul>
+             </li>
+           </ul>
+         </li>
+         <li class="lastChild">Struct <a href="structtop__level.html#exhale-struct-structtop-level">top_level</a></li>
 
-            </ul>
-        </li><!-- only tree view element -->
-        </ul><!-- /treeView class-treeView -->
+       </ul>
+     </li><!-- only tree view element -->
+   </ul><!-- /treeView class-treeView -->
     '''),  # noqa: E501
     "bootstrap": dedent(r'''
         <div id="class-treeView"></div>
-        <script type="text/javascript">
-        function getClassHierarchyTree() {
-            return [
-            {
-                text: "<span class=\"text-muted\">Namespace</span> nested",
-                href: "namespace_nested.html#namespace-nested",
-                selectable: false,
-                tags: ['4'],
-
-                nodes: [
+           <script type="text/javascript">
+            function getClassHierarchyTree() {
+               return [
                 {
-                    text: "<span class=\"text-muted\">Namespace</span> nested::dual_nested",
-                    href: "namespace_nested__dual_nested.html#namespace-nested-dual-nested",
-                    selectable: false,
-                    tags: ['2'],
-
-                    nodes: [
+                  text: "<span class=\"text-muted\">Namespace</span> nested",
+                  href: "namespace_nested.html#namespace-nested",
+                  selectable: false,
+                  tags: ['4'],
+        
+                  nodes: [
                     {
-                        text: "<span class=\"text-muted\">Struct</span> one",
-                        href: "structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
+                      text: "<span class=\"text-muted\">Namespace</span> nested::dual_nested",
+                      href: "namespace_nested__dual_nested.html#namespace-nested-dual-nested",
+                      selectable: false,
+                      tags: ['2'],
+        
+                      nodes: [
                         {
-                            text: "<span class=\"text-muted\">Struct</span> one::params",
-                            href: "structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
+                          text: "<span class=\"text-muted\">Struct</span> one",
+                          href: "structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one",
+                          selectable: false,
+                          tags: ['1'],
+        
+                          nodes: [
                             {
-                                text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                                href: "unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1one-1-1params-1-1four-bytes",
-                                selectable: false,
+                              text: "<span class=\"text-muted\">Struct</span> one::params",
+                              href: "structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params",
+                              selectable: false,
+                              tags: ['1'],
+        
+                              nodes: [
+                                {
+                                  text: "<span class=\"text-muted\">Union</span> params::four_bytes",
+                                  href: "unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1one-1-1params-1-1four-bytes",
+                                  selectable: false,
+                                },
+                              ]
                             },
-                            ]
+                          ]
                         },
-                        ]
-                    },
-                    {
-                        text: "<span class=\"text-muted\">Struct</span> two",
-                        href: "structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
                         {
-                            text: "<span class=\"text-muted\">Struct</span> two::params",
-                            href: "structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
+                          text: "<span class=\"text-muted\">Struct</span> two",
+                          href: "structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two",
+                          selectable: false,
+                          tags: ['1'],
+        
+                          nodes: [
                             {
-                                text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                                href: "unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1two-1-1params-1-1four-bytes",
-                                selectable: false,
+                              text: "<span class=\"text-muted\">Struct</span> two::params",
+                              href: "structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params",
+                              selectable: false,
+                              tags: ['1'],
+        
+                              nodes: [
+                                {
+                                  text: "<span class=\"text-muted\">Union</span> params::four_bytes",
+                                  href: "unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1two-1-1params-1-1four-bytes",
+                                  selectable: false,
+                                },
+                              ]
                             },
-                            ]
+                          ]
                         },
-                        ]
+                      ]
                     },
-                    ]
-                },
-                {
-                    text: "<span class=\"text-muted\">Struct</span> one",
-                    href: "structnested_1_1one.html#exhale-struct-structnested-1-1one",
-                    selectable: false,
-                    tags: ['1'],
-
-                    nodes: [
                     {
-                        text: "<span class=\"text-muted\">Struct</span> one::params",
-                        href: "structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
+                      text: "<span class=\"text-muted\">Struct</span> one",
+                      href: "structnested_1_1one.html#exhale-struct-structnested-1-1one",
+                      selectable: false,
+                      tags: ['1'],
+        
+                      nodes: [
                         {
-                            text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                            href: "unionnested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1one-1-1params-1-1four-bytes",
-                            selectable: false,
+                          text: "<span class=\"text-muted\">Struct</span> one::params",
+                          href: "structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params",
+                          selectable: false,
+                          tags: ['1'],
+        
+                          nodes: [
+                            {
+                              text: "<span class=\"text-muted\">Union</span> params::four_bytes",
+                              href: "unionnested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1one-1-1params-1-1four-bytes",
+                              selectable: false,
+                            },
+                          ]
                         },
-                        ]
+                      ]
                     },
-                    ]
-                },
-                {
-                    text: "<span class=\"text-muted\">Struct</span> two",
-                    href: "structnested_1_1two.html#exhale-struct-structnested-1-1two",
-                    selectable: false,
-                    tags: ['1'],
-
-                    nodes: [
                     {
-                        text: "<span class=\"text-muted\">Struct</span> two::params",
-                        href: "structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
+                      text: "<span class=\"text-muted\">Struct</span> two",
+                      href: "structnested_1_1two.html#exhale-struct-structnested-1-1two",
+                      selectable: false,
+                      tags: ['1'],
+        
+                      nodes: [
                         {
-                            text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                            href: "unionnested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1two-1-1params-1-1four-bytes",
-                            selectable: false,
+                          text: "<span class=\"text-muted\">Struct</span> two::params",
+                          href: "structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params",
+                          selectable: false,
+                          tags: ['1'],
+        
+                          nodes: [
+                            {
+                              text: "<span class=\"text-muted\">Union</span> params::four_bytes",
+                              href: "unionnested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1two-1-1params-1-1four-bytes",
+                              selectable: false,
+                            },
+                          ]
                         },
-                        ]
+                      ]
                     },
-                    ]
+                    {
+                      text: "<span class=\"text-muted\">Union</span> four_bytes",
+                      href: "unionnested_1_1four__bytes.html#exhale-union-unionnested-1-1four-bytes",
+                      selectable: false,
+                    },
+                  ]
                 },
                 {
-                    text: "<span class=\"text-muted\">Union</span> four_bytes",
-                    href: "unionnested_1_1four__bytes.html#exhale-union-unionnested-1-1four-bytes",
-                    selectable: false,
+                  text: "<span class=\"text-muted\">Namespace</span> special",
+                  href: "namespace_special.html#namespace-special",
+                  selectable: false,
+                  tags: ['7'],
+        
+                  nodes: [
+                    {
+                      text: "<span class=\"text-muted\">Template Struct</span> Base",
+                      href: "structspecial_1_1_base.html#exhale-struct-structspecial-1-1-base",
+                      selectable: false,
+                      tags: ['1'],
+        
+                      nodes: [
+                        {
+                          text: "<span class=\"text-muted\">Struct</span> Base::A",
+                          href: "structspecial_1_1_base_1_1_a.html#exhale-struct-structspecial-1-1-base-1-1-a",
+                          selectable: false,
+                        },
+                      ]
+                    },
+                    {
+                      text: "<span class=\"text-muted\">Template</span> Struct Base&lt;2&gt;",
+                      href: "structspecial_1_1_base_3_012_01_4.html#exhale-struct-structspecial-1-1-base-3-012-01-4",
+                      selectable: false,
+                      tags: ['4'],
+        
+                      nodes: [
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct Base&lt; 2 &gt;::AnotherNestedStruct",
+                          href: "structspecial_1_1_base_3_012_01_4_1_1_another_nested_struct.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-another-nested-struct",
+                          selectable: false,
+                        },
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct Base&lt; 2 &gt;::InnerStruct",
+                          href: "structspecial_1_1_base_3_012_01_4_1_1_inner_struct.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-inner-struct",
+                          selectable: false,
+                        },
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct Base&lt; 2 &gt;::InnerTemplatedStruct",
+                          href: "structspecial_1_1_base_3_012_01_4_1_1_inner_templated_struct.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-inner-templated-struct",
+                          selectable: false,
+                        },
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct Base&lt; 2 &gt;::InnerTemplatedStruct&lt;4, dont_use_this&gt;",
+                          href: "structspecial_1_1_base_3_012_01_4_1_1_inner_templated_struct_3_014_00_01dont__use__this_01_4.html#exhale-struct-structspecial-1-1-base-3-012-01-4-1-1-inner-templated-struct-3-014-00-01dont-use-this-01-4",
+                          selectable: false,
+                        },
+                      ]
+                    },
+                    {
+                      text: "<span class=\"text-muted\">Template Struct</span> Image",
+                      href: "structspecial_1_1_image.html#exhale-struct-structspecial-1-1-image",
+                      selectable: false,
+                    },
+                    {
+                      text: "<span class=\"text-muted\">Struct</span> Normal",
+                      href: "structspecial_1_1_normal.html#exhale-struct-structspecial-1-1-normal",
+                      selectable: false,
+                      tags: ['1'],
+        
+                      nodes: [
+                        {
+                          text: "<span class=\"text-muted\">Struct</span> Normal::Nested",
+                          href: "structspecial_1_1_normal_1_1_nested.html#exhale-struct-structspecial-1-1-normal-1-1-nested",
+                          selectable: false,
+                          tags: ['1'],
+        
+                          nodes: [
+                            {
+                              text: "<span class=\"text-muted\">Struct</span> Nested::Like",
+                              href: "structspecial_1_1_normal_1_1_nested_1_1_like.html#exhale-struct-structspecial-1-1-normal-1-1-nested-1-1-like",
+                              selectable: false,
+                              tags: ['1'],
+        
+                              nodes: [
+                                {
+                                  text: "<span class=\"text-muted\">Struct</span> Like::Usual",
+                                  href: "structspecial_1_1_normal_1_1_nested_1_1_like_1_1_usual.html#exhale-struct-structspecial-1-1-normal-1-1-nested-1-1-like-1-1-usual",
+                                  selectable: false,
+                                },
+                              ]
+                            },
+                          ]
+                        },
+                      ]
+                    },
+                    {
+                      text: "<span class=\"text-muted\">Template Class</span> ImageBuffer",
+                      href: "classspecial_1_1_image_buffer.html#exhale-class-classspecial-1-1-image-buffer",
+                      selectable: false,
+                      tags: ['2'],
+        
+                      nodes: [
+                        {
+                          text: "<span class=\"text-muted\">Struct</span> ImageBuffer::Data",
+                          href: "structspecial_1_1_image_buffer_1_1_data.html#exhale-struct-structspecial-1-1-image-buffer-1-1-data",
+                          selectable: false,
+                        },
+                        {
+                          text: "<span class=\"text-muted\">Template Struct</span> ImageBuffer::SomeThing",
+                          href: "structspecial_1_1_image_buffer_1_1_some_thing.html#exhale-struct-structspecial-1-1-image-buffer-1-1-some-thing",
+                          selectable: false,
+                        },
+                      ]
+                    },
+                    {
+                      text: "<span class=\"text-muted\">Template</span> Class ImageBuffer&lt;Image&lt;1920, 1080&gt;float, 128&gt;",
+                      href: "classspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4.html#exhale-class-classspecial-1-1-image-buffer-3-01-image-3-011920-00-011080-01-4-00-01float-00-01128-01-4",
+                      selectable: false,
+                      tags: ['2'],
+        
+                      nodes: [
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;::Data",
+                          href: "structspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_data.html#exhale-struct-structspecial-1-1-image-buffer-3-01-image-3-011920-00-011080-01-4-00-01float-00-01128-01-4-1-1-data",
+                          selectable: false,
+                        },
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;::SomeThing",
+                          href: "structspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_some_thing.html#exhale-struct-structspecial-1-1-image-buffer-3-01-image-3-011920-00-011080-01-4-00-01float-00-01128-01-4-1-1-some-thing",
+                          selectable: false,
+                        },
+                      ]
+                    },
+                    {
+                      text: "<span class=\"text-muted\">Template Class</span> ImageBuffer&lt;TImage, Tdata_t, 4&gt;",
+                      href: "classspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4.html#exhale-class-classspecial-1-1-image-buffer-3-01-t-image-00-01-tdata-t-00-014-01-4",
+                      selectable: false,
+                      tags: ['2'],
+        
+                      nodes: [
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct ImageBuffer&lt; TImage, Tdata_t, 4 &gt;::Data",
+                          href: "structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_data.html#exhale-struct-structspecial-1-1-image-buffer-3-01-t-image-00-01-tdata-t-00-014-01-4-1-1-data",
+                          selectable: false,
+                        },
+                        {
+                          text: "<span class=\"text-muted\">Template</span> Struct ImageBuffer&lt; TImage, Tdata_t, 4 &gt;::SomeThing",
+                          href: "structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_some_thing.html#exhale-struct-structspecial-1-1-image-buffer-3-01-t-image-00-01-tdata-t-00-014-01-4-1-1-some-thing",
+                          selectable: false,
+                        },
+                      ]
+                    },
+                  ]
                 },
-                ]
-            },
-            {
-                text: "<span class=\"text-muted\">Struct</span> top_level",
-                href: "structtop__level.html#exhale-struct-structtop-level",
-                selectable: false,
-            },
-
-            ]
-        }
-        </script><!-- end getClassHierarchyTree() function -->
+                {
+                  text: "<span class=\"text-muted\">Struct</span> top_level",
+                  href: "structtop__level.html#exhale-struct-structtop-level",
+                  selectable: false,
+                },
+        
+               ]
+            }
+       </script><!-- end getClassHierarchyTree() function -->
     ''')  # noqa: E501
 }
 """
@@ -266,154 +492,161 @@ file_hierarchy_ground_truth = {
                     - :ref:`file_include_nested_one_one.hpp`
                 - :ref:`dir_include_nested_two`
                     - :ref:`file_include_nested_two_two.hpp`
+            - :ref:`file_include_nesting_specializations.hpp`
             - :ref:`file_include_top_level.hpp`
     '''),
     "collapsible_lists": dedent(r'''
         <ul class="treeView" id="file-treeView">
-        <li>
-            <ul class="collapsibleList">
-            <li class="lastChild">
-                Directory <a href="dir_include.html#dir-include">include</a>
-                <ul>
-                <li>
-                    Directory <a href="dir_include_nested.html#dir-include-nested">nested</a>
-                    <ul>
-                    <li>
-                        Directory <a href="dir_include_nested_dual_nested.html#dir-include-nested-dual-nested">dual_nested</a>
-                        <ul>
-                        <li>
-                            Directory <a href="dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one">one</a>
-                            <ul>
-                            <li class="lastChild">File <a href="file_include_nested_dual_nested_one_one.hpp.html#file-include-nested-dual-nested-one-one.hpp">one.hpp</a></li>
-                            </ul>
-                        </li>
-                        <li class="lastChild">
-                            Directory <a href="dir_include_nested_dual_nested_two.html#dir-include-nested-dual-nested-two">two</a>
-                            <ul>
-                            <li class="lastChild">File <a href="file_include_nested_dual_nested_two_two.hpp.html#file-include-nested-dual-nested-two-two.hpp">two.hpp</a></li>
-                            </ul>
-                        </li>
-                        </ul>
-                    </li>
-                    <li>
-                        Directory <a href="dir_include_nested_one.html#dir-include-nested-one">one</a>
-                        <ul>
-                        <li class="lastChild">File <a href="file_include_nested_one_one.hpp.html#file-include-nested-one-one.hpp">one.hpp</a></li>
-                        </ul>
-                    </li>
-                    <li class="lastChild">
-                        Directory <a href="dir_include_nested_two.html#dir-include-nested-two">two</a>
-                        <ul>
-                        <li class="lastChild">File <a href="file_include_nested_two_two.hpp.html#file-include-nested-two-two.hpp">two.hpp</a></li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li class="lastChild">File <a href="file_include_top_level.hpp.html#file-include-top-level.hpp">top_level.hpp</a></li>
-                </ul>
-            </li>
+     <li>
+       <ul class="collapsibleList">
+         <li class="lastChild">
+           Directory <a href="dir_include.html#dir-include">include</a>
+           <ul>
+             <li>
+               Directory <a href="dir_include_nested.html#dir-include-nested">nested</a>
+               <ul>
+                 <li>
+                   Directory <a href="dir_include_nested_dual_nested.html#dir-include-nested-dual-nested">dual_nested</a>
+                   <ul>
+                     <li>
+                       Directory <a href="dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one">one</a>
+                       <ul>
+                         <li class="lastChild">File <a href="file_include_nested_dual_nested_one_one.hpp.html#file-include-nested-dual-nested-one-one.hpp">one.hpp</a></li>
+                       </ul>
+                     </li>
+                     <li class="lastChild">
+                       Directory <a href="dir_include_nested_dual_nested_two.html#dir-include-nested-dual-nested-two">two</a>
+                       <ul>
+                         <li class="lastChild">File <a href="file_include_nested_dual_nested_two_two.hpp.html#file-include-nested-dual-nested-two-two.hpp">two.hpp</a></li>
+                       </ul>
+                     </li>
+                   </ul>
+                 </li>
+                 <li>
+                   Directory <a href="dir_include_nested_one.html#dir-include-nested-one">one</a>
+                   <ul>
+                     <li class="lastChild">File <a href="file_include_nested_one_one.hpp.html#file-include-nested-one-one.hpp">one.hpp</a></li>
+                   </ul>
+                 </li>
+                 <li class="lastChild">
+                   Directory <a href="dir_include_nested_two.html#dir-include-nested-two">two</a>
+                   <ul>
+                     <li class="lastChild">File <a href="file_include_nested_two_two.hpp.html#file-include-nested-two-two.hpp">two.hpp</a></li>
+                   </ul>
+                 </li>
+               </ul>
+             </li>
+             <li>File <a href="file_include_nesting_specializations.hpp.html#file-include-nesting-specializations.hpp">nesting_specializations.hpp</a></li>
+             <li class="lastChild">File <a href="file_include_top_level.hpp.html#file-include-top-level.hpp">top_level.hpp</a></li>
+           </ul>
+         </li>
 
-            </ul>
-        </li><!-- only tree view element -->
-        </ul><!-- /treeView file-treeView -->
+       </ul>
+     </li><!-- only tree view element -->
+   </ul><!-- /treeView file-treeView -->
     '''),  # noqa: E501
     "bootstrap": dedent(r'''
         <div id="file-treeView"></div>
-        <script type="text/javascript">
-        function getFileHierarchyTree() {
+       <script type="text/javascript">
+         function getFileHierarchyTree() {
             return [
-            {
-                text: "<span class=\"text-muted\">Directory</span> include",
-                href: "dir_include.html#dir-include",
-                selectable: false,
-                tags: ['2'],
-
-                nodes: [
-                {
-                    text: "<span class=\"text-muted\">Directory</span> nested",
-                    href: "dir_include_nested.html#dir-include-nested",
-                    selectable: false,
-                    tags: ['3'],
-
-                    nodes: [
-                    {
-                        text: "<span class=\"text-muted\">Directory</span> dual_nested",
-                        href: "dir_include_nested_dual_nested.html#dir-include-nested-dual-nested",
-                        selectable: false,
-                        tags: ['2'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">Directory</span> one",
-                            href: "dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
-                            {
-                                text: "<span class=\"text-muted\">File</span> one.hpp",
-                                href: "file_include_nested_dual_nested_one_one.hpp.html#file-include-nested-dual-nested-one-one.hpp",
-                                selectable: false,
-                            },
-                            ]
-                        },
-                        {
-                            text: "<span class=\"text-muted\">Directory</span> two",
-                            href: "dir_include_nested_dual_nested_two.html#dir-include-nested-dual-nested-two",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
-                            {
-                                text: "<span class=\"text-muted\">File</span> two.hpp",
-                                href: "file_include_nested_dual_nested_two_two.hpp.html#file-include-nested-dual-nested-two-two.hpp",
-                                selectable: false,
-                            },
-                            ]
-                        },
-                        ]
-                    },
-                    {
-                        text: "<span class=\"text-muted\">Directory</span> one",
-                        href: "dir_include_nested_one.html#dir-include-nested-one",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">File</span> one.hpp",
-                            href: "file_include_nested_one_one.hpp.html#file-include-nested-one-one.hpp",
-                            selectable: false,
-                        },
-                        ]
-                    },
-                    {
-                        text: "<span class=\"text-muted\">Directory</span> two",
-                        href: "dir_include_nested_two.html#dir-include-nested-two",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">File</span> two.hpp",
-                            href: "file_include_nested_two_two.hpp.html#file-include-nested-two-two.hpp",
-                            selectable: false,
-                        },
-                        ]
-                    },
-                    ]
-                },
-                {
-                    text: "<span class=\"text-muted\">File</span> top_level.hpp",
-                    href: "file_include_top_level.hpp.html#file-include-top-level.hpp",
-                    selectable: false,
-                },
-                ]
-            },
-
+             {
+               text: "<span class=\"text-muted\">Directory</span> include",
+               href: "dir_include.html#dir-include",
+               selectable: false,
+               tags: ['3'],
+    
+               nodes: [
+                 {
+                   text: "<span class=\"text-muted\">Directory</span> nested",
+                   href: "dir_include_nested.html#dir-include-nested",
+                   selectable: false,
+                   tags: ['3'],
+    
+                   nodes: [
+                     {
+                       text: "<span class=\"text-muted\">Directory</span> dual_nested",
+                       href: "dir_include_nested_dual_nested.html#dir-include-nested-dual-nested",
+                       selectable: false,
+                       tags: ['2'],
+    
+                       nodes: [
+                         {
+                           text: "<span class=\"text-muted\">Directory</span> one",
+                           href: "dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one",
+                           selectable: false,
+                           tags: ['1'],
+    
+                           nodes: [
+                             {
+                               text: "<span class=\"text-muted\">File</span> one.hpp",
+                               href: "file_include_nested_dual_nested_one_one.hpp.html#file-include-nested-dual-nested-one-one.hpp",
+                               selectable: false,
+                             },
+                           ]
+                         },
+                         {
+                           text: "<span class=\"text-muted\">Directory</span> two",
+                           href: "dir_include_nested_dual_nested_two.html#dir-include-nested-dual-nested-two",
+                           selectable: false,
+                           tags: ['1'],
+    
+                           nodes: [
+                             {
+                               text: "<span class=\"text-muted\">File</span> two.hpp",
+                               href: "file_include_nested_dual_nested_two_two.hpp.html#file-include-nested-dual-nested-two-two.hpp",
+                               selectable: false,
+                             },
+                           ]
+                         },
+                       ]
+                     },
+                     {
+                       text: "<span class=\"text-muted\">Directory</span> one",
+                       href: "dir_include_nested_one.html#dir-include-nested-one",
+                       selectable: false,
+                       tags: ['1'],
+    
+                       nodes: [
+                         {
+                           text: "<span class=\"text-muted\">File</span> one.hpp",
+                           href: "file_include_nested_one_one.hpp.html#file-include-nested-one-one.hpp",
+                           selectable: false,
+                         },
+                       ]
+                     },
+                     {
+                       text: "<span class=\"text-muted\">Directory</span> two",
+                       href: "dir_include_nested_two.html#dir-include-nested-two",
+                       selectable: false,
+                       tags: ['1'],
+    
+                       nodes: [
+                         {
+                           text: "<span class=\"text-muted\">File</span> two.hpp",
+                           href: "file_include_nested_two_two.hpp.html#file-include-nested-two-two.hpp",
+                           selectable: false,
+                         },
+                       ]
+                     },
+                   ]
+                 },
+                 {
+                   text: "<span class=\"text-muted\">File</span> nesting_specializations.hpp",
+                   href: "file_include_nesting_specializations.hpp.html#file-include-nesting-specializations.hpp",
+                   selectable: false,
+                 },
+                 {
+                   text: "<span class=\"text-muted\">File</span> top_level.hpp",
+                   href: "file_include_top_level.hpp.html#file-include-top-level.hpp",
+                   selectable: false,
+                 },
+               ]
+             },
+    
             ]
-        }
-        </script><!-- end getFileHierarchyTree() function -->
+         }
+   </script><!-- end getFileHierarchyTree() function -->
     ''')  # noqa: E501
 }
 """
