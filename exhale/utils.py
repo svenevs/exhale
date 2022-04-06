@@ -844,11 +844,20 @@ def groupsFromBalancedBrackets(string : str, left_bracket : str, right_bracket :
             depth -= 1
         l.append(obj)
 
+    def pop(l, depth):
+        while depth:
+            l = l[-1]
+            depth -= 1
+        return l.pop()
+
     groups = []
     depth = 0
     try:
         for idx, char in enumerate(string):
             if char == left_bracket:
+                prev_char = pop(groups, depth)
+                if prev_char != ' ':  # remove the space before template brackets
+                    push(prev_char, groups, depth)  # put it back if it wasn't a space...
                 push([], groups, depth)
                 depth += 1
             elif char == right_bracket:
@@ -873,9 +882,7 @@ def groupsToNamedGroups(groups, outer_group):
             groupsToNamedGroups(char, outer_group[-1])
             current_string = ""
         else:
-            if char == ' ':
-                continue
-            elif char == ',':
+            if char == ',':
                 if current_string != '':
                     outer_group.append(current_string)
                     current_string = ''
@@ -894,7 +901,7 @@ def templateListToNodeName(template_list):
             return_str += templateListToNodeName(elem)
             return_str += '>'
         else:
-            return_str += str(elem)
+            return_str += str(elem).lstrip()
             return_str += ', '
     return_str = return_str.rstrip(' ,')
     return return_str
