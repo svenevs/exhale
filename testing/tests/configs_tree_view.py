@@ -9,13 +9,13 @@
 Tests specifically focused on the various tree view configurations.
 """
 from __future__ import unicode_literals
+
 import os
 import re
 from textwrap import dedent
 
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
-
 
 class_hierarchy_ground_truth = {
     "default_rst_list": dedent(r'''
@@ -57,7 +57,7 @@ class_hierarchy_ground_truth = {
                 - :ref:`exhale_struct_structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_data`
                 - :ref:`exhale_struct_structspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_some_thing`
         - :ref:`exhale_struct_structtop__level`
-    '''),
+    '''),  # noqa: E501
     "collapsible_lists": dedent(r'''
         <ul class="treeView" id="class-treeView">
      <li>
@@ -191,28 +191,28 @@ class_hierarchy_ground_truth = {
                   href: "namespace_nested.html#namespace-nested",
                   selectable: false,
                   tags: ['4'],
-        
+
                   nodes: [
                     {
                       text: "<span class=\"text-muted\">Namespace</span> nested::dual_nested",
                       href: "namespace_nested__dual_nested.html#namespace-nested-dual-nested",
                       selectable: false,
                       tags: ['2'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Struct</span> one",
                           href: "structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one",
                           selectable: false,
                           tags: ['1'],
-        
+
                           nodes: [
                             {
                               text: "<span class=\"text-muted\">Struct</span> one::params",
                               href: "structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params",
                               selectable: false,
                               tags: ['1'],
-        
+
                               nodes: [
                                 {
                                   text: "<span class=\"text-muted\">Union</span> params::four_bytes",
@@ -228,14 +228,14 @@ class_hierarchy_ground_truth = {
                           href: "structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two",
                           selectable: false,
                           tags: ['1'],
-        
+
                           nodes: [
                             {
                               text: "<span class=\"text-muted\">Struct</span> two::params",
                               href: "structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params",
                               selectable: false,
                               tags: ['1'],
-        
+
                               nodes: [
                                 {
                                   text: "<span class=\"text-muted\">Union</span> params::four_bytes",
@@ -253,14 +253,14 @@ class_hierarchy_ground_truth = {
                       href: "structnested_1_1one.html#exhale-struct-structnested-1-1one",
                       selectable: false,
                       tags: ['1'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Struct</span> one::params",
                           href: "structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params",
                           selectable: false,
                           tags: ['1'],
-        
+
                           nodes: [
                             {
                               text: "<span class=\"text-muted\">Union</span> params::four_bytes",
@@ -276,14 +276,14 @@ class_hierarchy_ground_truth = {
                       href: "structnested_1_1two.html#exhale-struct-structnested-1-1two",
                       selectable: false,
                       tags: ['1'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Struct</span> two::params",
                           href: "structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params",
                           selectable: false,
                           tags: ['1'],
-        
+
                           nodes: [
                             {
                               text: "<span class=\"text-muted\">Union</span> params::four_bytes",
@@ -306,14 +306,14 @@ class_hierarchy_ground_truth = {
                   href: "namespace_special.html#namespace-special",
                   selectable: false,
                   tags: ['7'],
-        
+
                   nodes: [
                     {
                       text: "<span class=\"text-muted\">Template Struct</span> Base",
                       href: "structspecial_1_1_base.html#exhale-struct-structspecial-1-1-base",
                       selectable: false,
                       tags: ['1'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Struct</span> Base::A",
@@ -327,7 +327,7 @@ class_hierarchy_ground_truth = {
                       href: "structspecial_1_1_base_3_012_01_4.html#exhale-struct-structspecial-1-1-base-3-012-01-4",
                       selectable: false,
                       tags: ['4'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Template</span> Struct Base&lt; 2 &gt;::AnotherNestedStruct",
@@ -361,21 +361,21 @@ class_hierarchy_ground_truth = {
                       href: "structspecial_1_1_normal.html#exhale-struct-structspecial-1-1-normal",
                       selectable: false,
                       tags: ['1'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Struct</span> Normal::Nested",
                           href: "structspecial_1_1_normal_1_1_nested.html#exhale-struct-structspecial-1-1-normal-1-1-nested",
                           selectable: false,
                           tags: ['1'],
-        
+
                           nodes: [
                             {
                               text: "<span class=\"text-muted\">Struct</span> Nested::Like",
                               href: "structspecial_1_1_normal_1_1_nested_1_1_like.html#exhale-struct-structspecial-1-1-normal-1-1-nested-1-1-like",
                               selectable: false,
                               tags: ['1'],
-        
+
                               nodes: [
                                 {
                                   text: "<span class=\"text-muted\">Struct</span> Like::Usual",
@@ -393,7 +393,7 @@ class_hierarchy_ground_truth = {
                       href: "classspecial_1_1_image_buffer.html#exhale-class-classspecial-1-1-image-buffer",
                       selectable: false,
                       tags: ['2'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Struct</span> ImageBuffer::Data",
@@ -412,7 +412,7 @@ class_hierarchy_ground_truth = {
                       href: "classspecial_1_1_image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4.html#exhale-class-classspecial-1-1-image-buffer-3-01-image-3-011920-00-011080-01-4-00-01float-00-01128-01-4",
                       selectable: false,
                       tags: ['2'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Template</span> Struct ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;::Data",
@@ -431,7 +431,7 @@ class_hierarchy_ground_truth = {
                       href: "classspecial_1_1_image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4.html#exhale-class-classspecial-1-1-image-buffer-3-01-t-image-00-01-tdata-t-00-014-01-4",
                       selectable: false,
                       tags: ['2'],
-        
+
                       nodes: [
                         {
                           text: "<span class=\"text-muted\">Template</span> Struct ImageBuffer&lt; TImage, Tdata_t, 4 &gt;::Data",
@@ -452,7 +452,7 @@ class_hierarchy_ground_truth = {
                   href: "structtop__level.html#exhale-struct-structtop-level",
                   selectable: false,
                 },
-        
+
                ]
             }
        </script><!-- end getClassHierarchyTree() function -->
@@ -478,7 +478,6 @@ Keys and what they represent:
     possible to synthetically re-create the hierarchy without this crazy text processing.
 """
 
-
 file_hierarchy_ground_truth = {
     "default_rst_list": dedent(r'''
         - :ref:`dir_include`
@@ -494,7 +493,7 @@ file_hierarchy_ground_truth = {
                     - :ref:`file_include_nested_two_two.hpp`
             - :ref:`file_include_nesting_specializations.hpp`
             - :ref:`file_include_top_level.hpp`
-    '''),
+    '''),  # noqa: E501
     "collapsible_lists": dedent(r'''
         <ul class="treeView" id="file-treeView">
      <li>
@@ -555,28 +554,28 @@ file_hierarchy_ground_truth = {
                href: "dir_include.html#dir-include",
                selectable: false,
                tags: ['3'],
-    
+
                nodes: [
                  {
                    text: "<span class=\"text-muted\">Directory</span> nested",
                    href: "dir_include_nested.html#dir-include-nested",
                    selectable: false,
                    tags: ['3'],
-    
+
                    nodes: [
                      {
                        text: "<span class=\"text-muted\">Directory</span> dual_nested",
                        href: "dir_include_nested_dual_nested.html#dir-include-nested-dual-nested",
                        selectable: false,
                        tags: ['2'],
-    
+
                        nodes: [
                          {
                            text: "<span class=\"text-muted\">Directory</span> one",
                            href: "dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one",
                            selectable: false,
                            tags: ['1'],
-    
+
                            nodes: [
                              {
                                text: "<span class=\"text-muted\">File</span> one.hpp",
@@ -590,7 +589,7 @@ file_hierarchy_ground_truth = {
                            href: "dir_include_nested_dual_nested_two.html#dir-include-nested-dual-nested-two",
                            selectable: false,
                            tags: ['1'],
-    
+
                            nodes: [
                              {
                                text: "<span class=\"text-muted\">File</span> two.hpp",
@@ -606,7 +605,7 @@ file_hierarchy_ground_truth = {
                        href: "dir_include_nested_one.html#dir-include-nested-one",
                        selectable: false,
                        tags: ['1'],
-    
+
                        nodes: [
                          {
                            text: "<span class=\"text-muted\">File</span> one.hpp",
@@ -620,7 +619,7 @@ file_hierarchy_ground_truth = {
                        href: "dir_include_nested_two.html#dir-include-nested-two",
                        selectable: false,
                        tags: ['1'],
-    
+
                        nodes: [
                          {
                            text: "<span class=\"text-muted\">File</span> two.hpp",
@@ -643,7 +642,7 @@ file_hierarchy_ground_truth = {
                  },
                ]
              },
-    
+
             ]
          }
    </script><!-- end getFileHierarchyTree() function -->
@@ -765,6 +764,7 @@ class TreeViewHierarchyTests(ExhaleTestCase):
             A length two tuple in the order ``(class_view, file_view)``.  Each item in
             the tuple is a list of strings of the parsed / filtered lines.
         """
+
         def strip_html_directive(hierarchy):
             hierarchy_lines = []
             found_raw_html = False
@@ -862,14 +862,14 @@ class TreeViewHierarchyTests(ExhaleTestCase):
                 a Bootstrap test.
         """  # noqa: E501
         # First, compare the head / tail of the lists.
-        indices            = (0, 1, 2, -1, -2, -3)
+        indices = (0, 1, 2, -1, -2, -3)
         expected_head_tail = [expected_list[idx] for idx in indices]
-        test_head_tail     = [test_list[idx] for idx in indices]
+        test_head_tail = [test_list[idx] for idx in indices]
         self.line_compare(expected_head_tail, test_head_tail)
 
         # Join the remaining elements to make a comparison.
-        start    = max(indices) + 1 + int(bootstrap)  # TODO: uh. Why + int(bootstrap)?
-        end      = min(indices)
+        start = max(indices) + 1 + int(bootstrap)  # TODO: uh. Why + int(bootstrap)?
+        end = min(indices)
         interior = "".join(expected_list[start:end])
 
         if bootstrap:

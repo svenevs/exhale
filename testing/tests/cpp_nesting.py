@@ -119,8 +119,8 @@ class CPPNestingPages(ExhaleTestCase):
         # TODO: make this a parameter if we add more than two tests...
         if uses_mainpage:
             f_name = "page_town_rock.hpp"
-            # Not sure why, but when it's a mainpage it's called "index" and when it's not it's called "overview"
-            # this is a bit hacky but seems to fix it.
+            # Not sure why, but when it's a mainpage it's called "index" and when it's not
+            # it's called "overview" this is a bit hacky but seems to fix it.
             custom_page = "index"
         else:
             f_name = "page_town_rock_alt.hpp"

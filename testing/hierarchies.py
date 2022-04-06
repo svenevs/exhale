@@ -81,6 +81,9 @@ class node(ExhaleNode):  # noqa: N801
         return "{0}: {1}".format(self.kind, self.name)
 
     def __repr__(self):
+        """
+        Return ``"{self.kind}: {self.name}"``.
+        """
         return self.__str__()
 
     def toConsole(self, level):
@@ -1025,7 +1028,6 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
                     exhale_grand_child = candidate
                     break
         else:
-            identifier = test_grand_child.breathe_identifier()
             for candidate in exhale_child.children:
                 if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:
                     exhale_grand_child = candidate
