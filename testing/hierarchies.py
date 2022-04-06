@@ -1027,8 +1027,7 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
         else:
             identifier = test_grand_child.breathe_identifier()
             for candidate in exhale_child.children:
-                if candidate.kind == test_grand_child.kind and \
-                        candidate.breathe_identifier() == identifier:
+                if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:
                     exhale_grand_child = candidate
         if exhale_grand_child is None:
             import ipdb
