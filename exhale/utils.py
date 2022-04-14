@@ -102,6 +102,7 @@ def get_time():
 
 
 AVAILABLE_KINDS = [
+    "concept",
     "class",
     "define",
     "dir",
@@ -127,6 +128,7 @@ LEAF_LIKE_KINDS = [
     "define",
     "enum",
     "function",
+    "concept",
     "class",
     "struct",
     "typedef",
@@ -401,6 +403,8 @@ def qualifyKind(kind):
     +=============+==================+
     | "class"     | "Class"          |
     +-------------+------------------+
+    | "concept"   | "Concept"        |
+    +-------------+------------------+
     | "define"    | "Define"         |
     +-------------+------------------+
     | "enum"      | "Enum"           |
@@ -456,6 +460,8 @@ def kindAsBreatheDirective(kind):
     +-------------+--------------------+
     | Input Kind  | Output Directive   |
     +=============+====================+
+    | "concept"   | "doxygenconcept"   |
+    +-------------+--------------------+
     | "class"     | "doxygenclass"     |
     +-------------+--------------------+
     | "define"    | "doxygendefine"    |
