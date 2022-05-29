@@ -55,11 +55,11 @@ namespace special {
     template <class TImage, typename Tdata_t, int Tchannels>
     class ImageBuffer {
     public:
-        using Image_t = TImage;
-        using data_t = Tdata_t;
-        static constexpr int width = Image_t::width;
-        static constexpr int height = Image_t::height;
-        static constexpr int channels = Tchannels;
+        using Image_t = TImage;///< Convenience typedef for template `TImage`.
+        using data_t = Tdata_t;///< Convenience typedef for template `Tdata_t`.
+        static constexpr int width = Image_t::width;///< The width of the image.
+        static constexpr int height = Image_t::height;///< The height of the image.
+        static constexpr int channels = Tchannels;///< The number of channels per pixel.
 
         /// Never do this in real life...
         struct Data {
@@ -82,11 +82,11 @@ namespace special {
     template <class TImage, typename Tdata_t>
     class ImageBuffer<TImage, Tdata_t, 4> {
     public:
-        using Image_t = TImage;
-        using data_t = Tdata_t;
-        static constexpr int width = Image_t::width;
-        static constexpr int height = Image_t::height;
-        static constexpr int channels = 4;
+        using Image_t = TImage;///< Convenience typedef for template `TImage`.
+        using data_t = Tdata_t;///< Convenience typedef for template `Tdata_t`.
+        static constexpr int width = Image_t::width;///< The width of the image.
+        static constexpr int height = Image_t::height;///< The height of the image.
+        static constexpr int channels = 4;///< The number of channels per pixel.
 
         /// So really, don't change how things work like this in real life...
         struct Data {
@@ -111,11 +111,11 @@ namespace special {
     template <>
     class ImageBuffer<Image<1920, 1080>, float, 128> {
     public:
-        using Image_t = Image<1920, 1080>;
-        using data_t = float;
-        static constexpr int width = 1920;
-        static constexpr int height = 1080;
-        static constexpr int channels = 128;
+        using Image_t = Image<1920, 1080>;///< Convenience typedef for the Image class.
+        using data_t = float;///< Convenience typedef for underlying data type `float`.
+        static constexpr int width = 1920;///< The width of the image.
+        static constexpr int height = 1080;///< The height of the image.
+        static constexpr int channels = 128;///< The number of channels per pixel.
 
         /// Definitely don't do this.
         struct Data {
@@ -131,7 +131,6 @@ namespace special {
         constexpr int size() const { return 88; }
     };
 
-#if 1
     /** The original example expanded a bit. Thanks florian for making it
      * copy-pasteable :) */
     template <size_t N>
@@ -172,5 +171,4 @@ namespace special {
             char s() const { return '}'; }
         };
     };
-#endif // 0 the test discover is broken
 }

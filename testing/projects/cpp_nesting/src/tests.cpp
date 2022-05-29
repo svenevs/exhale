@@ -73,7 +73,6 @@ TEST_CASE( "nesting_specializations", "[cpp-nesting]" ) {
     REQUIRE(Wow().size() == 88);
 
     // Base without specialization.
-    #if 0
     REQUIRE(special::Base<1>().size() == 1);
 
     // Base with specialization.
@@ -83,7 +82,6 @@ TEST_CASE( "nesting_specializations", "[cpp-nesting]" ) {
     REQUIRE(B2::AnotherNestedStruct().b() == 4);
     REQUIRE(B2::InnerTemplatedStruct<3>().s() == '{');
     REQUIRE(B2::InnerTemplatedStruct<4>().s() == '}');
-    #endif // 0
 }
 
 /* ================================================================================== */
