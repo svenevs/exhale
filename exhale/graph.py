@@ -2431,6 +2431,16 @@ class ExhaleRoot(object):
                     else:
                         template = utils.templateListToNodeName(templates)
                         title = template.split('::')[-1]
+
+                    template_tokens = utils.tokenize_template(node.name)
+                    if isinstance(template_tokens[-1], str):
+                        my_title = template_tokens[-1].split("::")[-1]
+                    else:
+                        my_title = node.name.split("::")[-1]
+                    # TODO: verify this is legit
+                    if title != my_title:
+                        import ipdb
+                        ipdb.set_trace()
                 except ValueError:
                     sys.stderr.write(utils.critical(
                         textwrap.dedent('''

@@ -10,15 +10,17 @@ from __future__ import unicode_literals
 
 from . import configs
 
+import codecs
+from dataclasses import dataclass
+import datetime
 import os
+import re
 import sys
 import six
-import datetime
-import time
-import types
-import codecs
-import traceback
 import textwrap
+import time
+import traceback
+import types
 
 # Fancy error printing <3
 try:
@@ -905,3 +907,54 @@ def templateListToNodeName(template_list):
             return_str += ', '
     return_str = return_str.rstrip(' ,')
     return return_str
+
+
+def tokenize_template(node_name: str):
+    """
+    Expand node_name in to a list of str or lists, each nested list representing
+    a new template.
+
+    TODO: docs, just look at the tests.
+    """
+    @dataclass
+    class TemplateToken:
+        type: str
+        value: str
+
+    def tokenize(s: str):
+        """
+        Tokenize ``node_name``.  See:
+
+        https://docs.python.org/3/library/re.html#writing-a-tokenizer
+        """
+        token_specification = [
+            ("T_START", r"<"),  # Template begin
+            ("T_CLOSE", r">"),  # Template end
+            ("SKIP", r"[ \t]+"),  # Skip over whitespace
+            ("COMMA", r","),  # Argument separator
+            ("KEEP", r"[^<>, \t]+")  # Everything else
+        ]
+        tok_regex = "|".join(
+            f"(?P<{name}>{pattern})" for name, pattern in token_specification)
+        for mo in re.finditer(tok_regex, s):
+            # NOTE: we skip commas as well, but it needs to be tokenized so that we break
+            # up the KEEP clauses.
+            if mo.lastgroup in {"SKIP", "COMMA"}:
+                continue
+            yield TemplateToken(mo.lastgroup, mo.group())
+
+    ret = []
+    curr = ret
+    prev = ret
+    for token in tokenize(node_name):
+        if token.type == "T_START":
+            next_list = []
+            curr.append(next_list)
+            prev = curr
+            curr = next_list
+        elif token.type == "T_CLOSE":
+            curr = prev
+        else:
+            curr.append(token.value)
+
+    return ret
