@@ -2436,9 +2436,53 @@ class ExhaleRoot(object):
                     if isinstance(template_tokens[-1], str):
                         my_title = template_tokens[-1].split("::")[-1]
                     else:
-                        my_title = node.name.split("::")[-1]
+                        # my_title = node.name.split("::")[-1]
+                        class_name = None
+                        skipped = []
+                        for item in reversed(template_tokens):
+                            if isinstance(item, list):
+                                skipped.insert(0, item)
+                                continue
+                            class_name = item
+                            break
+                        if class_name is None:
+                            raise ValueError("TODO: make this a fancy error asking to submit issue.")
+                        if not skipped:
+                            raise ValueError("TODO: internal parsing bug.")
+
+                        class_name = class_name.split("::")[-1]
+
+                        def join_template_args(idx, item, stream):
+                            if isinstance(item, str):
+                                if idx > 0:
+                                    stream.write(", ")
+                                stream.write(item)
+                            else:
+                                for idy, nested_item in enumerate(item):
+                                    if isinstance(nested_item, list):
+                                        stream.write("< ")
+                                    join_template_args(idy, nested_item, stream)
+                                    if isinstance(nested_item, list):
+                                        stream.write(" >")
+
+                        template_stream = StringIO()
+                        join_template_args(0, skipped, template_stream)
+                        final_title = f"{class_name}{template_stream.getvalue()}"
+                        template_stream.close()
+
+                        # TODO move to test after refactor.
+                        # Just checking that the full title can get rebuilt
+                        # should be same as node.name
+                        full_title_stream = StringIO()
+                        join_template_args(0, template_tokens, full_title_stream)
+                        full_title = full_title_stream.getvalue()
+                        full_title_stream.getvalue()
+
+
+                    my_title = node.name.split("::")[-1]
                     # TODO: verify this is legit
-                    if title != my_title:
+                    # if title != my_title:
+                    if "ontolo" in title.lower() or "ontolo" in my_title.lower():
                         import ipdb
                         ipdb.set_trace()
                 except ValueError:

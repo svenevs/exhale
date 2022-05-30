@@ -8,6 +8,7 @@
  **************************************************************************************/
 #include <catch2/catch.hpp>
 #include <type_traits>
+#include <vector>
 
 /* ================================================================================== */
 
@@ -82,6 +83,36 @@ TEST_CASE( "nesting_specializations", "[cpp-nesting]" ) {
     REQUIRE(B2::AnotherNestedStruct().b() == 4);
     REQUIRE(B2::InnerTemplatedStruct<3>().s() == '{');
     REQUIRE(B2::InnerTemplatedStruct<4>().s() == '}');
+
+    // special::unique::snowflake::Ontology
+    using SSO1 = special::unique::snowflake::Ontology<1>;
+    SSO1 onsies;
+    REQUIRE(SSO1::epoch() == onsies.epoch());
+    REQUIRE(SSO1::epoch() == 1);
+    REQUIRE(onsies.dual() == 1);
+
+    using SSO11 = special::unique::snowflake::Ontology<11>;
+    SSO11 elevensies;
+    REQUIRE(SSO11::epoch() == elevensies.epoch());
+    REQUIRE(SSO11::epoch() == 11);
+    REQUIRE(elevensies.dual() == 22);
+
+    // special::unique::Nonsense
+    using NonsenseVec = special::unique::Nonsense<11, std::vector<int>>;
+    std::vector<int> mein_vector = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    NonsenseVec n_vec{mein_vector};
+    REQUIRE(n_vec.x() == 11);
+    REQUIRE(n_vec.t().size() == 11);
+
+    using SSO22 = special::unique::snowflake::Ontology<22>;
+    using PartialNonsense = special::unique::PartialNonsense<22>;
+    SSO22 ssdd;
+    PartialNonsense pn{ssdd};
+    REQUIRE(pn.x() == ssdd.epoch() + pn.t().dual() + 22);
+
+    using FullNonsense = special::unique::FullNonsense;
+    FullNonsense fn{elevensies};
+    REQUIRE(fn.x() == elevensies.epoch() + fn.t().dual());
 }
 
 /* ================================================================================== */

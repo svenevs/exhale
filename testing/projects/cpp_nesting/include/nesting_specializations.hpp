@@ -171,4 +171,80 @@ namespace special {
             char s() const { return '}'; }
         };
     };
+
+    namespace unique {
+        namespace snowflake {
+            /// A wrapper struct in a namespace so I can have a final template parameter
+            /// with some `::` in it.
+            template <auto Epoch>
+            struct Ontology {
+                /// The current version of the simulation.
+                static constexpr auto epoch() { return Epoch; }
+                /// The dual of the epoch of the simulation.  Same as epoch.
+                auto dual() const { return epoch(); }
+            };
+
+            /// A very special epoch with a dual meaning.
+            template <>
+            struct Ontology<11> {
+                /// The current version of the simulation.
+                static constexpr auto epoch() { return 11; }
+                /// The dual of the epoch of the simulation, which is special. ?
+                auto dual() const { return 22; }
+            };
+        }
+
+        /// A nonsense class to specialize.
+        template <int X, class T>
+        struct Nonsense {
+            /// Initializes the thing.
+            Nonsense(const T &t) : thing{t} { }
+            /// A T reference thing.
+            const T &thing;
+
+            /// Returns template parameter X.
+            int x() const { return X; }
+            /// Returns the tea.
+            const T &t() const { return thing; }
+        };
+
+        /// Partially specialized nonsense.
+        template <int X>
+        struct Nonsense<X, snowflake::Ontology<X>> {
+            /// Makes some nonsense.
+            Nonsense(const snowflake::Ontology<X> &so) : thing{so} { }
+            /// A snowflake thing.
+            const snowflake::Ontology<X> &thing;
+
+            /// Returns snowflake epoch plus dual plus X.
+            int x() const {
+                return snowflake::Ontology<X>::epoch() + thing.dual() + X;
+            }
+            /// Gives you a snowflake.
+            const snowflake::Ontology<X> &t() const { return thing; }
+        };
+
+        /// Alias to partial nonsense.
+        template <int X>
+        using PartialNonsense = Nonsense<X, snowflake::Ontology<X>>;
+
+        /// A fully specialized nonsense.
+        template <>
+        struct Nonsense<11, snowflake::Ontology<11>> {
+            /// Fully special nonsense.
+            Nonsense(const snowflake::Ontology<11> &so) : thing{so} { }
+            /// A special snowflake thing.
+            const snowflake::Ontology<11> &thing;
+
+            /// Returns snowflake epoch plus dual.
+            int x() const {
+                return snowflake::Ontology<11>::epoch() + thing.dual();
+            }
+            /// Gives you a special snowflake.
+            const snowflake::Ontology<11> &t() const { return thing; }
+        };
+
+        /// Alias to full nonsense.
+        using FullNonsense = Nonsense<11, snowflake::Ontology<11>>;
+    }
 }
