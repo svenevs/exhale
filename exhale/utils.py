@@ -13,6 +13,7 @@ from . import configs
 import codecs
 from dataclasses import dataclass
 import datetime
+from io import StringIO
 import os
 import re
 import sys
@@ -838,77 +839,6 @@ def fancyError(critical_msg=None, lex="py3tb", singleton_hook=None):
     os._exit(1)
 
 
-def groupsFromBalancedBrackets(string : str, left_bracket : str, right_bracket : str):
-    """Returns a (nested) list of characters with their corresponding children (if any)"""
-    def push(obj, l, depth):
-        while depth:
-            l = l[-1]
-            depth -= 1
-        l.append(obj)
-
-    def pop(l, depth):
-        while depth:
-            l = l[-1]
-            depth -= 1
-        return l.pop()
-
-    groups = []
-    depth = 0
-    try:
-        for idx, char in enumerate(string):
-            if char == left_bracket:
-                prev_char = pop(groups, depth)
-                if prev_char != ' ':  # remove the space before template brackets
-                    push(prev_char, groups, depth)  # put it back if it wasn't a space...
-                push([], groups, depth)
-                depth += 1
-            elif char == right_bracket:
-                depth -= 1
-            else:
-                push(char, groups, depth)
-    except IndexError:
-        raise ValueError('Parentheses mismatch')
-    if depth > 0:
-        raise ValueError('Parentheses mismatch')
-    else:
-        return groups
-
-
-def groupsToNamedGroups(groups, outer_group):
-    """Turns the output of groupsFromBalancedBrackets into a list of strings"""
-    current_string = ""
-    for char in groups:
-        if type(char) is type([]):
-            outer_group.append(current_string)
-            outer_group.append([])
-            groupsToNamedGroups(char, outer_group[-1])
-            current_string = ""
-        else:
-            if char == ',':
-                if current_string != '':
-                    outer_group.append(current_string)
-                    current_string = ''
-            else:
-                current_string += char
-    if current_string != '':
-        outer_group.append(current_string)
-
-
-def templateListToNodeName(template_list):
-    return_str = ''
-    for elem in template_list:
-        if type(elem) is type([]):
-            return_str = return_str.rstrip(' ,')
-            return_str += "<"
-            return_str += templateListToNodeName(elem)
-            return_str += '>'
-        else:
-            return_str += str(elem).lstrip()
-            return_str += ', '
-    return_str = return_str.rstrip(' ,')
-    return return_str
-
-
 def tokenize_template(node_name: str):
     """
     Expand node_name in to a list of str or lists, each nested list representing
@@ -963,4 +893,35 @@ def tokenize_template(node_name: str):
         else:
             push(token.value, ret, depth)
 
+    return ret
+
+
+
+def _join_template_args(idx, item, stream):
+    """
+    Recursive helper method for :func:`~exhale.utils.join_template_tokens`.
+
+    idx: recursion depth level
+    item: either a str or List[Union[str, List]], the thing being written to
+          the stream
+    stream: where to write contents to
+    """
+    if isinstance(item, str):
+        if idx > 0:
+            stream.write(", ")
+        stream.write(item)
+    else:
+        for idy, nested_item in enumerate(item):
+            if isinstance(nested_item, list):
+                stream.write("< ")
+            _join_template_args(idy, nested_item, stream)
+            if isinstance(nested_item, list):
+                stream.write(" >")
+
+
+def join_template_tokens(tokens):
+    stream = StringIO()
+    _join_template_args(0, tokens, stream)
+    ret = stream.getvalue()
+    stream.close()
     return ret

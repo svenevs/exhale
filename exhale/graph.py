@@ -2423,15 +2423,6 @@ class ExhaleRoot(object):
                 #       in `node.name`.
                 template_special = True
                 try:
-                    groups = utils.groupsFromBalancedBrackets(node.name, '<', '>')
-                    templates = []
-                    utils.groupsToNamedGroups(groups, templates)
-                    if type(templates[-1]) is type(str):  # it isn't a parameter list.
-                        title = templates[-1].split('::')[-1]
-                    else:
-                        template = utils.templateListToNodeName(templates)
-                        title = template.split('::')[-1]
-
                     template_tokens = utils.tokenize_template(node.name)
                     if isinstance(template_tokens[-1], str):
                         my_title = template_tokens[-1].split("::")[-1]
