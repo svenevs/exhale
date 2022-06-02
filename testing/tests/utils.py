@@ -11,78 +11,53 @@
 
 # import re
 
-# import pytest
+import pytest
 
-# from exhale.utils import tokenize, tokenize_template, groupsToNamedGroups
+from exhale.utils import tokenize_template
 
-# @pytest.mark.parametrize(
-#     "node_name,expected",
-#     # NOTE: we only care about valid C++ here...
-#     [
-#         # Special case: empty list is returned for empty string.
-#         ("", []),
-#         # No template gets tokenized letter by letter.
-#         ("foo", ["f", "o", "o"]),
-#         ("ns::foo", list("ns::foo")),
-#         # Depth 1 templates.
-#         ("foo<12>", list("foo") + [list("12")]),
-#         ("ns::foo<int, 66>", list("ns::foo") + [list("int, 66")]),
-#         ("ns::foo<x, y, z>", list("ns::foo") + [list("x, y, z")]),
-#         # Depth 2 templates.
-#         ("foo<std::array<int>>", list("foo") + [list("std::array") + [list("int")]]),
-#         ("bar<Cls<x, y, z>>", list("bar") + [list("Cls") + [list("x, y, z")]]),
-#         (
-#             "baz<Cls<x>, y, z>",
-#             list("baz") + [
-#                 list("Cls") + [
-#                     list("x")
-#                 ] +
-#                 list(", y, z")
-#             ]
-#         ),
-#         (
-#             "baz<x, Cls<y, z>, w>",
-#             list("baz") + [
-#                 list("x, Cls") + [
-#                     list("y, z")
-#                 ] +
-#                 list(", w")
-#             ]
-#         ),
-#         (
-#             "boo<a, b, c, Cls<d, e, f>>",
-#             list("boo") + [
-#                 list("a, b, c, Cls") + [
-#                     list("d, e, f")
-#                 ]
-#             ]
-#         ),
-#         # Depth 3 templates for good measure.  And bleeding eyes.
-#         ("rawr<A<B<C>>>", list("rawr") + [list("A") + [list("B") + [list("C")]]]),
-#         (
-#             "f<a, B<c, D<e>>, F<g, H<i, J<k, l>>>>",
-#             list("f") + [
-#                 list("a, B") + [
-#                     list("c, D") + [
-#                         list("e")
-#                     ]
-#                  ] + list(", F") + [
-#                     list("g, H") + [
-#                         list("i, J") + [
-#                             list("k, l")
-#                         ]
-#                     ]
-#                 ]
-#             ]
-#         )
-#     ]
-# )
-# def test_tokenize(node_name, expected):
-#     assert tokenize(node_name, "<", ">") == expected
-#     x = []
-#     groupsToNamedGroups(tokenize(node_name, "<", ">"), x)
-#     assert join_token_groups(tokenize(node_name, "<", ">")) == x
-#     assert templateListToNodeName(join_token_groups(tokenize(node_name, "<", ">")))
+@pytest.mark.parametrize(
+    "node_name,expected",
+    [
+        # Special case: empty list is returned for empty string.
+        ("", []),
+        # No template gets tokenized letter by letter.
+        ("foo", ["foo"]),
+        ("ns::foo", ["ns::foo"]),
+        # Depth 1 templates.
+        ("foo<12>", ["foo", ["12"]]),
+        ("ns::foo<int, 66>", ["ns::foo", ["int", "66"]]),
+        ("ns::foo<x, y, z>", ["ns::foo", ["x", "y", "z"]]),
+        # Depth 2 templates.
+        ("foo<std::array<int>>", ["foo", ["std::array", ["int"]]]),
+        ("bar<Cls<x, y, z>>", ["bar", ["Cls", ["x", "y", "z"]]]),
+        ("baz<Cls<x>, y, z>", ["baz", ["Cls", ["x"], "y", "z"]]),
+        ("baz<x, Cls<y, z>, w>", ["baz", ["x", "Cls", ["y", "z"], "w"]]),
+        ("boo<a, b, c, Cls<d, e, f>>", ["boo", ["a", "b", "c", "Cls", ["d", "e", "f"]]]),
+        # Depth 3 templates for good measure.  And bleeding eyes.
+        ("rawr<A<B<C>>>", ["rawr", ["A", ["B", ["C"]]]]),
+        (
+            "f<a, B<c, D<e>>, F<g, H<i, J<k, l>>>>",
+            ["f", ["a","B", ["c","D", ["e"],],"F", ["g","H", ["i","J", ["k","l"]]]]]
+        ),
+        (
+            "special::ImageBuffer< Image< 1920, 1080 >>::Data",
+            # ['special::ImageBuffer', ['Image', ['1920', '1080'], '::Data']]
+            ["special::ImageBuffer", ["Image", ["1920", "1080"]], "::Data"]
+        ),
+        (
+            "special::unique::Nonsense< 11, snowflake::Ontology< 11 > >",
+            # Token list original:	 ['special::unique::Nonsense', ['11', 'snowflake::Ontology', ['11']]]
+            ["special::unique::Nonsense", ["11", "snowflake::Ontology", ["11"]]]
+        ),
+        (
+            "special::unique::Nonsense< 11, snowflake::Ontology< 11 >::test >::what",
+            # Token list original:	 ['special::unique::Nonsense', ['11', 'snowflake::Ontology', ['11'], '::test', '::what']]
+            ["special::unique::Nonsense", ["11", "snowflake::Ontology", ["11"], '::test'], "::what"]
+        )
+    ]
+)
+def test_tokenize_template(node_name, expected):
+    assert tokenize_template(node_name) == expected
 
 
 # def test_tokenize_errors():
