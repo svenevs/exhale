@@ -1,15 +1,13 @@
-# # -*- coding: utf8 -*-
-# ########################################################################################
-# # This file is part of exhale.  Copyright (c) 2017-2022, Stephen McDowell.             #
-# # Full BSD 3-Clause license available here:                                            #
-# #                                                                                      #
-# #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
-# ########################################################################################
-# """
-# Tests for validating some of ``exhale/utils.py``.
-# """
-
-# import re
+# -*- coding: utf8 -*-
+########################################################################################
+# This file is part of exhale.  Copyright (c) 2017-2022, Stephen McDowell.             #
+# Full BSD 3-Clause license available here:                                            #
+#                                                                                      #
+#                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
+########################################################################################
+"""
+Tests for validating parts of :mod:`exhale.utils`.
+"""
 
 import pytest
 
@@ -41,51 +39,17 @@ from exhale.utils import tokenize_template
         ),
         (
             "special::ImageBuffer< Image< 1920, 1080 >>::Data",
-            # ['special::ImageBuffer', ['Image', ['1920', '1080'], '::Data']]
             ["special::ImageBuffer", ["Image", ["1920", "1080"]], "::Data"]
         ),
         (
             "special::unique::Nonsense< 11, snowflake::Ontology< 11 > >",
-            # Token list original:	 ['special::unique::Nonsense', ['11', 'snowflake::Ontology', ['11']]]
             ["special::unique::Nonsense", ["11", "snowflake::Ontology", ["11"]]]
         ),
         (
             "special::unique::Nonsense< 11, snowflake::Ontology< 11 >::test >::what",
-            # Token list original:	 ['special::unique::Nonsense', ['11', 'snowflake::Ontology', ['11'], '::test', '::what']]
             ["special::unique::Nonsense", ["11", "snowflake::Ontology", ["11"], '::test'], "::what"]
         )
     ]
 )
 def test_tokenize_template(node_name, expected):
     assert tokenize_template(node_name) == expected
-
-
-# def test_tokenize_errors():
-#     with pytest.raises(ValueError) as exc_info:
-#         tokenize("asdf", "<", "<")
-#     assert exc_info.type is ValueError
-#     exc_info.match(
-#         "Cannot tokenize 'asdf' using start='<' and end='<', start and end may not be "
-#         "the same.")
-
-#     mismatches = [
-#         (
-#             ("foo<", "<", ">"),
-#             (
-#                 "Cannot tokenize 'foo<' using start='<' and end='>'.  There must be an "
-#                 "equivalent number of start and end tags, but found 1 '<' and 0 '>'."
-#             ),
-#         ),
-#         (
-#             ("foo]", "[", "]"),
-#             re.escape(
-#                 "Cannot tokenize 'foo]' using start='[' and end=']'.  There must be an "
-#                 "equivalent number of start and end tags, but found 0 '[' and 1 ']'."
-#             ),
-#         )
-#     ]
-#     for args, pattern in mismatches:
-#         with pytest.raises(ValueError) as exc_info:
-#             tokenize(*args)
-#         assert exc_info.type is ValueError
-#         exc_info.match(pattern)

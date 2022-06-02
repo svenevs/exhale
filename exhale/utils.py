@@ -943,18 +943,24 @@ def tokenize_template(node_name: str):
                 continue
             yield TemplateToken(mo.lastgroup, mo.group())
 
+    def push(obj, l, depth):
+        """
+        Add obj to a given list l at the specified depth.
+        """
+        while depth:
+            l = l[-1]
+            depth -= 1
+        l.append(obj)
+
     ret = []
-    curr = ret
-    prev = ret
+    depth = 0
     for token in tokenize(node_name):
         if token.type == "T_START":
-            next_list = []
-            curr.append(next_list)
-            prev = curr
-            curr = next_list
+            push([], ret, depth)
+            depth += 1
         elif token.type == "T_CLOSE":
-            curr = prev
+            depth -= 1
         else:
-            curr.append(token.value)
+            push(token.value, ret, depth)
 
     return ret
