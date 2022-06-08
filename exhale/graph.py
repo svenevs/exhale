@@ -2414,75 +2414,43 @@ class ExhaleRoot(object):
             unique_id = node.refid
 
             # special treatment for templates
-            last_lt = node.name.rfind("<")
-            last_gt = node.name.rfind(">")
+            n_lt = node.name.count("<")
+            n_gt = node.name.count(">")
+            if n_lt != n_gt:
+                utils.fancyError(
+                    f"Invalid C++ template: {node.name} has {n_lt} '<' and {n_gt} '>', "
+                    "exhale does not know what to do with your code.")
             # dealing with a template when this is true
-            if last_lt > -1 and last_gt > -1:
+            if n_lt > 0:
                 # NOTE: this has to happen for partial / full template specializations
                 #       When specializations occur, the "<param1, param2>" etc show up
                 #       in `node.name`.
                 template_special = True
-                try:
-                    template_tokens = utils.tokenize_template(node.name)
-                    if isinstance(template_tokens[-1], str):
-                        my_title = template_tokens[-1].split("::")[-1]
-                    else:
-                        # my_title = node.name.split("::")[-1]
-                        class_name = None
-                        skipped = []
-                        for item in reversed(template_tokens):
-                            if isinstance(item, list):
-                                skipped.insert(0, item)
-                                continue
-                            class_name = item
-                            break
-                        if class_name is None:
-                            raise ValueError("TODO: make this a fancy error asking to submit issue.")
-                        if not skipped:
-                            raise ValueError("TODO: internal parsing bug.")
 
-                        class_name = class_name.split("::")[-1]
+                # First tokenize the template into its sub components.
+                template_tokens = utils.tokenize_template(node.name)
+                # Starting from the end, find the first non-template class name,
+                # which will be the first string found.  Make sure to keep any
+                # templates in `skipped` so we can rebuild the full name.  We do
+                # this so that the node document's name for e.g., nested template
+                # types is just the nested name.
+                class_name = None
+                skipped = []
+                for item in reversed(template_tokens):
+                    if isinstance(item, list):
+                        skipped.insert(0, item)
+                        continue
+                    # The first non-list item will be a string.
+                    class_name = item
+                    break
 
-                        def join_template_args(idx, item, stream):
-                            if isinstance(item, str):
-                                if idx > 0:
-                                    stream.write(", ")
-                                stream.write(item)
-                            else:
-                                for idy, nested_item in enumerate(item):
-                                    if isinstance(nested_item, list):
-                                        stream.write("< ")
-                                    join_template_args(idy, nested_item, stream)
-                                    if isinstance(nested_item, list):
-                                        stream.write(" >")
+                if class_name is None:
+                    utils.fancyError(
+                        f"Exhale does not know how to process {node.name}, tokenized "
+                        f"to {template_tokens}.  Please report this bug.")
 
-                        template_stream = StringIO()
-                        join_template_args(0, skipped, template_stream)
-                        final_title = f"{class_name}{template_stream.getvalue()}"
-                        template_stream.close()
-
-                        # TODO move to test after refactor.
-                        # Just checking that the full title can get rebuilt
-                        # should be same as node.name
-                        full_title_stream = StringIO()
-                        join_template_args(0, template_tokens, full_title_stream)
-                        full_title = full_title_stream.getvalue()
-                        full_title_stream.getvalue()
-
-
-                    my_title = node.name.split("::")[-1]
-                    # TODO: verify this is legit
-                    # if title != my_title:
-                    if "ontolo" in title.lower() or "ontolo" in my_title.lower():
-                        import ipdb
-                        ipdb.set_trace()
-                except ValueError:
-                    sys.stderr.write(utils.critical(
-                        textwrap.dedent('''
-                            Mismatched template brackets for node {title}
-                        '''.format(title=node.name))
-                    ))
-                #flake8failhere
+                # Join up the final class name and any potentially skipped templates.
+                title = utils.join_template_tokens([class_name] + skipped)
             else:
                 title = node.name.split("::")[-1]
 
