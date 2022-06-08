@@ -10,9 +10,9 @@ Tests for validating parts of :mod:`exhale.utils`.
 """
 import re
 
-import pytest
-
 from exhale.utils import join_template_tokens, tokenize_template
+
+import pytest
 
 templates = [
     # Special case: empty list is returned for empty string.
@@ -34,7 +34,7 @@ templates = [
     ("rawr< A< B< C > > >", ["rawr", ["A", ["B", ["C"]]]]),
     (
         "f< a, B< c, D< e > >, F< g, H< i, J< k, l > > > >",
-        ["f", ["a","B", ["c","D", ["e"],],"F", ["g","H", ["i","J", ["k","l"]]]]]
+        ["f", ["a", "B", ["c", "D", ["e"]], "F", ["g", "H", ["i", "J", ["k", "l"]]]]]
     ),
     (
         "special::ImageBuffer< Image< 1920, 1080 > >::Data",
@@ -115,7 +115,11 @@ def test_join_template_tokens(node_name):
     """
     assert join_template_tokens(tokenize_template(node_name)) == node_name
 
+
 def test_join_template_tokens_edge_cases():
+    """
+    Edge case tests for :func:`~exhale.utils.join_template_tokens`.
+    """
     with pytest.raises(ValueError) as exc_info:
         join_template_tokens("hi there")
     exc_info.match(

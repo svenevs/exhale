@@ -912,7 +912,6 @@ def tokenize_template(node_name: str):
     return ret
 
 
-
 def _join_template_args(idx, item, stream):
     """
     Recursive helper method for :func:`~exhale.utils.join_template_tokens`.
