@@ -173,7 +173,9 @@ namespace special {
         };
     };
 
+    /// unique snowflakes are unique
     namespace unique {
+        /// very unique
         namespace snowflake {
             /// A wrapper struct in a namespace so I can have a final template parameter
             /// with some `::` in it.

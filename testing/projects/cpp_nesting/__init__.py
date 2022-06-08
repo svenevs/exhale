@@ -2,7 +2,7 @@
 The ``cpp_nesting`` test project.
 """
 
-from testing.hierarchies import clike, directory, file, namespace, union
+from testing.hierarchies import clike, directory, file, namespace, typedef, union
 
 
 def default_class_hierarchy_dict():
@@ -32,7 +32,6 @@ def default_class_hierarchy_dict():
                 clike("struct", "Data"): {},
                 clike("struct", "SomeThing"): {}
             },
-            # TODO: undo #if 0 in nesting_specializations.hpp
             clike("struct", "Base", template=["size_t N"]): {
                 clike("struct", "A"): {}
             },
@@ -43,6 +42,29 @@ def default_class_hierarchy_dict():
                     "size_t M", "typename no_use_this = void"]): {},
                 clike("struct", "InnerTemplatedStruct< 4, dont_use_this >", template=[
                     "typename dont_use_this"]): {}
+            },
+            namespace("unique"): {
+                namespace("snowflake"): {
+                    clike("struct", "Ontology", template=["auto Epoch"]): {},
+                    clike("struct", "Ontology< 11 >", template=["11"]): {},
+                },
+                clike("struct", "Nonsense", template=["int X", "class T"]): {},
+                clike("struct", "Nonsense< X, snowflake::Ontology< X > >",
+                      template=["int X"]): {},
+                clike("struct", "Nonsense< 11, snowflake::Ontology< 11 > >"): {},
+                typedef("PartialNonsense", "Nonsense< X, snowflake::Ontology< X > >",
+                        template=["int X"]): {},
+                typedef("FullNonsense", "Nonsense< 11, snowflake::Ontology< 11 > >"): {}
+            },
+            namespace("complex"): {
+                clike("struct", "Fold", template=["typename... Ts"]): {},
+                typedef("void_t", "void", template=["class..."]): {},
+                clike("struct", "has_type_member",
+                      template=["class", "class=void"]): {},
+                clike("struct", "has_type_member< T, void_t< typename T::type > >",
+                      template=["class T"]): {},
+                clike("struct", "IntPtr", template=["const int* I"]): {},
+                clike("struct", "IntRef", template=["const int& I"]): {}
             }
         },
         namespace("nested"): {
@@ -104,7 +126,6 @@ def default_file_hierarchy_dict():
                         clike("struct", "Data"): {},
                         clike("struct", "SomeThing"): {}
                     },
-                    # TODO: undo #if 0 in nesting_specializations.hpp
                     clike("struct", "Base", template=["size_t N"]): {
                         clike("struct", "A"): {}
                     },
@@ -115,6 +136,31 @@ def default_file_hierarchy_dict():
                             "size_t M", "typename no_use_this = void"]): {},
                         clike("struct", "InnerTemplatedStruct< 4, dont_use_this >", template=[
                             "typename dont_use_this"]): {}
+                    },
+                    namespace("unique"): {
+                        namespace("snowflake"): {
+                            clike("struct", "Ontology", template=["auto Epoch"]): {},
+                            clike("struct", "Ontology< 11 >", template=["11"]): {},
+                        },
+                        clike("struct", "Nonsense", template=["int X", "class T"]): {},
+                        clike("struct", "Nonsense< X, snowflake::Ontology< X > >",
+                              template=["int X"]): {},
+                        clike("struct", "Nonsense< 11, snowflake::Ontology< 11 > >"): {},
+                        typedef("PartialNonsense",
+                                "Nonsense< X, snowflake::Ontology< X > >",
+                                template=["int X"]): {},
+                        typedef("FullNonsense",
+                                "Nonsense< 11, snowflake::Ontology< 11 > >"): {}
+                    },
+                    namespace("complex"): {
+                        clike("struct", "Fold", template=["typename... Ts"]): {},
+                        typedef("void_t", "void", template=["class..."]): {},
+                        clike("struct", "has_type_member",
+                              template=["class", "class=void"]): {},
+                        clike("struct", "has_type_member< T, void_t< typename T::type > >",
+                              template=["class T"]): {},
+                        clike("struct", "IntPtr", template=["const int* I"]): {},
+                        clike("struct", "IntRef", template=["const int& I"]): {}
                     }
                 }
             },
