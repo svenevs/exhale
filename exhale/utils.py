@@ -923,7 +923,7 @@ def _join_template_args(idx, item, stream):
     stream: where to write contents to
     """
     if isinstance(item, str):
-        if idx > 0:
+        if idx > 0 and not item.startswith("::"):
             stream.write(", ")
         stream.write(item)
     else:
@@ -936,6 +936,23 @@ def _join_template_args(idx, item, stream):
 
 
 def join_template_tokens(tokens):
+    """
+    Re-build a C++ type using the output (or subset of) from
+    :func:`~exhale.utils.tokenize_template`.
+
+    The tokens are expected to be a list of either strings or list of strings,
+    and the first element of tokens must be a string.
+    """
+    if not isinstance(tokens, list):
+        raise ValueError(
+            f"Expected tokens to be a list, but got {type(tokens)} instead.")
+    if len(tokens) == 0:
+        return ""
+    if not isinstance(tokens[0], str):
+        raise ValueError(
+            "The first token must be a string, but the type of tokens[0] is "
+            f"{type(tokens[0])}.")
+
     stream = StringIO()
     _join_template_args(0, tokens, stream)
     ret = stream.getvalue()

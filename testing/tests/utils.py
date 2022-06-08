@@ -8,6 +8,7 @@
 """
 Tests for validating parts of :mod:`exhale.utils`.
 """
+import re
 
 import pytest
 
@@ -36,7 +37,7 @@ templates = [
         ["f", ["a","B", ["c","D", ["e"],],"F", ["g","H", ["i","J", ["k","l"]]]]]
     ),
     (
-        "special::ImageBuffer< Image< 1920, 1080 >>::Data",
+        "special::ImageBuffer< Image< 1920, 1080 > >::Data",
         ["special::ImageBuffer", ["Image", ["1920", "1080"]], "::Data"]
     ),
     (
@@ -112,7 +113,18 @@ def test_join_template_tokens(node_name):
     """
     Tests for :func:`~exhale.utils.join_template_tokens`.
     """
-    if "snowflake" in node_name and "::what" in node_name:
-        import ipdb
-        ipdb.set_trace()
     assert join_template_tokens(tokenize_template(node_name)) == node_name
+
+def test_join_template_tokens_edge_cases():
+    with pytest.raises(ValueError) as exc_info:
+        join_template_tokens("hi there")
+    exc_info.match(
+        "Expected tokens to be a list, but got <class 'str'> instead.")
+
+    assert join_template_tokens([]) == ""
+
+    with pytest.raises(ValueError) as exc_info:
+        join_template_tokens([["foo"]])
+    exc_info.match(re.escape(
+        "The first token must be a string, but the type of tokens[0] is <class "
+        "'list'>."))
