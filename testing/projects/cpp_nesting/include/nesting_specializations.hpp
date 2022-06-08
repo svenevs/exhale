@@ -14,6 +14,7 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 /** Specialized struct nesting for the joy and fun of all:
@@ -246,5 +247,52 @@ namespace special {
 
         /// Alias to full nonsense.
         using FullNonsense = Nonsense<11, snowflake::Ontology<11>>;
+    }
+
+    /** More complicated templates with special characters, doing it on classes
+     * intentionally (no functions allowed :p).  These are mostly here for help
+     * testing limits on tokenize_template edge cases.  The tokenize_template
+     * function may not even be called with these, but the python test cases
+     * have these in there and this code is checked for compilation. */
+    namespace complex {
+        /// variadic folding stuff
+        template <typename... Ts>
+        struct Fold {
+            /// make sure your types actually operator+...
+            static auto sum(Ts... ts) { return (ts + ...); }
+        };
+
+        /// https://en.cppreference.com/w/cpp/types/void_t
+        template <class...>
+        using void_t = void;
+
+        /// primary template handles types that have no nested ::type member:
+        /// https://en.cppreference.com/w/cpp/types/void_t
+        /// the equals sign yo
+        template <class, class=void>
+        struct has_type_member : std::false_type {
+            bool meh() const { return false; }
+        };
+
+        /// specialization recognizes types that do have a nested ::type member:
+        /// https://en.cppreference.com/w/cpp/types/void_t
+        template <class T>
+        struct has_type_member<T, void_t<typename T::type>> : std::true_type {
+            bool meh() const { return true; }
+        };
+
+        /// pure nonsense
+        template <const int* I>
+        struct IntPtr {
+            /// gives back the I
+            int i() { return *I; }
+        };
+
+        /// more nonsense
+        template <const int& I>
+        struct IntRef {
+            /// gives back the I
+            int i() { return I; }
+        };
     }
 }

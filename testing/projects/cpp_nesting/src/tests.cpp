@@ -113,6 +113,18 @@ TEST_CASE( "nesting_specializations", "[cpp-nesting]" ) {
     using FullNonsense = special::unique::FullNonsense;
     FullNonsense fn{elevensies};
     REQUIRE(fn.x() == elevensies.epoch() + fn.t().dual());
+
+    // special::complex
+    REQUIRE(special::complex::Fold<int, double, float>::sum(1, 2.0, 3.0f) == 6.0);
+
+    struct NoTypeMember{ };
+    struct TypeMember { using type = int; };
+    REQUIRE(special::complex::has_type_member<NoTypeMember>().meh() == false);
+    REQUIRE(special::complex::has_type_member<TypeMember>().meh() == true);
+
+    static int x = 11;
+    REQUIRE(special::complex::IntPtr<&x>().i() == 11);
+    REQUIRE(special::complex::IntRef<x>().i() == 11);
 }
 
 /* ================================================================================== */

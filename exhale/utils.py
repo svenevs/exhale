@@ -858,20 +858,36 @@ def tokenize_template(node_name: str):
         https://docs.python.org/3/library/re.html#writing-a-tokenizer
         """
         token_specification = [
+            # NOTE: tokenizing the whitespace is not OK, e.g., `typename... Ts`.
             ("T_START", r"<"),  # Template begin
             ("T_CLOSE", r">"),  # Template end
-            ("SKIP", r"[ \t]+"),  # Skip over whitespace
             ("COMMA", r","),  # Argument separator
-            ("KEEP", r"[^<>, \t]+")  # Everything else
+            ("KEEP", r"[^<>,]+")  # Everything else
         ]
         tok_regex = "|".join(
             f"(?P<{name}>{pattern})" for name, pattern in token_specification)
         for mo in re.finditer(tok_regex, s):
             # NOTE: we skip commas as well, but it needs to be tokenized so that we break
             # up the KEEP clauses.
-            if mo.lastgroup in {"SKIP", "COMMA"}:
+            if mo.lastgroup == "COMMA":
                 continue
-            yield TemplateToken(mo.lastgroup, mo.group())
+            # If the result of trimming whitespace is the emptry string, then this is
+            # not a novel template parameter and should be skipped.  We normalize the
+            # remainder of the name so that e.g., foo< int > gives just ["foo", ["int"]]
+            # rather than having funky whitespace everywhere.
+            trimmed = mo.group().strip()
+            if len(trimmed) == 0:
+                continue
+            # "Normalize" is used loosely here, `typename... Ts` and `typename ...Ts`
+            # and `typename ... Ts` do not get regularized to some uniform value, but we
+            # can get away with cleaning up erroneous whitespace so that something like
+            # `typename...    Ts` becomes `typename... Ts`.  Trying to do anything more
+            # complicated such as turn `int  &  I` and `int  &I` into say `int& I` or
+            # making `class = void` always be `class=void` is far too complicated.  Our
+            # end game is to get it as readable as possible while still breaking it all
+            # out into the correct template arguments.
+            trimmed = re.sub(r"\s+", " ", trimmed)
+            yield TemplateToken(mo.lastgroup, trimmed)
 
     def push(obj, l, depth):
         """

@@ -57,8 +57,49 @@ Shared template test case parameters, (node_name, template_tokens expected value
     exactly 1 space after any ``<`` and exactly one space before any ``>``.
 """
 
+extra_templates = [
+    # Test interior whitespace is folded into a single space.
+    (
+        "special::complex::Fold< typename... \t\t\t   \t Ts>",
+        ["special::complex::Fold", ["typename... Ts"]]
+    ),
+    (
+        "special::complex::Fold<     typename \t  ...   Ts >",
+        ["special::complex::Fold", ["typename ... Ts"]]
+    ),
+    (
+        "special::complex::Fold<typename \t \t ...Ts>",
+        ["special::complex::Fold", ["typename ...Ts"]]
+    ),
+    # It's so ugly it's pretty.
+    (
+        "has_type_member< T      , void_t  < typename     T::type  >",
+        ["has_type_member", ["T", "void_t", ["typename T::type"]]]
+    ),
+    # Getting lazy with these tests, just care about special symbols.
+    ("template <class...>", ["template", ["class..."]]),
+    ("template< class, class=void >", ["template", ["class", "class=void"]]),
+    (
+        "template<class, class   =   void>",
+        ["template", ["class", "class = void"]]
+    ),
+    ("template <const int* I>", ["template", ["const int* I"]]),
+    ("template < const   int   *  I>", ["template", ["const int * I"]]),
+    ("template <const int& I>", ["template", ["const int& I"]]),
+    ("template <const int      &I>", ["template", ["const int &I"]])
+    # TODO: probably more examples directly from the specs should be added, but this is
+    # hopefully good enough for now.
+    # https://en.cppreference.com/w/cpp/language/template_parameters
+]
+"""
+Only used for testing :func:`~exhale.utils.tokenize_template` (not joining back to the
+original name).  These tests include some more complicated templates to ensure the
+regular expression matching is valid, and some permutations of the whitespace as well
+for testing how tokens are getting split.
+"""
 
-@pytest.mark.parametrize("node_name,expected", templates)
+
+@pytest.mark.parametrize("node_name,expected", templates + extra_templates)
 def test_tokenize_template(node_name, expected):
     """
     Tests for :func:`~exhale.utils.tokenize_template`.
