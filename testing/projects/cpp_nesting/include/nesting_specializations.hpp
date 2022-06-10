@@ -70,6 +70,7 @@ namespace special {
         /// Checking nested specials too.
         template <int TNested>
         struct SomeThing {
+            /// The identifier
             std::string id() const { return std::to_string(TNested); }
         };
 
@@ -99,6 +100,7 @@ namespace special {
 
         /// This one is not as special, right?
         struct SomeThing {
+            /// The special identifier.
             std::string id() const { return "I AM SPECIAL!"; }
         };
 
@@ -125,6 +127,7 @@ namespace special {
 
         /// Super special.
         struct SomeThing {
+            /// The spectral identifier.
             std::string id() const { return "Spectral"; }
         };
 
@@ -149,26 +152,30 @@ namespace special {
 
         /// Inner struct 1.
         struct InnerStruct {
+            /// returns 3
             int a() const { return 3; };
         };
 
         /// Inner struct 2.
         struct AnotherNestedStruct {
+            /// returns 4
             double b() const { return 4; }
         };
 
 
-        char base_member{'!'};/// < not used
+        char base_member{'!'};///< not used
 
         /// Unspecialized inner struct.
         template <size_t M, typename no_use_this = void>
         struct InnerTemplatedStruct {
+            /// returns `{`
             char s() const { return '{'; }
         };
 
         /// Specialized inner struct.
         template <typename dont_use_this>
         struct InnerTemplatedStruct<4, dont_use_this>{
+            /// returns `}`
             char s() const { return '}'; }
         };
     };
@@ -268,18 +275,20 @@ namespace special {
         template <class...>
         using void_t = void;
 
-        /// primary template handles types that have no nested ::type member:
+        /// primary template handles types that have no nested `type` member:
         /// https://en.cppreference.com/w/cpp/types/void_t
         /// the equals sign yo
         template <class, class=void>
         struct has_type_member : std::false_type {
+            /// returns `false`.
             bool meh() const { return false; }
         };
 
-        /// specialization recognizes types that do have a nested ::type member:
+        /// specialization recognizes types that do have a nested `type` member:
         /// https://en.cppreference.com/w/cpp/types/void_t
         template <class T>
         struct has_type_member<T, void_t<typename T::type>> : std::true_type {
+            /// returns `true`
             bool meh() const { return true; }
         };
 
