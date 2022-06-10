@@ -1,0 +1,145 @@
+<ul class="treeView" id="class-treeView">
+  <li>
+    <ul class="collapsibleList">
+      <li>
+        Namespace <a href="namespace_nested.html#namespace-nested">nested</a>
+        <ul>
+          <li>
+            Namespace <a href="namespace_nested__dual_nested.html#namespace-nested-dual-nested">nested::dual_nested</a>
+            <ul>
+              <li>
+                Struct <a href="structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one">one</a>
+                <ul>
+                  <li class="lastChild">
+                    Struct <a href="structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params">one::params</a>
+                    <ul>
+                      <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li class="lastChild">
+                Struct <a href="structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two">two</a>
+                <ul>
+                  <li class="lastChild">
+                    Struct <a href="structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params">two::params</a>
+                    <ul>
+                      <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            Struct <a href="structnested_1_1one.html#exhale-struct-structnested-1-1one">one</a>
+            <ul>
+              <li class="lastChild">
+                Struct <a href="structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params">one::params</a>
+                <ul>
+                  <li class="lastChild">Union <a href="unionnested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            Struct <a href="structnested_1_1two.html#exhale-struct-structnested-1-1two">two</a>
+            <ul>
+              <li class="lastChild">
+                Struct <a href="structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params">two::params</a>
+                <ul>
+                  <li class="lastChild">Union <a href="unionnested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li class="lastChild">Union <a href="unionnested_1_1four__bytes.html#exhale-union-unionnested-1-1four-bytes">four_bytes</a></li>
+        </ul>
+      </li>
+      <li>
+        Namespace <a href="namespace_special.html#namespace-special">special</a>
+        <ul>
+          <li>
+            Namespace <a href="namespace_special__complex.html#namespace-special-complex">special::complex</a>
+            <ul>
+              <li>Template Struct <a href="structspecial_1_1complex_1_1Fold.html#exhale-struct-structspecial-1-1complex-1-1Fold">Fold</a></li>
+              <li>Template Struct <a href="structspecial_1_1complex_1_1has__type__member.html#exhale-struct-structspecial-1-1complex-1-1has-type-member">has_type_member</a></li>
+              <li>Template Struct <a href="structspecial_1_1complex_1_1has__type__member_3_01T_00_01void__t_3_01typename_01T_1_1type_01_4_01_4.html#exhale-struct-structspecial-1-1complex-1-1has-type-member-3-01T-00-01void-t-3-01typename-01T-1-1type-01-4-01-4">has_type_member&lt; T, void_t&lt; typename T::type &gt; &gt;</a></li>
+              <li>Template Struct <a href="structspecial_1_1complex_1_1IntPtr.html#exhale-struct-structspecial-1-1complex-1-1IntPtr">IntPtr</a></li>
+              <li class="lastChild">Template Struct <a href="structspecial_1_1complex_1_1IntRef.html#exhale-struct-structspecial-1-1complex-1-1IntRef">IntRef</a></li>
+            </ul>
+          </li>
+          <li>
+            Namespace <a href="namespace_special__unique.html#namespace-special-unique">special::unique</a>
+            <ul>
+              <li>
+                Namespace <a href="namespace_special__unique__snowflake.html#namespace-special-unique-snowflake">special::unique::snowflake</a>
+                <ul>
+                  <li>Template Struct <a href="structspecial_1_1unique_1_1snowflake_1_1Ontology.html#exhale-struct-structspecial-1-1unique-1-1snowflake-1-1Ontology">Ontology</a></li>
+                  <li class="lastChild">Template <a href="structspecial_1_1unique_1_1snowflake_1_1Ontology_3_0111_01_4.html#exhale-struct-structspecial-1-1unique-1-1snowflake-1-1Ontology-3-0111-01-4">Struct Ontology&lt; 11 &gt;</a></li>
+                </ul>
+              </li>
+              <li>Template Struct <a href="structspecial_1_1unique_1_1Nonsense.html#exhale-struct-structspecial-1-1unique-1-1Nonsense">Nonsense</a></li>
+              <li>Template <a href="structspecial_1_1unique_1_1Nonsense_3_0111_00_01snowflake_1_1Ontology_3_0111_01_4_01_4.html#exhale-struct-structspecial-1-1unique-1-1Nonsense-3-0111-00-01snowflake-1-1Ontology-3-0111-01-4-01-4">Struct Nonsense&lt; 11, snowflake::Ontology&lt; 11 &gt; &gt;</a></li>
+              <li class="lastChild">Template Struct <a href="structspecial_1_1unique_1_1Nonsense_3_01X_00_01snowflake_1_1Ontology_3_01X_01_4_01_4.html#exhale-struct-structspecial-1-1unique-1-1Nonsense-3-01X-00-01snowflake-1-1Ontology-3-01X-01-4-01-4">Nonsense&lt; X, snowflake::Ontology&lt; X &gt; &gt;</a></li>
+            </ul>
+          </li>
+          <li>
+            Template Struct <a href="structspecial_1_1Base.html#exhale-struct-structspecial-1-1Base">Base</a>
+            <ul>
+              <li class="lastChild">Struct <a href="structspecial_1_1Base_1_1A.html#exhale-struct-structspecial-1-1Base-1-1A">Base::A</a></li>
+            </ul>
+          </li>
+          <li>
+            Template <a href="structspecial_1_1Base_3_012_01_4.html#exhale-struct-structspecial-1-1Base-3-012-01-4">Struct Base&lt; 2 &gt;</a>
+            <ul>
+              <li>Template <a href="structspecial_1_1Base_3_012_01_4_1_1AnotherNestedStruct.html#exhale-struct-structspecial-1-1Base-3-012-01-4-1-1AnotherNestedStruct">Struct Base&lt; 2 &gt;::AnotherNestedStruct</a></li>
+              <li>Template <a href="structspecial_1_1Base_3_012_01_4_1_1InnerStruct.html#exhale-struct-structspecial-1-1Base-3-012-01-4-1-1InnerStruct">Struct Base&lt; 2 &gt;::InnerStruct</a></li>
+              <li>Template <a href="structspecial_1_1Base_3_012_01_4_1_1InnerTemplatedStruct.html#exhale-struct-structspecial-1-1Base-3-012-01-4-1-1InnerTemplatedStruct">Struct Base&lt; 2 &gt;::InnerTemplatedStruct</a></li>
+              <li class="lastChild">Template <a href="structspecial_1_1Base_3_012_01_4_1_1InnerTemplatedStruct_3_014_00_01dont__use__this_01_4.html#exhale-struct-structspecial-1-1Base-3-012-01-4-1-1InnerTemplatedStruct-3-014-00-01dont-use-this-01-4">Struct Base&lt; 2 &gt;::InnerTemplatedStruct&lt; 4, dont_use_this &gt;</a></li>
+            </ul>
+          </li>
+          <li>Template Struct <a href="structspecial_1_1Image.html#exhale-struct-structspecial-1-1Image">Image</a></li>
+          <li>
+            Struct <a href="structspecial_1_1Normal.html#exhale-struct-structspecial-1-1Normal">Normal</a>
+            <ul>
+              <li class="lastChild">
+                Struct <a href="structspecial_1_1Normal_1_1Nested.html#exhale-struct-structspecial-1-1Normal-1-1Nested">Normal::Nested</a>
+                <ul>
+                  <li class="lastChild">
+                    Struct <a href="structspecial_1_1Normal_1_1Nested_1_1Like.html#exhale-struct-structspecial-1-1Normal-1-1Nested-1-1Like">Nested::Like</a>
+                    <ul>
+                      <li class="lastChild">Struct <a href="structspecial_1_1Normal_1_1Nested_1_1Like_1_1Usual.html#exhale-struct-structspecial-1-1Normal-1-1Nested-1-1Like-1-1Usual">Like::Usual</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            Template Class <a href="classspecial_1_1ImageBuffer.html#exhale-class-classspecial-1-1ImageBuffer">ImageBuffer</a>
+            <ul>
+              <li>Struct <a href="structspecial_1_1ImageBuffer_1_1Data.html#exhale-struct-structspecial-1-1ImageBuffer-1-1Data">ImageBuffer::Data</a></li>
+              <li class="lastChild">Template Struct <a href="structspecial_1_1ImageBuffer_1_1SomeThing.html#exhale-struct-structspecial-1-1ImageBuffer-1-1SomeThing">ImageBuffer::SomeThing</a></li>
+            </ul>
+          </li>
+          <li>
+            Template <a href="classspecial_1_1ImageBuffer_3_01Image_3_011920_00_011080_01_4_00_01float_00_01128_01_4.html#exhale-class-classspecial-1-1ImageBuffer-3-01Image-3-011920-00-011080-01-4-00-01float-00-01128-01-4">Class ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;</a>
+            <ul>
+              <li>Template <a href="structspecial_1_1ImageBuffer_3_01Image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1Data.html#exhale-struct-structspecial-1-1ImageBuffer-3-01Image-3-011920-00-011080-01-4-00-01float-00-01128-01-4-1-1Data">Struct ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;::Data</a></li>
+              <li class="lastChild">Template <a href="structspecial_1_1ImageBuffer_3_01Image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1SomeThing.html#exhale-struct-structspecial-1-1ImageBuffer-3-01Image-3-011920-00-011080-01-4-00-01float-00-01128-01-4-1-1SomeThing">Struct ImageBuffer&lt; Image&lt; 1920, 1080 &gt;, float, 128 &gt;::SomeThing</a></li>
+            </ul>
+          </li>
+          <li class="lastChild">
+            Template Class <a href="classspecial_1_1ImageBuffer_3_01TImage_00_01Tdata__t_00_014_01_4.html#exhale-class-classspecial-1-1ImageBuffer-3-01TImage-00-01Tdata-t-00-014-01-4">ImageBuffer&lt; TImage, Tdata_t, 4 &gt;</a>
+            <ul>
+              <li>Template <a href="structspecial_1_1ImageBuffer_3_01TImage_00_01Tdata__t_00_014_01_4_1_1Data.html#exhale-struct-structspecial-1-1ImageBuffer-3-01TImage-00-01Tdata-t-00-014-01-4-1-1Data">Struct ImageBuffer&lt; TImage, Tdata_t, 4 &gt;::Data</a></li>
+              <li class="lastChild">Template <a href="structspecial_1_1ImageBuffer_3_01TImage_00_01Tdata__t_00_014_01_4_1_1SomeThing.html#exhale-struct-structspecial-1-1ImageBuffer-3-01TImage-00-01Tdata-t-00-014-01-4-1-1SomeThing">Struct ImageBuffer&lt; TImage, Tdata_t, 4 &gt;::SomeThing</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li class="lastChild">Struct <a href="structtop__level.html#exhale-struct-structtop-level">top_level</a></li>
+    </ul>
+  </li><!-- only tree view element -->
+</ul><!-- /treeView class-treeView -->
