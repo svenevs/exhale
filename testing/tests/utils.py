@@ -91,6 +91,10 @@ extra_templates = [
     # TODO: probably more examples directly from the specs should be added, but this is
     # hopefully good enough for now.
     # https://en.cppreference.com/w/cpp/language/template_parameters
+    #
+    # https://github.com/svenevs/exhale/pull/159#discussion_r892041086
+    # We may have issues with pointer to member of object and specializations
+    # and if we do then we'll have to fix it.  First somebody can donate code.
 ]
 """
 Only used for testing :func:`~exhale.utils.tokenize_template` (not joining back to the
