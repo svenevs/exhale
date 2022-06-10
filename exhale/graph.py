@@ -2448,6 +2448,7 @@ class ExhaleRoot(object):
                     utils.fancyError(
                         f"Exhale does not know how to process {node.name}, tokenized "
                         f"to {template_tokens}.  Please report this bug.")
+                class_name = class_name.split("::")[-1]
 
                 # Join up the final class name and any potentially skipped templates.
                 title = utils.join_template_tokens([class_name] + skipped)
