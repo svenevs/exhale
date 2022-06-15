@@ -19,7 +19,7 @@ jobs:
         # TODO: either obtain doxygen 1.8.20 on mac, or find out why everything
         # breaks in doxygen 1.9.2.
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@v2
       ##########################################################################
