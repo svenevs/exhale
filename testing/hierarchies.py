@@ -470,6 +470,8 @@ class root(object):  # noqa: N801
             raise ValueError("Hierarchy type must be either 'file' or 'class'.")
         self.hierarchy_type = hierarchy_type
 
+        self.all_nodes = []
+
         # Mimic exhale.graph.ExhaleRoot fields.
         self.class_like = []
         self.defines    = []
@@ -580,6 +582,7 @@ class root(object):  # noqa: N801
 
         if node not in self.__dict__[lst_name]:
             self.__dict__[lst_name].append(node)
+            self.all_nodes.append(node)
 
     def _visit_children(self, parent, child_spec):
         self._track_node(parent)
