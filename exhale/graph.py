@@ -2175,6 +2175,11 @@ class ExhaleRoot(object):
                 func.return_type = utils.sanitize(
                     memberdef.find("type", recursive=False).text
                 )
+                if "typename" in func.return_type:
+                    # This fixes the doxygen pasting typename to a parameter
+                    func.return_type = func.return_type.replace('typename', 'typename ')
+                    # Just in case we acccidentally add too many spaces, we remove double spaces.
+                    func.return_type = func.return_type.replace('  ', ' ')
                 # 2. The function parameter list.
                 parameters = []
                 for param in memberdef.find_all("param", recursive=False):

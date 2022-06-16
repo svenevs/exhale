@@ -327,6 +327,19 @@ class namespace(node):  # noqa: N801
         super(namespace, self).__init__(name, "namespace")
 
 
+class page(node):  # noqa: N801
+    """
+    Represent a ``page`` (doxygen specific).
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the page (doxygen identifier, not the text).
+    """
+
+    def __init__(self, name):
+        super(page, self).__init__(name, "page")
+
+
 class typedef(node):  # noqa: N801
     """
     Represents a ``typedef``.
@@ -448,6 +461,7 @@ class root(object):  # noqa: N801
         self.files      = []
         self.groups     = []
         self.namespaces = []
+        self.pages      = []
         self.typedefs   = []
         self.unions     = []
         self.variables  = []
@@ -534,6 +548,8 @@ class root(object):  # noqa: N801
             lst_name = "files"
         elif kind == "namespace":
             lst_name = "namespaces"
+        elif kind == "page":
+            lst_name = "pages"
         elif kind == "typedef":
             lst_name = "typedefs"
         elif kind == "union":
@@ -587,6 +603,15 @@ class root(object):  # noqa: N801
                 #       parents so that they can propagate to children
                 child.def_in_file = parent
             else:
+                # Exhale stores pages in a hierarchy, but they are all also
+                # direct children of the file.
+                # TODO: should nested pages be children of the file?  Doesn't seem to
+                # matter...
+                if child.kind == "page":
+                    file_parent = parent.def_in_file
+                    child.def_in_file = file_parent
+                    file_parent.children.append(child)
+
                 child.parent = parent
 
             if child not in parent.children:
@@ -763,7 +788,11 @@ class file_hierarchy(root):  # noqa: N801
 ########################################################################################
 def _compare_children(hierarchy_type, test, test_child, exhale_child):
     if test_child.parent:
-        test.assertTrue(exhale_child.parent is not None)
+        test.assertTrue(
+            exhale_child.parent is not None,
+            f"test_child of kind={test_child.kind} name={test_child.name} had a "
+            f"parent of kind={test_child.parent.kind} name={test_child.parent.name} "
+            "but exhale_child did *NOT* have a parent.  Likely invalid test hierarchy.")
         test.assertEqual(test_child.parent.name, exhale_child.parent.name)
         test.assertEqual(test_child.parent.kind, exhale_child.parent.kind)
     else:
@@ -773,7 +802,19 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
             test.assertTrue(exhale_child.parent is not None)
             test.assertTrue(exhale_child.parent.kind == "namespace")
         else:
-            test.assertTrue(exhale_child.parent is None)
+            # Better error message when the test fails, but don't crash tests
+            # that succeed by accessing `parent`.
+            def err_message():
+                if exhale_child.parent is None:
+                    return ""
+                return (
+                    f"exhale_child of kind={exhale_child.kind} "
+                    f"name={exhale_child.name} had a parent of "
+                    f"kind={exhale_child.parent.kind} "
+                    f"name={exhale_child.parent.name} but *NO* parent was expected."
+                )
+
+            test.assertTrue(exhale_child.parent is None, err_message())
 
     if hierarchy_type == "file":
         if test_child.def_in_file:
@@ -985,18 +1026,30 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
         exhale_grand_child = None
         if test_grand_child.kind == "function":
             test_signature = test_grand_child.full_signature()
+            considered_signatures = []  # for error reporting help in CI
             for candidate in exhale_child.children:
-                if candidate.kind == "function" and candidate.full_signature() == test_signature:
-                    exhale_grand_child = candidate
-                    break
+                if candidate.kind == "function":
+                    candidate_signature = candidate.full_signature()
+                    considered_signatures.append(candidate_signature)
+                    if test_signature == candidate_signature:
+                        exhale_grand_child = candidate
+                        break
+
+            if not exhale_grand_child:
+                raise RuntimeError(
+                    f"Matching child for [{test_grand_child.kind}] "
+                    f"'{test_grand_child.name}' with signature '{test_signature}' not "
+                    f"found!  Considered signatures: {considered_signatures}.")
         else:
             for candidate in exhale_child.children:
                 if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:
                     exhale_grand_child = candidate
-        if not exhale_grand_child:
-            raise RuntimeError("Matching child for [{0}] '{1}' not found!".format(
-                test_grand_child.kind, test_grand_child.name
-            ))
+
+            if not exhale_grand_child:
+                raise RuntimeError(
+                    f"Matching child for [{test_grand_child.kind}] "
+                    f"'{test_grand_child.name}' not found!")
+
         _compare_children(hierarchy_type, test, test_grand_child, exhale_grand_child)
 
 
