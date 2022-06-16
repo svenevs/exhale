@@ -1,0 +1,13 @@
+- :ref:`dir_include`
+    - :ref:`dir_include_nested`
+        - :ref:`dir_include_nested_dual_nested`
+            - :ref:`dir_include_nested_dual_nested_one`
+                - :ref:`file_include_nested_dual_nested_one_one.hpp`
+            - :ref:`dir_include_nested_dual_nested_two`
+                - :ref:`file_include_nested_dual_nested_two_two.hpp`
+        - :ref:`dir_include_nested_one`
+            - :ref:`file_include_nested_one_one.hpp`
+        - :ref:`dir_include_nested_two`
+            - :ref:`file_include_nested_two_two.hpp`
+    - :ref:`file_include_nesting_specializations.hpp`
+    - :ref:`file_include_top_level.hpp`
