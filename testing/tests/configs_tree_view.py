@@ -186,7 +186,7 @@ def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
         contents = f.read()
 
     if platform.system() == "Windows":
-        for unix_refid, windows_refid in unix_to_windows_refid_map.items():
+        for unix_refid, windows_refid in unix_to_windows_refid_map:
             if is_html:
                 unix_refid = unix_refid.replace("_", "-")
                 windows_refid = windows_refid.replace("_", "-")
