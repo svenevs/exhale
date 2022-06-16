@@ -190,12 +190,15 @@ def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
             # For html, two replacements are needed.  The generated page is named as
             # {refid}.html with underscores in tact, but the anchor names are #{refid}
             # with underscores as hyphens.
-            contents = contents.replace(unix_refid, windows_refid)
+            #
+            # NOTE: hyphenated replacements *MUST* be done first.
             if is_html:
                 unix_refid_hyphenated = unix_refid.replace("_", "-")
                 windows_refid_hyphenated = windows_refid.replace("_", "-")
                 contents = contents.replace(
                     unix_refid_hyphenated, windows_refid_hyphenated)
+
+            contents = contents.replace(unix_refid, windows_refid)
 
     return contents
 
