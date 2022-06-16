@@ -11,6 +11,7 @@ Tests specifically focused on the various tree view configurations.
 from __future__ import unicode_literals
 
 import os
+import platform
 import re
 from pathlib import Path
 from textwrap import dedent
@@ -34,9 +35,54 @@ tree_view_keys = {"default_rst_list", "collapsible_lists", "bootstrap"}
 def read_default_data(root: Path, file_name: str) -> str:
     """
     Open, read, and return the contents of the file ``{root}/{file_name}``.
+
+    The stored data files include the unix doxygen refids, on windows they are replaced
+    with the expected refid.  Doxygen only seems to differ on the platforms when there
+    is nesting / specialization occurring.  The tree view tests are validating against
+    the ``cpp_nesting`` project which has a large amount of this going on.
     """
+    # Keys: unix refids, values: windows refids.
+    unix_to_windows_refid_map = {
+        "structspecial_1_1complex_1_1Fold": "structspecial_1_1complex_1_1_fold",
+        "structspecial_1_1complex_1_1has__type__member_3_01T_00_01void__t_3_01typename_01T_1_1type_01_4_01_4": "structspecial_1_1complex_1_1has__type__member_3_01_t_00_01void__t_3_01typename_01_t_1_1type_01_4_01_4",  # noqa: E501
+        "structspecial_1_1complex_1_1IntPtr": "structspecial_1_1complex_1_1_int_ptr",
+        "structspecial_1_1complex_1_1IntRef": "structspecial_1_1complex_1_1_int_ref",
+        "structspecial_1_1unique_1_1snowflake_1_1Ontology": "structspecial_1_1unique_1_1snowflake_1_1_ontology",  # noqa: E501
+        "structspecial_1_1unique_1_1snowflake_1_1Ontology_3_0111_01_4": "structspecial_1_1unique_1_1snowflake_1_1_ontology_3_0111_01_4",  # noqa: E501
+        "structspecial_1_1unique_1_1Nonsense": "structspecial_1_1unique_1_1_nonsense",
+        "structspecial_1_1unique_1_1Nonsense_3_0111_00_01snowflake_1_1Ontology_3_0111_01_4_01_4": "structspecial_1_1unique_1_1Nonsense_3_0111_00_01snowflake_1_1_ontology_3_0111_01_4_01_4",  # noqa: E501
+        "structspecial_1_1unique_1_1Nonsense_3_01X_00_01snowflake_1_1Ontology_3_01X_01_4_01_4": "structspecial_1_1unique_1_1Nonsense_3_01_x_00_01snowflake_1_1_ontology_3_01_x_01_4_01_4",  # noqa: E501
+        "structspecial_1_1Base": "structspecial_1_1_base",
+        "structspecial_1_1Base_1_1A": "structspecial_1_1Base_1_1_a",
+        "structspecial_1_1Base_3_012_01_4": "structspecial_1_1_base_3_012_01_4",
+        "structspecial_1_1Base_3_012_01_4_1_1AnotherNestedStruct": "structspecial_1_1Base_3_012_01_4_1_1_another_nested_struct",  # noqa: E501
+        "structspecial_1_1Base_3_012_01_4_1_1InnerStruct": "structspecial_1_1Base_3_012_01_4_1_1_inner_struct",  # noqa: E501
+        "structspecial_1_1Base_3_012_01_4_1_1InnerTemplatedStruct": "structspecial_1_1Base_3_012_01_4_1_1_inner_templated_struct",  # noqa: E501
+        "structspecial_1_1Base_3_012_01_4_1_1InnerTemplatedStruct_3_014_00_01dont__use__this_01_4": "structspecial_1_1Base_3_012_01_4_1_1_inner_templated_struct_3_014_00_01dont__use__this_01_4",  # noqa: E501
+        "structspecial_1_1Image": "structspecial_1_1_image",
+        "structspecial_1_1Normal": "structspecial_1_1_normal",
+        "structspecial_1_1Normal_1_1Nested": "structspecial_1_1Normal_1_1_nested",
+        "structspecial_1_1Normal_1_1Nested_1_1Like": "structspecial_1_1Normal_1_1Nested_1_1_like",
+        "structspecial_1_1Normal_1_1Nested_1_1Like_1_1Usual": "structspecial_1_1Normal_1_1Nested_1_1Like_1_1_usual",  # noqa: E501
+        "classspecial_1_1ImageBuffer": "classspecial_1_1_image_buffer",
+        "structspecial_1_1ImageBuffer_1_1Data": "structspecial_1_1Image_buffer_1_1_data",
+        "structspecial_1_1ImageBuffer_1_1SomeThing": "structspecial_1_1Image_buffer_1_1_some_thing",
+        "classspecial_1_1ImageBuffer_3_01Image_3_011920_00_011080_01_4_00_01float_00_01128_01_4": "classspecial_1_1ImageBuffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4",  # noqa: E501
+        "structspecial_1_1ImageBuffer_3_01Image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1Data": "structspecial_1_1Image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_data",  # noqa: E501
+        "structspecial_1_1ImageBuffer_3_01Image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1SomeThing": "structspecial_1_1Image_buffer_3_01_image_3_011920_00_011080_01_4_00_01float_00_01128_01_4_1_1_some_thing",  # noqa: E501
+        "classspecial_1_1ImageBuffer_3_01TImage_00_01Tdata__t_00_014_01_4": "classspecial_1_1ImageBuffer_3_01_t_image_00_01_tdata__t_00_014_01_4",  # noqa: E501
+        "structspecial_1_1ImageBuffer_3_01TImage_00_01Tdata__t_00_014_01_4_1_1Data": "structspecial_1_1Image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_data",  # noqa: E501
+        "structspecial_1_1ImageBuffer_3_01TImage_00_01Tdata__t_00_014_01_4_1_1SomeThing": "structspecial_1_1Image_buffer_3_01_t_image_00_01_tdata__t_00_014_01_4_1_1_some_thing",  # noqa: E501
+    }
+
     with open(root / file_name) as f:
-        return f.read()
+        contents = f.read()
+
+    if platform.system() == "Windows":
+        for unix_refid, windows_refid in unix_to_windows_refid_map.items():
+            contents = contents.replace(unix_refid, windows_refid)
+
+    return contents
 
 
 class_hierarchy_ground_truth = {
