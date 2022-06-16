@@ -12,6 +12,8 @@ Tests for the ``cpp_nesting`` project.
 from __future__ import unicode_literals
 
 import os.path as osp
+import re
+import subprocess
 from textwrap import dedent
 
 from exhale.utils import heading_mark
@@ -124,18 +126,36 @@ class CPPNestingPages(ExhaleTestCase):
             f_name = "page_town_rock_alt.hpp"
             outer_page = "overview"
 
-        file_hierarchy_dict[include_dir][file(f_name)] = {
-            page(outer_page): {
-                page("intro"): {
-                    page("more_nesting"): {},
-                    page("more_nesting_redux"): {
-                        page("more_nesting_redux_again"): {},
-                        page("more_nesting_redux_again_again"): {}
-                    }
+        # In doxygen 1.8.x no pages appear, but in 1.9.x they exist and are required to
+        # be added in order for tests to pass.
+        doxygen_proc = subprocess.run(
+            ["doxygen", "--version"], capture_output=True, check=True)
+        doxygen_stdout = doxygen_proc.stdout.decode("utf8").strip()
+        match = re.match(
+            r"(\d+)\.(\d+)\.(\d+)", doxygen_proc.stdout.decode("utf-8").strip())
+        try:
+            major, minor, patch = [int(g) for g in match.groups()]
+        except Exception as e:
+            self.fail(
+                f"Could not obtain doxygen version number from {doxygen_stdout}: {e}")
+
+        if (major, minor) < (1, 9):
+            page_hierarchy = {}
+        else:
+            page_hierarchy = {
+                page(outer_page): {
+                    page("intro"): {
+                        page("more_nesting"): {},
+                        page("more_nesting_redux"): {
+                            page("more_nesting_redux_again"): {},
+                            page("more_nesting_redux_again_again"): {}
+                        }
+                    },
+                    page("advanced"): {}
                 },
-                page("advanced"): {}
-            },
-        }
+            }
+        file_hierarchy_dict[include_dir][file(f_name)] = page_hierarchy
+
         compare_file_hierarchy(self, file_hierarchy(file_hierarchy_dict))
 
         # Validate the misc page hierarchy details.
