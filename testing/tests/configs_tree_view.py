@@ -120,11 +120,6 @@ def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
         ),
         ################################################################################
         (
-            "structspecial_1_1Image",
-            "structspecial_1_1_image"
-        ),
-        ################################################################################
-        (
             "structspecial_1_1Normal_1_1Nested_1_1Like_1_1Usual",
             "structspecial_1_1Normal_1_1Nested_1_1Like_1_1_usual"
         ),
@@ -174,11 +169,16 @@ def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
         ################################################################################
         (
             "structspecial_1_1ImageBuffer_1_1Data",
-            "structspecial_1_1Image_buffer_1_1_data"
+            "structspecial_1_1_image_buffer_1_1_data"
         ),
         (
             "structspecial_1_1ImageBuffer_1_1SomeThing",
-            "structspecial_1_1Image_buffer_1_1_some_thing"
+            "structspecial_1_1_image_buffer_1_1_some_thing"
+        ),
+        ################################################################################
+        (
+            "structspecial_1_1Image",
+            "structspecial_1_1_image"
         ),
     ]
 
