@@ -1026,18 +1026,30 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
         exhale_grand_child = None
         if test_grand_child.kind == "function":
             test_signature = test_grand_child.full_signature()
+            considered_signatures = []  # for error reporting help in CI
             for candidate in exhale_child.children:
-                if candidate.kind == "function" and candidate.full_signature() == test_signature:
-                    exhale_grand_child = candidate
-                    break
+                if candidate.kind == "function":
+                    candidate_signature = candidate.full_signature()
+                    considered_signatures.append(candidate_signature)
+                    if test_signature == candidate_signature:
+                        exhale_grand_child = candidate
+                        break
+
+            if not exhale_grand_child:
+                raise RuntimeError(
+                    f"Matching child for [{test_grand_child.kind}] "
+                    f"'{test_grand_child.name}' with signature '{test_signature}' not "
+                    f"found!  Considered signatures: {considered_signatures}.")
         else:
             for candidate in exhale_child.children:
                 if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:
                     exhale_grand_child = candidate
-        if not exhale_grand_child:
-            raise RuntimeError("Matching child for [{0}] '{1}' not found!".format(
-                test_grand_child.kind, test_grand_child.name
-            ))
+
+            if not exhale_grand_child:
+                raise RuntimeError(
+                    f"Matching child for [{test_grand_child.kind}] "
+                    f"'{test_grand_child.name}' not found!")
+
         _compare_children(hierarchy_type, test, test_grand_child, exhale_grand_child)
 
 
