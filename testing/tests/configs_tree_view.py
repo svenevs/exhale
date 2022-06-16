@@ -87,6 +87,8 @@ def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
                 unix_refid = unix_refid.replace("_", "-")
                 windows_refid = windows_refid.replace("_", "-")
             contents = contents.replace(unix_refid, windows_refid)
+    else:
+        raise RuntimeError("just checkin chicken")
 
     return contents
 
