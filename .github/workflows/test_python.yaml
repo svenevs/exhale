@@ -15,10 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [macos-latest, ubuntu-latest, windows-latest]
-        # TODO: either obtain doxygen 1.8.20 on mac, or find out why everything
-        # breaks in doxygen 1.9.2.
-        os: [ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ['3.7', '3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@v2
@@ -26,9 +23,6 @@ jobs:
       - name: Install Doxygen (macOS)
         if: contains(matrix.os, 'macos')
         run: |
-          # brew tap-new $USER/local-doxygen
-          # brew extract --version=1.8.20 doxygen $USER/local-doxygen
-          # HOMEBREW_NO_AUTO_UPDATE=1 brew install -v doxygen@1.8.20
           HOMEBREW_NO_AUTO_UPDATE=1 brew install doxygen
       - name: Install Doxygen (Ubuntu)
         if: contains(matrix.os, 'ubuntu')
