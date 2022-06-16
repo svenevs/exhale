@@ -32,9 +32,12 @@ tree_view_keys = {"default_rst_list", "collapsible_lists", "bootstrap"}
 """Available kinds of tree views to validate against."""
 
 
-def read_default_data(root: Path, file_name: str) -> str:
+def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
     """
-    Open, read, and return the contents of the file ``{root}/{file_name}``.
+    Open, read, and return the contents of the file ``{root}/{file_name}``.  If the
+    default data being read is html (collapsible lists and bootstrap), underscores in
+    the refid need to be replaced with dashes since the link generated follows an html
+    anchor (``#``).
 
     The stored data files include the unix doxygen refids, on windows they are replaced
     with the expected refid.  Doxygen only seems to differ on the platforms when there
@@ -80,13 +83,17 @@ def read_default_data(root: Path, file_name: str) -> str:
 
     if platform.system() == "Windows":
         for unix_refid, windows_refid in unix_to_windows_refid_map.items():
+            if is_html:
+                unix_refid = unix_refid.replace("_", "-")
+                windows_refid = windows_refid.replace("_", "-")
             contents = contents.replace(unix_refid, windows_refid)
 
     return contents
 
 
 class_hierarchy_ground_truth = {
-    k: read_default_data(class_data_root, f"{k}.txt") for k in tree_view_keys
+    k: read_default_data(class_data_root, f"{k}.txt", k != "default_rst_list")
+    for k in tree_view_keys
 }
 """
 Ground truth for the three versions of class hierarchies.
@@ -109,7 +116,8 @@ Keys and what they represent:
 """
 
 file_hierarchy_ground_truth = {
-    k: read_default_data(file_data_root, f"{k}.txt") for k in tree_view_keys
+    k: read_default_data(file_data_root, f"{k}.txt", k != "default_rst_list")
+    for k in tree_view_keys
 }
 """
 Ground truth for the three versions of file hierarchies.
