@@ -31,3 +31,7 @@ include = [
     "exhale/**",
     "testing/**",
 ]
+omit = [
+    # Tests generate a conf.py that should not be included in code coverage.
+    "**/conf.py",
+]
