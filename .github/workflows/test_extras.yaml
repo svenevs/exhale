@@ -1,75 +1,75 @@
-# name: Extras
+name: Extras
 
-# on:
-#   push:
-#     branches:
-#       - master
-#   pull_request:
-#     branches:
-#       - master
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
-# jobs:
-#   build_docs_linkcheck:
-#     name: Docs / Linkcheck
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
+jobs:
+  build_docs_linkcheck:
+    name: Docs / Linkcheck
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
 
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Use Python 3.9
-#         uses: actions/setup-python@v2
-#         with:
-#           python-version: '3.9'
-#       - name: Install Tools
-#         run: |
-#           sudo apt-get install -y graphviz
-#           pip install -U tox
-#       # NOTE: the RTD PR build is enabled to view docs, this tests with nitpicky
-#       # flags that will catch non-critical warnings.
-#       - name: Test Docs
-#         run: |
-#           tox -e docs
-#       - name: Test Linkcheck
-#         run: |
-#           tox -e linkcheck
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install Tools
+        run: |
+          sudo apt-get install -y graphviz
+          pip install -U tox
+      # NOTE: the RTD PR build is enabled to view docs, this tests with nitpicky
+      # flags that will catch non-critical warnings.
+      - name: Test Docs
+        run: |
+          tox -e docs
+      - name: Test Linkcheck
+        run: |
+          tox -e linkcheck
 
-#   # TODO: this will become `lint` which will have more checks.
-#   build_flake8:
-#     name: Flake8
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
+  # TODO: this will become `lint` which will have more checks.
+  build_flake8:
+    name: Flake8
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
 
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Use Python 3.9
-#         uses: actions/setup-python@v2
-#         with:
-#           python-version: '3.9'
-#       - name: Install Tools
-#         run: |
-#           pip install -U tox
-#       - name: Test Flake8
-#         run: |
-#           tox -e flake8
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install Tools
+        run: |
+          pip install -U tox
+      - name: Test Flake8
+        run: |
+          tox -e flake8
 
-#   build_dist:
-#     name: Packaging
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
+  build_dist:
+    name: Packaging
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
 
-#     steps:
-#       - uses: actions/checkout@v2
-#       # Use minimum version of python needed for this project in setup.cfg.
-#       - name: Use Python 3.7
-#         uses: actions/setup-python@v2
-#         with:
-#           python-version: '3.7'
-#       - name: Install Tools
-#         run: |
-#           pip install -U tox
-#       - name: Test Packaging
-#         run: |
-#           tox -e dist
+    steps:
+      - uses: actions/checkout@v2
+      # Use minimum version of python needed for this project in setup.cfg.
+      - name: Use Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install Tools
+        run: |
+          pip install -U tox
+      - name: Test Packaging
+        run: |
+          tox -e dist
