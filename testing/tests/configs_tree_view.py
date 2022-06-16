@@ -185,7 +185,7 @@ def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
     with open(root / file_name) as f:
         contents = f.read()
 
-    if platform.system() == "Windows":
+    if platform.system() in {"Darwin", "Windows"}:
         for unix_refid, windows_refid in unix_to_windows_refid_map:
             # For html, two replacements are needed.  The generated page is named as
             # {refid}.html with underscores in tact, but the anchor names are #{refid}
