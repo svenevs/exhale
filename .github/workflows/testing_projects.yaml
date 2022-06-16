@@ -1,114 +1,114 @@
-name: Projects
+# name: Projects
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
+#     branches:
+#       - master
 
-jobs:
-  build_linux:
-    name: Linux
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
+# jobs:
+#   build_linux:
+#     name: Linux
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
 
-    steps:
-      - uses: actions/checkout@v2
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - name: Use Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
+#       - name: Use Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.8'
 
-      - name: Install Build Tools
-        run: |
-          pip install -U pip
-          pip install codecov gcovr
-          # cpp_long_names test runs code from testing/tests/cpp_long_names.py,
-          # so we need to install the runtime dependencies of Exhale's Python tests.
-          pip install . pytest pytest-raises>=0.10
-          sudo apt-get install -y \
-            cmake \
-            gcc \
-            g++ \
-            gfortran \
-            make
+#       - name: Install Build Tools
+#         run: |
+#           pip install -U pip
+#           pip install codecov gcovr
+#           # cpp_long_names test runs code from testing/tests/cpp_long_names.py,
+#           # so we need to install the runtime dependencies of Exhale's Python tests.
+#           pip install . pytest pytest-raises>=0.10
+#           sudo apt-get install -y \
+#             cmake \
+#             gcc \
+#             g++ \
+#             gfortran \
+#             make
 
-      - name: Build Tool Versions
-        run: |
-          gcc --version
-          g++ --version
-          gfortran --version
-          cmake --version
+#       - name: Build Tool Versions
+#         run: |
+#           gcc --version
+#           g++ --version
+#           gfortran --version
+#           cmake --version
 
-      - name: Build and Upload Coverage
-        run: |
-          cd testing/projects
-          mkdir build
-          cd build
-          cmake ..
-          make -j
-          make coverage-xml
-          codecov -X gcov -f .\coverage.xml --name linux_cxx
+#       - name: Build and Upload Coverage
+#         run: |
+#           cd testing/projects
+#           mkdir build
+#           cd build
+#           cmake ..
+#           make -j
+#           make coverage-xml
+#           codecov -X gcov -f .\coverage.xml --name linux_cxx
 
-  build_windows:
-    name: Windows
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
+#   build_windows:
+#     name: Windows
+#     runs-on: windows-latest
+#     strategy:
+#       fail-fast: false
 
-    steps:
-      - uses: actions/checkout@v2
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - name: Use Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
+#       - name: Use Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.8'
 
-      - name: Install Build Tools
-        run: |
-          pip install -U pip
-          pip install codecov gcovr
-          # cpp_long_names test runs code from testing/tests/cpp_long_names.py,
-          # so we need to install the runtime dependencies of Exhale's Python tests.
-          pip install . pytest pytest-raises>=0.10
+#       - name: Install Build Tools
+#         run: |
+#           pip install -U pip
+#           pip install codecov gcovr
+#           # cpp_long_names test runs code from testing/tests/cpp_long_names.py,
+#           # so we need to install the runtime dependencies of Exhale's Python tests.
+#           pip install . pytest pytest-raises>=0.10
 
-          choco install opencppcoverage
-          echo "C:\Program Files\OpenCppCoverage" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+#           choco install opencppcoverage
+#           echo "C:\Program Files\OpenCppCoverage" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Setup Windows Dev Env
-        uses: ilammy/msvc-dev-cmd@v1.9.0
-        with:
-          arch: x64
+#       - name: Setup Windows Dev Env
+#         uses: ilammy/msvc-dev-cmd@v1.9.0
+#         with:
+#           arch: x64
 
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
+#       - name: Install Ninja
+#         uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Build Tool Versions
-        run: |
-          cl
-          ninja --version
-          cmake --version
+#       - name: Build Tool Versions
+#         run: |
+#           cl
+#           ninja --version
+#           cmake --version
 
-      - name: Build and Upload Coverage
-        run: |
-          cd testing\projects
-          mkdir build
-          cd build
-          cmake .. -G Ninja
-          ninja
-          ninja coverage-xml
+#       - name: Build and Upload Coverage
+#         run: |
+#           cd testing\projects
+#           mkdir build
+#           cd build
+#           cmake .. -G Ninja
+#           ninja
+#           ninja coverage-xml
 
-          # Gerrymander generated coverage report to include paths from the
-          # repository root (rather than let GitHub Actions build folder paths
-          # leak in -- D:\a\exhale\exhale).
-          (Get-Content .\coverage.xml) -replace '(.*)filename=\"a\\exhale\\exhale\\(.*)\"(.*)', '$1 filename="$2"$3' | Set-Content .\coverage.xml
-          Copy-Item .\coverage.xml -Destination D:\a\exhale\exhale
-          cd D:\a\exhale\exhale
-          type coverage.xml
+#           # Gerrymander generated coverage report to include paths from the
+#           # repository root (rather than let GitHub Actions build folder paths
+#           # leak in -- D:\a\exhale\exhale).
+#           (Get-Content .\coverage.xml) -replace '(.*)filename=\"a\\exhale\\exhale\\(.*)\"(.*)', '$1 filename="$2"$3' | Set-Content .\coverage.xml
+#           Copy-Item .\coverage.xml -Destination D:\a\exhale\exhale
+#           cd D:\a\exhale\exhale
+#           type coverage.xml
 
-          $codecov_cmd = '& codecov -X gcov -f .\coverage.xml --name windows_cxx'
-          Invoke-Expression $codecov_cmd
+#           $codecov_cmd = '& codecov -X gcov -f .\coverage.xml --name windows_cxx'
+#           Invoke-Expression $codecov_cmd
