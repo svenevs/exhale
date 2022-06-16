@@ -62,3 +62,12 @@ Unsorted Misc
 .. autofunction:: exhale.utils.sanitize
 
 .. autofunction:: exhale.utils.sanitize_all
+
+Template Parsing
+----------------------------------------------------------------------------------------
+
+.. autofunction:: exhale.utils.tokenize_template
+
+.. autofunction:: exhale.utils.join_template_tokens
+
+.. autofunction:: exhale.utils._join_template_args
