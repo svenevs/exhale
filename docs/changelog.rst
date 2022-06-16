@@ -9,6 +9,11 @@ v0.3.2
 ----------------------------------------------------------------------------------------
 
 - Exhale requires python 3.7+ (:pr:`163`).
+- Development (local and CI) now support doxygen 1.9.x.  Additionally, fix parsing of
+  function signatures where doxygen will erroneously create e.g.,
+  ``template <typenameC>`` rather than ``template <typename C>`` with a space needed. It
+  does not happen with all ``typename``, so the hack just replaces ``"typename"`` with
+  ``"typename "`` and then replaces two spaces with one (:pr:`157`).
 
 v0.3.1
 ----------------------------------------------------------------------------------------
