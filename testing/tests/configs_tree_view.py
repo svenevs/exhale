@@ -187,12 +187,15 @@ def read_default_data(root: Path, file_name: str, is_html: bool) -> str:
 
     if platform.system() == "Windows":
         for unix_refid, windows_refid in unix_to_windows_refid_map:
-            if is_html:
-                unix_refid = unix_refid.replace("_", "-")
-                windows_refid = windows_refid.replace("_", "-")
+            # For html, two replacements are needed.  The generated page is named as
+            # {refid}.html with underscores in tact, but the anchor names are #{refid}
+            # with underscores as hyphens.
             contents = contents.replace(unix_refid, windows_refid)
-    else:
-        raise RuntimeError("just checkin chicken")
+            if is_html:
+                unix_refid_hyphenated = unix_refid.replace("_", "-")
+                windows_refid_hyphenated = windows_refid.replace("_", "-")
+                contents = contents.replace(
+                    unix_refid_hyphenated, windows_refid_hyphenated)
 
     return contents
 
