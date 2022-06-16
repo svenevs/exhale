@@ -197,30 +197,6 @@ class file(node):  # noqa: N801
         return "{0}: {1}".format(self.kind, self.location)
 
 
-class page(node):  # noqa: N801
-    """
-    Represent a ``page``.
-
-    .. note::
-
-       This class may only appear in a file hierarchy, not a class hierarchy.
-
-    **Parameters**
-        ``name`` (:class:`python:str`)
-            The name of the page being represented.
-    """
-
-    def __init__(self, name):
-        super(page, self).__init__(name, "page")
-        self.location = None
-
-    def __str__(self):
-        """
-        Return ``"{self.kind}: {self.name}"``.
-        """
-        return "{0}: {1}".format(self.kind, self.name)
-
-
 class function(node):  # noqa: N801
     """
     Represent a (partial) ``function``.
@@ -290,6 +266,24 @@ class function(node):  # noqa: N801
         self.parameters = parameters.args
 
 
+class page(node):  # noqa: N801
+    """
+    Represent a ``page``.
+
+    .. note::
+
+       This class may only appear in a file hierarchy, not a class hierarchy.
+
+    **Parameters**
+        ``name`` (:class:`python:str`)
+            The name of the page being represented.
+    """
+
+    def __init__(self, name):
+        super(page, self).__init__(name, "page")
+        self.location = None
+
+
 class parameters(object):  # noqa: N801
     """
     Represent a |function| parameters.
@@ -356,19 +350,6 @@ class namespace(node):  # noqa: N801
 
     def __init__(self, name):
         super(namespace, self).__init__(name, "namespace")
-
-
-class page(node):  # noqa: N801
-    """
-    Represent a ``page`` (doxygen specific).
-
-    **Parameters**
-        ``name`` (:class:`python:str`)
-            The name of the page (doxygen identifier, not the text).
-    """
-
-    def __init__(self, name):
-        super(page, self).__init__(name, "page")
 
 
 class typedef(node):  # noqa: N801
