@@ -198,8 +198,6 @@ class ExhaleNode(object):
             self.return_type = None # string (void, int, etc)
             self.parameters = [] # list of strings: ["int", "int"] for foo(int x, int y)
             self.template = None # list of strings
-        if self.kind in ["class", "struct"]:
-            self.template = [] # list of strings
 
     def __lt__(self, other):
         '''
