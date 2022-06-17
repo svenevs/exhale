@@ -17,7 +17,7 @@ namespace nested {
     namespace dual_nested {
         /// The second class inside the ``nested::dual_nested`` namespace.
         struct two {
-            /// Nesting even further: ``nested::dual_nested::one::params``.
+            /// Nesting even further: ``nested::dual_nested::two::params``.
             struct params {
                 /// A union that occupies four bytes: http://en.cppreference.com/w/cpp/language/union
                 union four_bytes {

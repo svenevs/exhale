@@ -9,433 +9,15 @@
 Tests specifically focused on the various tree view configurations.
 """
 from __future__ import unicode_literals
+
 import os
 import re
 from textwrap import dedent
 
 from testing.base import ExhaleTestCase
 from testing.decorators import confoverrides
-
-
-class_hierarchy_ground_truth = {
-    "default_rst_list": dedent(r'''
-        - :ref:`namespace_nested`
-            - :ref:`namespace_nested__dual_nested`
-                - :ref:`exhale_struct_structnested_1_1dual__nested_1_1one`
-                    - :ref:`exhale_struct_structnested_1_1dual__nested_1_1one_1_1params`
-                        - :ref:`exhale_union_unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes`
-                - :ref:`exhale_struct_structnested_1_1dual__nested_1_1two`
-                    - :ref:`exhale_struct_structnested_1_1dual__nested_1_1two_1_1params`
-                        - :ref:`exhale_union_unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes`
-            - :ref:`exhale_struct_structnested_1_1one`
-                - :ref:`exhale_struct_structnested_1_1one_1_1params`
-                    - :ref:`exhale_union_unionnested_1_1one_1_1params_1_1four__bytes`
-            - :ref:`exhale_struct_structnested_1_1two`
-                - :ref:`exhale_struct_structnested_1_1two_1_1params`
-                    - :ref:`exhale_union_unionnested_1_1two_1_1params_1_1four__bytes`
-            - :ref:`exhale_union_unionnested_1_1four__bytes`
-        - :ref:`exhale_struct_structtop__level`
-    '''),
-    "collapsible_lists": dedent(r'''
-        <ul class="treeView" id="class-treeView">
-        <li>
-            <ul class="collapsibleList">
-            <li>
-                Namespace <a href="namespace_nested.html#namespace-nested">nested</a>
-                <ul>
-                <li>
-                    Namespace <a href="namespace_nested__dual_nested.html#namespace-nested-dual-nested">nested::dual_nested</a>
-                    <ul>
-                    <li>
-                        Struct <a href="structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one">one</a>
-                        <ul>
-                        <li class="lastChild">
-                            Struct <a href="structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params">one::params</a>
-                            <ul>
-                            <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                            </ul>
-                        </li>
-                        </ul>
-                    </li>
-                    <li class="lastChild">
-                        Struct <a href="structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two">two</a>
-                        <ul>
-                        <li class="lastChild">
-                            Struct <a href="structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params">two::params</a>
-                            <ul>
-                            <li class="lastChild">Union <a href="unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                            </ul>
-                        </li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li>
-                    Struct <a href="structnested_1_1one.html#exhale-struct-structnested-1-1one">one</a>
-                    <ul>
-                    <li class="lastChild">
-                        Struct <a href="structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params">one::params</a>
-                        <ul>
-                        <li class="lastChild">Union <a href="unionnested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1one-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li>
-                    Struct <a href="structnested_1_1two.html#exhale-struct-structnested-1-1two">two</a>
-                    <ul>
-                    <li class="lastChild">
-                        Struct <a href="structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params">two::params</a>
-                        <ul>
-                        <li class="lastChild">Union <a href="unionnested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1two-1-1params-1-1four-bytes">params::four_bytes</a></li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li class="lastChild">Union <a href="unionnested_1_1four__bytes.html#exhale-union-unionnested-1-1four-bytes">four_bytes</a></li>
-                </ul>
-            </li>
-            <li class="lastChild">Struct <a href="structtop__level.html#exhale-struct-structtop-level">top_level</a></li>
-
-            </ul>
-        </li><!-- only tree view element -->
-        </ul><!-- /treeView class-treeView -->
-    '''),  # noqa: E501
-    "bootstrap": dedent(r'''
-        <div id="class-treeView"></div>
-        <script type="text/javascript">
-        function getClassHierarchyTree() {
-            return [
-            {
-                text: "<span class=\"text-muted\">Namespace</span> nested",
-                href: "namespace_nested.html#namespace-nested",
-                selectable: false,
-                tags: ['4'],
-
-                nodes: [
-                {
-                    text: "<span class=\"text-muted\">Namespace</span> nested::dual_nested",
-                    href: "namespace_nested__dual_nested.html#namespace-nested-dual-nested",
-                    selectable: false,
-                    tags: ['2'],
-
-                    nodes: [
-                    {
-                        text: "<span class=\"text-muted\">Struct</span> one",
-                        href: "structnested_1_1dual__nested_1_1one.html#exhale-struct-structnested-1-1dual-nested-1-1one",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">Struct</span> one::params",
-                            href: "structnested_1_1dual__nested_1_1one_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1one-1-1params",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
-                            {
-                                text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                                href: "unionnested_1_1dual__nested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1one-1-1params-1-1four-bytes",
-                                selectable: false,
-                            },
-                            ]
-                        },
-                        ]
-                    },
-                    {
-                        text: "<span class=\"text-muted\">Struct</span> two",
-                        href: "structnested_1_1dual__nested_1_1two.html#exhale-struct-structnested-1-1dual-nested-1-1two",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">Struct</span> two::params",
-                            href: "structnested_1_1dual__nested_1_1two_1_1params.html#exhale-struct-structnested-1-1dual-nested-1-1two-1-1params",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
-                            {
-                                text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                                href: "unionnested_1_1dual__nested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1dual-nested-1-1two-1-1params-1-1four-bytes",
-                                selectable: false,
-                            },
-                            ]
-                        },
-                        ]
-                    },
-                    ]
-                },
-                {
-                    text: "<span class=\"text-muted\">Struct</span> one",
-                    href: "structnested_1_1one.html#exhale-struct-structnested-1-1one",
-                    selectable: false,
-                    tags: ['1'],
-
-                    nodes: [
-                    {
-                        text: "<span class=\"text-muted\">Struct</span> one::params",
-                        href: "structnested_1_1one_1_1params.html#exhale-struct-structnested-1-1one-1-1params",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                            href: "unionnested_1_1one_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1one-1-1params-1-1four-bytes",
-                            selectable: false,
-                        },
-                        ]
-                    },
-                    ]
-                },
-                {
-                    text: "<span class=\"text-muted\">Struct</span> two",
-                    href: "structnested_1_1two.html#exhale-struct-structnested-1-1two",
-                    selectable: false,
-                    tags: ['1'],
-
-                    nodes: [
-                    {
-                        text: "<span class=\"text-muted\">Struct</span> two::params",
-                        href: "structnested_1_1two_1_1params.html#exhale-struct-structnested-1-1two-1-1params",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">Union</span> params::four_bytes",
-                            href: "unionnested_1_1two_1_1params_1_1four__bytes.html#exhale-union-unionnested-1-1two-1-1params-1-1four-bytes",
-                            selectable: false,
-                        },
-                        ]
-                    },
-                    ]
-                },
-                {
-                    text: "<span class=\"text-muted\">Union</span> four_bytes",
-                    href: "unionnested_1_1four__bytes.html#exhale-union-unionnested-1-1four-bytes",
-                    selectable: false,
-                },
-                ]
-            },
-            {
-                text: "<span class=\"text-muted\">Struct</span> top_level",
-                href: "structtop__level.html#exhale-struct-structtop-level",
-                selectable: false,
-            },
-
-            ]
-        }
-        </script><!-- end getClassHierarchyTree() function -->
-    ''')  # noqa: E501
-}
-"""
-Ground truth for the three versions of class hierarchies.
-
-Keys and what they represent:
-
-``"default_rst_list"``
-    The reStructuredText list version (``createTreeView=False``).
-
-``"collapsible_lists"``
-    The collapsible lists version of the tree view (raw html unordered list).
-
-``"bootstrap"``
-    The bootstrap version of the tree view (raw JavaScript function returning json data).
-
-.. todo::
-
-    This will break if / when doxygen refid generation changes.  In theory it should be
-    possible to synthetically re-create the hierarchy without this crazy text processing.
-"""
-
-
-file_hierarchy_ground_truth = {
-    "default_rst_list": dedent(r'''
-        - :ref:`dir_include`
-            - :ref:`dir_include_nested`
-                - :ref:`dir_include_nested_dual_nested`
-                    - :ref:`dir_include_nested_dual_nested_one`
-                        - :ref:`file_include_nested_dual_nested_one_one.hpp`
-                    - :ref:`dir_include_nested_dual_nested_two`
-                        - :ref:`file_include_nested_dual_nested_two_two.hpp`
-                - :ref:`dir_include_nested_one`
-                    - :ref:`file_include_nested_one_one.hpp`
-                - :ref:`dir_include_nested_two`
-                    - :ref:`file_include_nested_two_two.hpp`
-            - :ref:`file_include_top_level.hpp`
-    '''),
-    "collapsible_lists": dedent(r'''
-        <ul class="treeView" id="file-treeView">
-        <li>
-            <ul class="collapsibleList">
-            <li class="lastChild">
-                Directory <a href="dir_include.html#dir-include">include</a>
-                <ul>
-                <li>
-                    Directory <a href="dir_include_nested.html#dir-include-nested">nested</a>
-                    <ul>
-                    <li>
-                        Directory <a href="dir_include_nested_dual_nested.html#dir-include-nested-dual-nested">dual_nested</a>
-                        <ul>
-                        <li>
-                            Directory <a href="dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one">one</a>
-                            <ul>
-                            <li class="lastChild">File <a href="file_include_nested_dual_nested_one_one.hpp.html#file-include-nested-dual-nested-one-one.hpp">one.hpp</a></li>
-                            </ul>
-                        </li>
-                        <li class="lastChild">
-                            Directory <a href="dir_include_nested_dual_nested_two.html#dir-include-nested-dual-nested-two">two</a>
-                            <ul>
-                            <li class="lastChild">File <a href="file_include_nested_dual_nested_two_two.hpp.html#file-include-nested-dual-nested-two-two.hpp">two.hpp</a></li>
-                            </ul>
-                        </li>
-                        </ul>
-                    </li>
-                    <li>
-                        Directory <a href="dir_include_nested_one.html#dir-include-nested-one">one</a>
-                        <ul>
-                        <li class="lastChild">File <a href="file_include_nested_one_one.hpp.html#file-include-nested-one-one.hpp">one.hpp</a></li>
-                        </ul>
-                    </li>
-                    <li class="lastChild">
-                        Directory <a href="dir_include_nested_two.html#dir-include-nested-two">two</a>
-                        <ul>
-                        <li class="lastChild">File <a href="file_include_nested_two_two.hpp.html#file-include-nested-two-two.hpp">two.hpp</a></li>
-                        </ul>
-                    </li>
-                    </ul>
-                </li>
-                <li class="lastChild">File <a href="file_include_top_level.hpp.html#file-include-top-level.hpp">top_level.hpp</a></li>
-                </ul>
-            </li>
-
-            </ul>
-        </li><!-- only tree view element -->
-        </ul><!-- /treeView file-treeView -->
-    '''),  # noqa: E501
-    "bootstrap": dedent(r'''
-        <div id="file-treeView"></div>
-        <script type="text/javascript">
-        function getFileHierarchyTree() {
-            return [
-            {
-                text: "<span class=\"text-muted\">Directory</span> include",
-                href: "dir_include.html#dir-include",
-                selectable: false,
-                tags: ['2'],
-
-                nodes: [
-                {
-                    text: "<span class=\"text-muted\">Directory</span> nested",
-                    href: "dir_include_nested.html#dir-include-nested",
-                    selectable: false,
-                    tags: ['3'],
-
-                    nodes: [
-                    {
-                        text: "<span class=\"text-muted\">Directory</span> dual_nested",
-                        href: "dir_include_nested_dual_nested.html#dir-include-nested-dual-nested",
-                        selectable: false,
-                        tags: ['2'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">Directory</span> one",
-                            href: "dir_include_nested_dual_nested_one.html#dir-include-nested-dual-nested-one",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
-                            {
-                                text: "<span class=\"text-muted\">File</span> one.hpp",
-                                href: "file_include_nested_dual_nested_one_one.hpp.html#file-include-nested-dual-nested-one-one.hpp",
-                                selectable: false,
-                            },
-                            ]
-                        },
-                        {
-                            text: "<span class=\"text-muted\">Directory</span> two",
-                            href: "dir_include_nested_dual_nested_two.html#dir-include-nested-dual-nested-two",
-                            selectable: false,
-                            tags: ['1'],
-
-                            nodes: [
-                            {
-                                text: "<span class=\"text-muted\">File</span> two.hpp",
-                                href: "file_include_nested_dual_nested_two_two.hpp.html#file-include-nested-dual-nested-two-two.hpp",
-                                selectable: false,
-                            },
-                            ]
-                        },
-                        ]
-                    },
-                    {
-                        text: "<span class=\"text-muted\">Directory</span> one",
-                        href: "dir_include_nested_one.html#dir-include-nested-one",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">File</span> one.hpp",
-                            href: "file_include_nested_one_one.hpp.html#file-include-nested-one-one.hpp",
-                            selectable: false,
-                        },
-                        ]
-                    },
-                    {
-                        text: "<span class=\"text-muted\">Directory</span> two",
-                        href: "dir_include_nested_two.html#dir-include-nested-two",
-                        selectable: false,
-                        tags: ['1'],
-
-                        nodes: [
-                        {
-                            text: "<span class=\"text-muted\">File</span> two.hpp",
-                            href: "file_include_nested_two_two.hpp.html#file-include-nested-two-two.hpp",
-                            selectable: false,
-                        },
-                        ]
-                    },
-                    ]
-                },
-                {
-                    text: "<span class=\"text-muted\">File</span> top_level.hpp",
-                    href: "file_include_top_level.hpp.html#file-include-top-level.hpp",
-                    selectable: false,
-                },
-                ]
-            },
-
-            ]
-        }
-        </script><!-- end getFileHierarchyTree() function -->
-    ''')  # noqa: E501
-}
-"""
-Ground truth for the three versions of file hierarchies.
-
-Keys and what they represent:
-
-``"default_rst_list"``
-    The reStructuredText list version (``createTreeView=False``).
-
-``"collapsible_lists"``
-    The collapsible lists version of the tree view (raw html unordered list).
-
-``"bootstrap"``
-    The bootstrap version of the tree view (raw JavaScript function returning json data).
-
-.. todo::
-
-   This one should be possible to re-create manually rather than relying on direct text
-   comparisons.  But until you figure out how to do the class one more programmatically
-   you aren't doing that lolz.
-"""
+from testing.tests.configs_tree_view_data import \
+    class_hierarchy_ground_truth, file_hierarchy_ground_truth
 
 
 # NOTE: See cpp_nesting.CPPNestingPages.{setUp,tearDown} (creates page_town_rock.hpp).
@@ -532,6 +114,7 @@ class TreeViewHierarchyTests(ExhaleTestCase):
             A length two tuple in the order ``(class_view, file_view)``.  Each item in
             the tuple is a list of strings of the parsed / filtered lines.
         """
+
         def strip_html_directive(hierarchy):
             hierarchy_lines = []
             found_raw_html = False
@@ -629,14 +212,14 @@ class TreeViewHierarchyTests(ExhaleTestCase):
                 a Bootstrap test.
         """  # noqa: E501
         # First, compare the head / tail of the lists.
-        indices            = (0, 1, 2, -1, -2, -3)
+        indices = (0, 1, 2, -1, -2, -3)
         expected_head_tail = [expected_list[idx] for idx in indices]
-        test_head_tail     = [test_list[idx] for idx in indices]
+        test_head_tail = [test_list[idx] for idx in indices]
         self.line_compare(expected_head_tail, test_head_tail)
 
         # Join the remaining elements to make a comparison.
-        start    = max(indices) + 1 + int(bootstrap)  # TODO: uh. Why + int(bootstrap)?
-        end      = min(indices)
+        start = max(indices) + 1 + int(bootstrap)  # TODO: uh. Why + int(bootstrap)?
+        end = min(indices)
         interior = "".join(expected_list[start:end])
 
         if bootstrap:
@@ -652,15 +235,23 @@ class TreeViewHierarchyTests(ExhaleTestCase):
         **Parameters**
             ``hierarchy`` (:class:`python:str`)
                 Should **only** be ``"class"`` or ``"file"``.  Indexes into
-                :data:`class_hierarchy_ground_truth` and
-                :data:`file_hierarchy_ground_truth` respectively.
+                |class_hierarchy_ground_truth| and |file_hierarchy_ground_truth|
+                respectively.
 
             ``key`` (:class:`python:str`)
-                The key to lookup in either :data:`class_hierarchy_ground_truth` or
-                :data:`file_hierarchy_ground_truth`.  Specifically, you really only
-                want to be using ``"collapsible_lists"`` or ``"bootstrap"``, since the
-                raw reStructuredText version (``createTreeView=False``) can be compared
-                directly.
+                The key to lookup in either |class_hierarchy_ground_truth| or
+                |file_hierarchy_ground_truth|.  Specifically, you really only want to be
+                using ``"collapsible_lists"`` or ``"bootstrap"``, since the raw
+                reStructuredText version (``createTreeView=False``) can be compared
+                "directly".
+
+        .. |class_hierarchy_ground_truth| replace::
+
+            :data:`~testing.tests.configs_tree_view_data.class_hierarchy_ground_truth`
+
+        .. |file_hierarchy_ground_truth| replace::
+
+            :data:`~testing.tests.configs_tree_view_data.file_hierarchy_ground_truth`
 
         **Return** (:class:`python:list` of :class:`python:str`)
             The text specified by ``hierarchy[key]``, with every line split and lines

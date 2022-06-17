@@ -246,6 +246,31 @@ class ExhaleNode(object):
         else:
             return self.kind < other.kind
 
+    def __repr__(self):
+        # NOTE: there will never be a way to eval(repr()) anything from this!  These are
+        # exclusively for developer debugging convenience.
+        prefix = self.kind.capitalize()
+        if self.kind == "function":
+            return f"{prefix}({self.full_signature()})"
+        if self.kind == "file":
+            prefix += f"({self.location}"
+        else:
+            prefix += f"({self.name}"
+        if self.template_params:
+            prefix += f", template=<"
+            last_comma_index = len(self.template_params) - 1
+            for idx, (param_t, decl_n, def_n) in enumerate(self.template_params):
+                _, typeid = param_t
+                prefix += f"{typeid}"
+                if decl_n:
+                    prefix += f" {decl_n}"
+                if def_n:
+                    prefix += f" = {def_n}"
+                if idx < last_comma_index:
+                    prefix += ", "
+            prefix += ">"
+        return f"{prefix}, n_kids={len(self.children)})"
+
     def set_owner(self, root):
         """Sets the :class:`~exhale.graph.ExhaleRoot` owner ``self.root_owner``."""
         # needed to be able to track the page orderings as presented in index.xml
@@ -2406,21 +2431,44 @@ class ExhaleRoot(object):
             unique_id = node.refid
 
             # special treatment for templates
-            first_lt = node.name.find("<")
-            last_gt  = node.name.rfind(">")
+            n_lt = node.name.count("<")
+            n_gt = node.name.count(">")
+            if n_lt != n_gt:
+                utils.fancyError(
+                    f"Invalid C++ template: {node.name} has {n_lt} '<' and {n_gt} '>', "
+                    "exhale does not know what to do with your code.")
             # dealing with a template when this is true
-            if first_lt > -1 and last_gt > -1:
+            if n_lt > 0:
                 # NOTE: this has to happen for partial / full template specializations
                 #       When specializations occur, the "<param1, param2>" etc show up
                 #       in `node.name`.
                 template_special = True
-                #flake8failhere
-                # TODO: when specializations occur, can you find a way to link to them
-                # in the title?  Issue: nested templates prevent splitting on ','
-                title = "{cls}{templates}".format(
-                    cls=node.name[:first_lt].split("::")[-1],  # remove namespaces
-                    templates=node.name[first_lt:last_gt + 1]  # template params
-                )
+
+                # First tokenize the template into its sub components.
+                template_tokens = utils.tokenize_template(node.name)
+                # Starting from the end, find the first non-template class name,
+                # which will be the first string found.  Make sure to keep any
+                # templates in `skipped` so we can rebuild the full name.  We do
+                # this so that the node document's name for e.g., nested template
+                # types is just the nested name.
+                class_name = None
+                skipped = []
+                for item in reversed(template_tokens):
+                    if isinstance(item, list):
+                        skipped.insert(0, item)
+                        continue
+                    # The first non-list item will be a string.
+                    class_name = item
+                    break
+
+                if class_name is None:
+                    utils.fancyError(
+                        f"Exhale does not know how to process {node.name}, tokenized "
+                        f"to {template_tokens}.  Please report this bug.")
+                class_name = class_name.split("::")[-1]
+
+                # Join up the final class name and any potentially skipped templates.
+                title = utils.join_template_tokens([class_name] + skipped)
             else:
                 title = node.name.split("::")[-1]
 

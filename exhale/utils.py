@@ -6,19 +6,23 @@
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, annotations
+from typing import TextIO, Union
 
 from . import configs
 
+import codecs
+from dataclasses import dataclass
+import datetime
+from io import StringIO
 import os
+import re
 import sys
 import six
-import datetime
-import time
-import types
-import codecs
-import traceback
 import textwrap
+import time
+import traceback
+import types
 
 # Fancy error printing <3
 try:
@@ -834,3 +838,188 @@ def fancyError(critical_msg=None, lex="py3tb", singleton_hook=None):
             ))
 
     os._exit(1)
+
+
+def tokenize_template(node_name: str) -> list[Union[list, str]]:
+    """
+    Transform ``node_name`` into a list representing the templates.
+
+    .. note::
+
+        This method may not support all C++ templates, it is only used in exhale to
+        parse when templates occur in the doxygen name.  This happens with template
+        structs / classes and specializations.
+
+    In order to represent templates (and nested templates), any ``< template >`` is
+    tokenized to create a nested list of template parameters (and remove the ``<`` and
+    ``>`` characters).  Some examples:
+
+    +--------------------------------+---------------------------------------+
+    | Input ``node_name``            | Returned Tokens                       |
+    +================================+=======================================+
+    | ``""``                         | ``[]``                                |
+    +--------------------------------+---------------------------------------+
+    | ``"foo"``                      | ``["foo"]``                           |
+    +--------------------------------+---------------------------------------+
+    | *Depth 1*                                                              |
+    +--------------------------------+---------------------------------------+
+    | ``"foo< 12 >"``                | ``["foo", ["12"]]``                   |
+    +--------------------------------+---------------------------------------+
+    | ``"ns::foo< int, 66 >"``       | ``["ns::foo", ["int", "66"]]``        |
+    +--------------------------------+---------------------------------------+
+    | *Depth 2*                                                              |
+    +--------------------------------+---------------------------------------+
+    | ``"foo< std::array< int > >"`` | ``["foo", ["std::array", ["int"]]]``  |
+    +--------------------------------+---------------------------------------+
+    | ``"bar< Cls< x, y, z > >"``    | ``["bar", ["Cls", ["x", "y", "z"]]]`` |
+    +--------------------------------+---------------------------------------+
+    | *Depth 3*                                                              |
+    +--------------------------------+---------------------------------------+
+    | ``"rawr< A< B< C > > >"``      | ``["rawr", ["A", ["B", ["C"]]]]``     |
+    +--------------------------------+---------------------------------------+
+
+    The function will transform any duplicate whitespace to a single space in the final
+    output, as well as remove any leading or trailing whitespace for a given token.
+    To transform back to a string, use :func:`~exhale.utils.join_template_tokens`.
+
+    **Parameters**
+
+    ``node_name`` (str)
+        The name of the node to tokenize.  It is **assumed** that this is valid C++, if
+        it is not the results are undefined.
+    """
+    @dataclass
+    class TemplateToken:
+        type: str
+        value: str
+
+    def tokenize(s: str):
+        """
+        Tokenize ``node_name``.  See:
+
+        https://docs.python.org/3/library/re.html#writing-a-tokenizer
+        """
+        token_specification = [
+            # NOTE: tokenizing the whitespace is not OK, e.g., `typename... Ts`.
+            ("T_START", r"<"),  # Template begin
+            ("T_CLOSE", r">"),  # Template end
+            ("COMMA", r","),  # Argument separator
+            ("KEEP", r"[^<>,]+")  # Everything else
+        ]
+        tok_regex = "|".join(
+            f"(?P<{name}>{pattern})" for name, pattern in token_specification)
+        for mo in re.finditer(tok_regex, s):
+            # NOTE: we skip commas as well, but it needs to be tokenized so that we break
+            # up the KEEP clauses.
+            if mo.lastgroup == "COMMA":
+                continue
+            # If the result of trimming whitespace is the emptry string, then this is
+            # not a novel template parameter and should be skipped.  We normalize the
+            # remainder of the name so that e.g., foo< int > gives just ["foo", ["int"]]
+            # rather than having funky whitespace everywhere.
+            trimmed = mo.group().strip()
+            if len(trimmed) == 0:
+                continue
+            # "Normalize" is used loosely here, `typename... Ts` and `typename ...Ts`
+            # and `typename ... Ts` do not get regularized to some uniform value, but we
+            # can get away with cleaning up erroneous whitespace so that something like
+            # `typename...    Ts` becomes `typename... Ts`.  Trying to do anything more
+            # complicated such as turn `int  &  I` and `int  &I` into say `int& I` or
+            # making `class = void` always be `class=void` is far too complicated.  Our
+            # end game is to get it as readable as possible while still breaking it all
+            # out into the correct template arguments.
+            trimmed = re.sub(r"\s+", " ", trimmed)
+            yield TemplateToken(mo.lastgroup, trimmed)
+
+    def push(obj, l, depth):
+        """
+        Add obj to a given list l at the specified depth.
+        """
+        while depth:
+            l = l[-1]
+            depth -= 1
+        l.append(obj)
+
+    ret = []
+    depth = 0
+    for token in tokenize(node_name):
+        if token.type == "T_START":
+            push([], ret, depth)
+            depth += 1
+        elif token.type == "T_CLOSE":
+            depth -= 1
+        else:
+            push(token.value, ret, depth)
+
+    return ret
+
+
+def _join_template_args(idx: int, item: Union[str, list[Union[list, str]]], stream: TextIO):
+    """
+    Internal helper function for :func:`~exhale.utils.join_template_tokens`.
+
+    Recursively writes each ``item`` to ``stream`` in order, expanding the list to the
+    original C++ template definition.
+
+    **Parameters**
+
+    ``idx`` (int)
+        Recursive ``item`` depth level (not recursion call-stack depth).  This is
+        element index for when a parent calling function is iterating a list, when
+        greater than ``0`` a ``,`` is needed to be inserted.
+
+    ``item`` (Union[str, list[Union[list, str]]])
+        The current item to write to ``stream``.  When a ``str``, it is written
+        directly.  When a list, the item represents an inner template -- ``<`` is
+        written, followed by recursive joining of elements in the list, followed by
+        ``>``.
+
+    ``stream`` (TextIO)
+        The stream to write the results to.
+    """
+    if isinstance(item, str):
+        # NOTE: if an element after the beginning (idx > 0) starts with :: then this
+        # means that it is referencing a nested type/member -- no comma should be
+        # prefixed.  Otherwise, this is another template parameter, so add a comma.
+        if idx > 0 and not item.startswith("::"):
+            stream.write(", ")
+        stream.write(item)
+    else:
+        for idy, nested_item in enumerate(item):
+            if isinstance(nested_item, list):
+                stream.write("< ")
+            _join_template_args(idy, nested_item, stream)
+            if isinstance(nested_item, list):
+                stream.write(" >")
+
+
+def join_template_tokens(tokens: list[Union[list, str]]) -> str:
+    """
+    Return a C++ type using the output from :func:`~exhale.utils.tokenize_template`.
+
+    .. note::
+
+        The original input to :func:`~exhale.utils.tokenize_template` and the return of
+        this function are not guaranteed to be equivalent.  Whitespace variations will
+        occur.
+
+    **Parameters**
+
+    ``tokens`` (list[Union[list, str]])
+        The tokens to re-join together as a C++ template.
+    """
+    if not isinstance(tokens, list):
+        raise ValueError(
+            f"Expected tokens to be a list, but got {type(tokens)} instead.")
+    if len(tokens) == 0:
+        return ""
+    if not isinstance(tokens[0], str):
+        raise ValueError(
+            "The first token must be a string, but the type of tokens[0] is "
+            f"{type(tokens[0])}.")
+
+    stream = StringIO()
+    _join_template_args(0, tokens, stream)
+    ret = stream.getvalue()
+    stream.close()
+    return ret
