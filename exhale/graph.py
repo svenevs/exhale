@@ -3654,41 +3654,50 @@ class ExhaleRoot(object):
                                     */
                                     // Part 1: use linkColor as a parameter to bootstrap treeview
 
-                                    // apply the page view hierarchy
-                                    $("#{page_idx}").treeview({{
-                                        data: {page_func_name}(),
-                                        enableLinks: true,
-                                        color: linkColor,
-                                        showTags: {show_tags},
-                                        collapseIcon: "{collapse_icon}",
-                                        expandIcon: "{expand_icon}",
-                                        levels: {levels},
-                                        onhoverColor: "{onhover_color}"
-                                    }});
+                                    // apply the page view hierarchy if it exists
+                                    var page_h = $("#{page_idx}");
+                                    if (page_h.length) {{
+                                        page_h.treeview({{
+                                            data: {page_func_name}(),
+                                            enableLinks: true,
+                                            color: linkColor,
+                                            showTags: {show_tags},
+                                            collapseIcon: "{collapse_icon}",
+                                            expandIcon: "{expand_icon}",
+                                            levels: {levels},
+                                            onhoverColor: "{onhover_color}"
+                                        }});
+                                    }}
 
-                                    // apply the class view hierarchy
-                                    $("#{class_idx}").treeview({{
-                                        data: {class_func_name}(),
-                                        enableLinks: true,
-                                        color: linkColor,
-                                        showTags: {show_tags},
-                                        collapseIcon: "{collapse_icon}",
-                                        expandIcon: "{expand_icon}",
-                                        levels: {levels},
-                                        onhoverColor: "{onhover_color}"
-                                    }});
+                                    // apply the class view hierarchy if it exists
+                                    var class_h = $("#{class_idx}");
+                                    if (class_h.length) {{
+                                        class_h.treeview({{
+                                            data: {class_func_name}(),
+                                            enableLinks: true,
+                                            color: linkColor,
+                                            showTags: {show_tags},
+                                            collapseIcon: "{collapse_icon}",
+                                            expandIcon: "{expand_icon}",
+                                            levels: {levels},
+                                            onhoverColor: "{onhover_color}"
+                                        }});
+                                    }}
 
-                                    // apply the file view hierarchy
-                                    $("#{file_idx}").treeview({{
-                                        data: {file_func_name}(),
-                                        enableLinks: true,
-                                        color: linkColor,
-                                        showTags: {show_tags},
-                                        collapseIcon: "{collapse_icon}",
-                                        expandIcon: "{expand_icon}",
-                                        levels: {levels},
-                                        onhoverColor: "{onhover_color}"
-                                    }});
+                                    // apply the file view hierarchy if it exists
+                                    var file_h = $("#{file_idx}");
+                                    if (file_h.length) {{
+                                        file_h.treeview({{
+                                            data: {file_func_name}(),
+                                            enableLinks: true,
+                                            color: linkColor,
+                                            showTags: {show_tags},
+                                            collapseIcon: "{collapse_icon}",
+                                            expandIcon: "{expand_icon}",
+                                            levels: {levels},
+                                            onhoverColor: "{onhover_color}"
+                                        }});
+                                    }}
 
                                     // Part 2: override the style of the glyphicons by injecting some CSS
                                     $('<style type="text/css" id="exhaleTreeviewOverride">' +

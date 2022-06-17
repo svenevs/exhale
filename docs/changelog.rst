@@ -5,6 +5,13 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.3
+----------------------------------------------------------------------------------------
+
+- Fix sphinx-bootstrap-theme styling, the introduction of the page hierarchies broke
+  the bootstrap tree for any project that does not use ``page``.  Solution is to only
+  select / apply the ``treeview`` functions if the id anchors are found (:pr:`167`).
+
 v0.3.2
 ----------------------------------------------------------------------------------------
 
