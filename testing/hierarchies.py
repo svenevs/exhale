@@ -74,17 +74,34 @@ class node(ExhaleNode):  # noqa: N801
     def __init__(self, name, kind):
         super(node, self).__init__(name, kind, "")  # no Doxygen refid available
 
-    def __str__(self):
-        """
-        Return ``"{self.kind}: {self.name}"``.
-        """
-        return "{0}: {1}".format(self.kind, self.name)
-
     def __repr__(self):
         """
-        Return ``"{self.kind}: {self.name}"``.
+        Return ``ExhaleNode.__repr__``, possibly manufacturing ``self.template_params``.
+
+        A dirty hack to piggy-back off of ExhaleNode's ``__repr__``, the same value is
+        returned but for anything with a template we need to coerce the
+        ``ExhaleNode.template_params``.
+
+        When parsing from doxygen you get::
+
+            ((refid, typed), declared_name, defined_name)
+
+        But in the testing framework we're just using lists of strings.  Hallucinate
+        everything as the typeid as far as ``ExhaleNode`` is concerned.
+
+        .. todo::
+
+            On a day that is not this day, make ``ExhaleNode.template_params`` use a
+            ``class Tparam`` and reuse that here and in the testing framework.  And
+            just rename it to ``template``, unifying with ``kind=function``, and have
+            the testing framework use the same variable name.  But that's a lot of
+            effort right now and I just want good debugging prints.
         """
-        return self.__str__()
+        if getattr(self, "template", None) is not None:
+            self.template_params = []
+            for t in self.template:
+                self.template_params.append(((None, t), None, None))
+        return super().__repr__()
 
     def toConsole(self, level):
         """
@@ -190,12 +207,6 @@ class file(node):  # noqa: N801
         self.location = None  # TODO: these should not be needed anymore
         self.namespaces_used = []
 
-    def __str__(self):
-        """
-        Return ``"{self.kind}: {self.location}"``.
-        """
-        return "{0}: {1}".format(self.kind, self.location)
-
 
 class function(node):  # noqa: N801
     """
@@ -246,14 +257,6 @@ class function(node):  # noqa: N801
                 self.name = "blargh< nested::SuperStruct >"
                 self.parameters = ["int"]
                 self.template = []
-
-    def __str__(self):
-        """
-        Pass-through method that will return |f_signature|.
-
-        .. |f_signature| replace:: :func:`ExhaleNode.full_signature <exhale.graph.ExhaleNode.full_signature>`
-        """
-        return self.full_signature()
 
     def setParameters(self, parameters):
         """
@@ -332,11 +335,11 @@ class parameters(object):  # noqa: N801
     def __init__(self, *args):
         self.args = args
 
-    def __str__(self):
+    def __repr__(self):
         """
         Return ``", ".join(a for a in self.args)``.
         """
-        return ", ".join(a for a in self.args)
+        return f"Parameters({', '.join(a for a in self.args)})"
 
 
 class namespace(node):  # noqa: N801
@@ -480,6 +483,7 @@ class root(object):  # noqa: N801
 
         # The listing of top-level constructs.
         self.top_level  = []
+        self.all_nodes  = []
 
         # Initialize from the specified hierarchy and construct the graph.
         # NOTE: a deep copy of hierarchy is needed so that if a test wants to
@@ -574,6 +578,8 @@ class root(object):  # noqa: N801
 
         if node not in self.__dict__[lst_name]:
             self.__dict__[lst_name].append(node)
+        if node not in self.all_nodes:
+            self.all_nodes.append(node)
 
     def _visit_children(self, parent, child_spec):
         self._track_node(parent)

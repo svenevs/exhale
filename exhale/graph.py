@@ -246,11 +246,30 @@ class ExhaleNode(object):
         else:
             return self.kind < other.kind
 
-    def __str__(self):
-        return f"{self.kind}: {self.name}"
-
     def __repr__(self):
-        return self.__str__()
+        # NOTE: there will never be a way to eval(repr()) anything from this!  These are
+        # exclusively for developer debugging convenience.
+        prefix = self.kind.capitalize()
+        if self.kind == "function":
+            return f"{prefix}({self.full_signature()})"
+        if self.kind == "file":
+            prefix += f"({self.location}"
+        else:
+            prefix += f"({self.name}"
+        if self.template_params:
+            prefix += f", template=<"
+            last_comma_index = len(self.template_params) - 1
+            for idx, (param_t, decl_n, def_n) in enumerate(self.template_params):
+                _, typeid = param_t
+                prefix += f"{typeid}"
+                if decl_n:
+                    prefix += f" {decl_n}"
+                if def_n:
+                    prefix += f" = {def_n}"
+                if idx < last_comma_index:
+                    prefix += ", "
+            prefix += ">"
+        return f"{prefix}, n_kids={len(self.children)})"
 
     def set_owner(self, root):
         """Sets the :class:`~exhale.graph.ExhaleRoot` owner ``self.root_owner``."""
