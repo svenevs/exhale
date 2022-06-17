@@ -14,6 +14,15 @@ v0.3.2
   ``template <typenameC>`` rather than ``template <typename C>`` with a space needed. It
   does not happen with all ``typename``, so the hack just replaces ``"typename"`` with
   ``"typename "`` and then replaces two spaces with one (:pr:`157`).
+- Fix a bug where nested classes with specialized templates had the incorrect name being
+  displayed (:issue:`156`, fix: :pr:`159`).  Nodes with ``<>`` in their name (doxygen
+  presents specialized templates in the ``name`` attribute) get tokenized and the
+  various parameters extracted.  As a result of fixing, exhale now has stronger
+  capabilities to understand template parameters.  Substantive testing framework
+  overhaul was required, exhale may still not handle all templates correctly.
+
+  **Huge** thanks to `@florianhumblot <https://github.com/florianhumblot>`_ for devising
+  the strategy and spending time helping flesh this out.
 
 v0.3.1
 ----------------------------------------------------------------------------------------
