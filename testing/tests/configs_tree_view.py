@@ -541,7 +541,6 @@ class TreeViewHierarchyTests(ExhaleTestCase):
         """
         Verify the *minified* collapsible lists html unordered list appears as expected.
         """
-        self.maxDiff = None
         test_class_view_lines, test_file_view_lines = self.html_hierarchies()
         expected_class_view_lines = self.html_ground_truth_list("class", "collapsible_lists")
         expected_file_view_lines = self.html_ground_truth_list("file", "collapsible_lists")
