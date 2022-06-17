@@ -1106,7 +1106,8 @@ def compare_class_hierarchy(test, test_root):
 
     # Run some preliminary tests
     exhale_root = get_exhale_root(test)
-    test.assertEqual(len(test_root.class_like), len(exhale_root.class_like), msg="Classes don't match")
+    test.assertEqual(
+        len(test_root.class_like), len(exhale_root.class_like), msg="Classes / structs don't match")
     test.assertEqual(len(test_root.enums), len(exhale_root.enums), msg="Enums don't match")
     # TODO: cpp_nesting project somehow gets an arbitrary namespace std page in there
     # from doxygen with no members.  Currently #dontcare but eventually that should be
@@ -1181,8 +1182,8 @@ def compare_file_hierarchy(test, test_root):
 
     # Run some preliminary tests
     exhale_root = get_exhale_root(test)
-    test.assertEqual(len(test_root.dirs), len(exhale_root.dirs), msg="Root dirs don't match")
-    test.assertEqual(len(test_root.files), len(exhale_root.files), msg="Root files don't match")
+    test.assertEqual(len(test_root.dirs), len(exhale_root.dirs), msg="Directories don't match")
+    test.assertEqual(len(test_root.files), len(exhale_root.files), msg="Files don't match")
     for test_obj in test_root.top_level:
         exhale_obj = None
         if test_obj.kind == "dir":
@@ -1203,7 +1204,7 @@ def compare_file_hierarchy(test, test_root):
         _compare_children("file", test, test_obj, exhale_obj)
 
     # Functions needs to be checked explicitly (overloaded function names are same...)
-    test.assertEqual(len(test_root.functions), len(exhale_root.functions), msg="functions don't match")
+    test.assertEqual(len(test_root.functions), len(exhale_root.functions), msg="Functions don't match")
 
     def find_overloads(root):
         # keys: string function names
