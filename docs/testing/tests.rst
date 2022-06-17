@@ -12,6 +12,12 @@ Exhale Core Tests
 .. automodule:: testing.tests.configs
    :members:
 
+``configs_tree_view_data``
+----------------------------------------------------------------------------------------
+
+.. automodule:: testing.tests.configs_tree_view_data
+   :members:
+
 ``configs_tree_view``
 ----------------------------------------------------------------------------------------
 
