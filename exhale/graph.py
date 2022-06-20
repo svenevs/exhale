@@ -2430,15 +2430,45 @@ class ExhaleRoot(object):
         else:
             unique_id = node.refid
 
-            # special treatment for templates
+            # For template specializations, the template will appear in node.name.  We
+            # need to extract this information for nested structs / classes with
+            # specializations (see https://github.com/svenevs/exhale/issues/156).  The
+            # extraction code requires that the number of < and > are the same.
+            #
+            # For functions, though, doxygen does not present the specialization in
+            # node.name (see the other overload logic which is still broken for partial
+            # specializations).  However, operator overloads can and will have differing
+            # numbers of < and > characters, so we need to skip this scenario.  For
+            # example, the following two functions both have a node.name := "operator<<"
+            #
+            # - template <typename Out, typename T>
+            #   Out& operator<<(Out&, const T&)
+            # - template <>
+            #   std::ostream& operator<<<std::ostream, CustomType>(std::ostream&, const CustomType&)
+            #
+            # See: https://github.com/svenevs/exhale/issues/168
             n_lt = node.name.count("<")
             n_gt = node.name.count(">")
-            if n_lt != n_gt:
-                utils.fancyError(
-                    f"Invalid C++ template: {node.name} has {n_lt} '<' and {n_gt} '>', "
-                    "exhale does not know what to do with your code.")
-            # dealing with a template when this is true
-            if n_lt > 0:
+            # This should also skip operator<=> which is "balanced".
+            if node.kind == "function" and "operator" in node.name:
+                operator_overload = True
+            else:
+                operator_overload = False
+
+            # We error early since this functionality is somewhat brittle and we must
+            # rely on users reporting what is breaking.  Sorry, but also, not sorry, if
+            # the failure isn't done your docs would be broken you just wouldn't be told.
+            if not operator_overload and n_lt != n_gt:
+                try:
+                    # fancyError needs a traceback...
+                    raise Exception(str(node))
+                except:
+                    utils.fancyError(
+                        f"Invalid C++ template: {node.name} has {n_lt} '<' and {n_gt} "
+                        f"'>', exhale does not know what to do with your code.")
+
+            # Dealing with a template specialization?  Extract it.
+            if not operator_overload and n_lt > 0:
                 # NOTE: this has to happen for partial / full template specializations
                 #       When specializations occur, the "<param1, param2>" etc show up
                 #       in `node.name`.
@@ -2462,9 +2492,13 @@ class ExhaleRoot(object):
                     break
 
                 if class_name is None:
-                    utils.fancyError(
-                        f"Exhale does not know how to process {node.name}, tokenized "
-                        f"to {template_tokens}.  Please report this bug.")
+                    try:
+                        # fancyError needs a traceback...
+                        raise Exception(str(node))
+                    except:
+                        utils.fancyError(
+                            f"Exhale does not know how to process {node.name}, "
+                            f"tokenized to {template_tokens}.  Please report this bug.")
                 class_name = class_name.split("::")[-1]
 
                 # Join up the final class name and any potentially skipped templates.

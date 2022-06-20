@@ -5,6 +5,16 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.4
+----------------------------------------------------------------------------------------
+
+- Fix a regression introduced by :pr:`159`.  Nested template specializations need to
+  have their name extracted to be documented correctly, but the implementation checked
+  for ``node.name`` having the same number of ``<`` and ``>``.  This breaks operator
+  overloading (:issue:`168`).  Skip asserting the same number of ``<`` and ``>`` when
+  ``node.kind == "function"`` and ``operator`` is in ``node.name``.  See comments in
+  ``graph.py`` (:pr:`169`).
+
 v0.3.3
 ----------------------------------------------------------------------------------------
 

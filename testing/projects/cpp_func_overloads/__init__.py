@@ -2,12 +2,16 @@
 The ``cpp_func_overloads`` test project.
 """
 
-from testing.hierarchies import directory, file, function, namespace, parameters
+from testing.hierarchies import clike, directory, file, function, namespace, parameters
 
 
 def default_class_hierarchy_dict():
     """Return the default class hierarchy dictionary."""
-    return {}
+    return {
+        namespace("overload"): {
+            clike("class", "CustomType"): {},
+        }
+    }
 
 
 def default_file_hierarchy_dict():
@@ -72,6 +76,33 @@ def default_file_hierarchy_dict():
                             "blargh",
                             template=["class C", "typename T"]
                         ): parameters("typename C::type")
+                    }
+                },
+                file("operators.hpp"): {
+                    namespace("overload"): {
+                        clike("class", "CustomType"): {},
+                        function(
+                            "Out&",
+                            "operator<<",
+                            template=["typename Out", "typename T"]
+                        ): parameters("Out&", "const T&"),
+                        function(
+                            "std::ostream&",
+                            "operator<<",
+                            template=["std::ostream", "CustomType"]
+                        ): parameters("std::ostream&", "const CustomType&"),
+                        function("bool", "operator=="): parameters(
+                            "const CustomType&", "const CustomType&"),
+                        function("bool", "operator!="): parameters(
+                            "const CustomType&", "const CustomType&"),
+                        function("bool", "operator<"): parameters(
+                            "const CustomType&", "const CustomType&"),
+                        function("bool", "operator>"): parameters(
+                            "const CustomType&", "const CustomType&"),
+                        function("bool", "operator<="): parameters(
+                            "const CustomType&", "const CustomType&"),
+                        function("bool", "operator>="): parameters(
+                            "const CustomType&", "const CustomType&")
                     }
                 }
             }
