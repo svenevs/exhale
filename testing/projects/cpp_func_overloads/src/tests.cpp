@@ -6,8 +6,12 @@
  * License:      CC0 1.0 Universal                                                     *
  * License Text: https://creativecommons.org/publicdomain/zero/1.0/legalcode           *
  **************************************************************************************/
+#include <sstream>
+
 #include <catch2/catch.hpp>
+
 #include <overload/overload.hpp>
+#include <overload/operators.hpp>
 
 /* ================================================================================== */
 
@@ -266,4 +270,34 @@ TEST_CASE( "int ::blargh(int)", "[cpp-func-overloads]" ) {
 
     x = blargh(12);
     REQUIRE( x == 12 );
+}
+
+/* ================================================================================== */
+
+TEST_CASE( "Operator overloads", "[cpp-func-overloads]") {
+    using overload::CustomType;
+    CustomType eleven{11};
+    CustomType eleven_alt{11};
+    CustomType twenty_two{22};
+    CustomType twenty_two_alt{22};
+
+    std::ostringstream oss;
+    oss << "Eleven: " << eleven << ", Twenty Two: " << twenty_two;
+    const std::string value = oss.str();
+    REQUIRE( value == "Eleven: 11, Twenty Two: 22");
+
+    REQUIRE( eleven == eleven_alt );
+    REQUIRE( twenty_two == twenty_two_alt );
+
+    REQUIRE( eleven != twenty_two);
+
+    REQUIRE( eleven < twenty_two );
+
+    REQUIRE( twenty_two > eleven );
+
+    REQUIRE( eleven <= eleven_alt );
+    REQUIRE( eleven <= twenty_two );
+
+    REQUIRE( eleven >= eleven_alt );
+    REQUIRE( twenty_two >= eleven );
 }

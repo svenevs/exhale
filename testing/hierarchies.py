@@ -257,6 +257,10 @@ class function(node):  # noqa: N801
                 self.name = "blargh< nested::SuperStruct >"
                 self.parameters = ["int"]
                 self.template = []
+        elif template == ["std::ostream", "CustomType"]:
+            self.name = "operator<<< std::ostream, CustomType >"
+            self.parameters = ["std::ostream&", "const CustomType&"]
+            self.template = []
 
     def setParameters(self, parameters):
         """
@@ -1014,6 +1018,9 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
     )
     # Make sure they have the same number of children.
     CHILD_COUNT_IGNORE_KINDS = ["enumvalue", "group"]
+    # Functions do not appear in the class hierarchy.
+    if hierarchy_type == "class":
+        CHILD_COUNT_IGNORE_KINDS.append("function")
     num_exhale_children = sum(child.kind not in CHILD_COUNT_IGNORE_KINDS for child in exhale_child.children)
     test.assertEqual(
         len(test_child.children),
@@ -1055,10 +1062,11 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
                         break
 
             if not exhale_grand_child:
+                sig_str = "\n- ".join(considered_signatures)
                 raise RuntimeError(
                     f"Matching child for [{test_grand_child.kind}] "
                     f"'{test_grand_child.name}' with signature '{test_signature}' not "
-                    f"found!  Considered signatures: {considered_signatures}.")
+                    f"found!  Considered signatures:\n{sig_str}.")
         else:
             for candidate in exhale_child.children:
                 if candidate.kind == test_grand_child.kind and candidate.name == test_grand_child.name:

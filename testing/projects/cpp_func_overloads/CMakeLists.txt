@@ -14,8 +14,10 @@ add_library(cpp-func-overloads "")
 target_sources(cpp-func-overloads
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include/overload/overload.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/overload/operators.hpp
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/overload.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/operators.cpp
 )
 target_include_directories(cpp-func-overloads
   PUBLIC

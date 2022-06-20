@@ -13,7 +13,8 @@ from __future__ import unicode_literals
 
 from testing.base import ExhaleTestCase
 from testing.decorators import no_cleanup
-from testing.hierarchies import compare_file_hierarchy, file_hierarchy
+from testing.hierarchies import class_hierarchy, compare_class_hierarchy, \
+    compare_file_hierarchy, file_hierarchy
 
 
 class CPPFuncOverloads(ExhaleTestCase):
@@ -33,6 +34,7 @@ class CPPFuncOverloads(ExhaleTestCase):
             ipdb.set_trace()
             print("hi there")
 
-    def test_file_hierarchy(self):
-        """Verify the file hierarchy."""
+    def test_hierarchies(self):
+        """Verify the class and file hierarchies."""
+        compare_class_hierarchy(self, class_hierarchy(self.class_hierarchy_dict()))
         compare_file_hierarchy(self, file_hierarchy(self.file_hierarchy_dict()))
