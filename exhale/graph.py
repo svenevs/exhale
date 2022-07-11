@@ -3236,7 +3236,7 @@ class ExhaleRoot(object):
 
                             .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
 
-                        '''.format(
+                        '''.format(  # NOTE: newline required at end (#171)
                             link=link_declaration,
                             heading=prog_title,
                             heading_mark=utils.heading_mark(
@@ -3410,7 +3410,8 @@ class ExhaleRoot(object):
                             |exhale_lsh| :ref:`Parent directory <{parent_link}>` (``{parent_name}``)
 
                             .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
-                        '''.format(
+
+                        '''.format(  # NOTE: newline required at end (#171)
                             parent_link=f.parent.link_name, parent_name=f.parent.name
                         )))
 
@@ -3549,7 +3550,8 @@ class ExhaleRoot(object):
                 |exhale_lsh| :ref:`Parent directory <{parent_link}>` (``{parent_name}``)
 
                 .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
-            '''.format(
+
+            '''.format(  # NOTE: newline required at end (#171)
                 parent_link=node.parent.link_name, parent_name=node.parent.name
             ))
         else:

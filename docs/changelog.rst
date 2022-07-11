@@ -5,6 +5,13 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.5
+----------------------------------------------------------------------------------------
+
+- Fix a bug (:issue:`171`) where some generated pages are missing a blank line (before
+  the heading markup, after the backlink to the parent directory) resulting in warnings
+  from sphinx (:pr:`172`).
+
 v0.3.4
 ----------------------------------------------------------------------------------------
 
