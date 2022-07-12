@@ -924,10 +924,16 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
                     |exhale_lsh| :ref:`Return to documentation for file <{file_link}>` (``{file_location}``)
 
                     .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
                 ''').format(
                     file_link=exhale_child.link_name,
                     file_location=exhale_child.location
                 )
+                # NOTE: see #171
+                test.assertTrue(
+                    program_back_link.endswith("S\n\n"),
+                    "Test setup failure, trailing newlines are expected.")
+
                 with codecs.open(program_listing_path, "r", "utf-8") as pl_file:
                     desired_lines = []
                     for line in pl_file:
@@ -973,9 +979,14 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
                     |exhale_lsh| :ref:`Parent directory <{parent_link}>` (``{parent_name}``)
 
                     .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
                 '''.format(
                     parent_link=parent_link_name, parent_name=parent_name
                 ))
+                # NOTE: see #171
+                test.assertTrue(
+                    parent_reference.endswith("S\n\n"),
+                    "Test setup failure, trailing newlines are expected.")
 
                 # Verify that both files and directories link to their directory parent
                 test.assertTrue(
