@@ -8,7 +8,7 @@
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.5.dev"
+__version__ = "0.3.5"
 
 
 def environment_ready(app):
