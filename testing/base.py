@@ -86,7 +86,7 @@ class ExhaleTestCaseMetaclass(type):
         """
         if attrs["__module__"] == __name__:
             # we skip everything if we're creating ExhaleTestCase below
-            return super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs)
+            return super().__new__(mcs, name, bases, attrs)
 
         # Make sure `test_project` is defined in all derived classes.
         test_project = attrs.get("test_project", None)
@@ -246,8 +246,7 @@ class ExhaleTestCaseMetaclass(type):
         # applying the default configuration override, which is overridden using the
         # @confoverride decorator at class or method level
         return default_confoverrides(
-            super(ExhaleTestCaseMetaclass, mcs).__new__(mcs, name, bases, attrs),
-            make_default_config(attrs["test_project"])
+            super().__new__(mcs, name, bases, attrs), make_default_config(attrs["test_project"])
         )
 
 
