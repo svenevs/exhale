@@ -40,8 +40,6 @@ follows:
    options are to modify the behavior of Exhale.
 '''
 
-from __future__ import unicode_literals
-
 import os
 import six
 import textwrap

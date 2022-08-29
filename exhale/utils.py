@@ -6,7 +6,7 @@
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 
-from __future__ import unicode_literals, annotations
+from __future__ import annotations
 from typing import TextIO, Union
 
 from . import configs

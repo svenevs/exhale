@@ -9,8 +9,6 @@
 Tests for the ``cpp_with_spaces`` project.
 """
 
-from __future__ import unicode_literals
-
 from testing.base import ExhaleTestCase
 from testing.decorators import no_cleanup
 from testing.hierarchies import compare_file_hierarchy, file_hierarchy

@@ -9,8 +9,6 @@
 Tests for the ``cpp_func_overloads`` project.
 """
 
-from __future__ import unicode_literals
-
 from testing.base import ExhaleTestCase
 from testing.decorators import no_cleanup
 from testing.hierarchies import class_hierarchy, compare_class_hierarchy, \
