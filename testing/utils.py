@@ -9,11 +9,7 @@
 Utility functionality for the testing suite.
 """
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    # TODO: remove when dropping python 2.7
-    from collections import Mapping
+from collections.abc import Mapping
 
 
 def deep_update(orig, override):
