@@ -5,7 +5,6 @@ sphinx-issues
 beautifulsoup4
 lxml
 breathe
-six
 # test imports
 pytest
 pytest-raises>=0.10

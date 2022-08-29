@@ -19,7 +19,6 @@ from .graph import ExhaleRoot
 
 import os
 import sys
-import six
 import re
 import codecs
 import tempfile
@@ -78,7 +77,7 @@ def _generate_doxygen(doxygen_input):
             method to restore some state before exiting the program (namely, the working
             directory before propagating an exception to ``sphinx-build``).
     '''
-    if not isinstance(doxygen_input, six.string_types):
+    if not isinstance(doxygen_input, str):
         return "Error: the `doxygen_input` variable must be of type `str`."
 
     doxyfile = doxygen_input == "Doxyfile"
@@ -104,12 +103,7 @@ def _generate_doxygen(doxygen_input):
             #
             # See excellent synopsis:
             # https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
-            if six.PY2:
-                tempfile_kwargs = {}
-            else:
-                # encoding argument introduced in python 3
-                tempfile_kwargs = {"encoding": "utf-8"}
-            tempfile_kwargs["mode"] = "r+"
+            tempfile_kwargs = {"mode": "r+", "encoding": "utf-8"}
             tmp_out_file = tempfile.TemporaryFile(
                 prefix="doxygen_stdout_buff", **tempfile_kwargs
             )
@@ -213,7 +207,7 @@ def generateDoxygenXML():
         # 1. INPUT (where doxygen should parse).
         #
         # The below is a modest attempt to validate that these were / were not given.
-        if not isinstance(configs.exhaleDoxygenStdin, six.string_types):
+        if not isinstance(configs.exhaleDoxygenStdin, str):
             return "`exhaleDoxygenStdin` config must be a string!"
 
         if not _valid_config("OUTPUT_DIRECTORY", False):

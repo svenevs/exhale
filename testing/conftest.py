@@ -33,6 +33,6 @@ def pytest_configure(config):
 
 def pytest_runtest_setup(item):
     """.. todo:: stop reloading configs module in 1.x."""
-    from six.moves import reload_module
+    from importlib import reload
     from exhale import configs
-    reload_module(configs)
+    reload(configs)

@@ -18,7 +18,6 @@ from io import StringIO
 import os
 import re
 import sys
-import six
 import textwrap
 import time
 import traceback
@@ -227,7 +226,7 @@ def makeCustomSpecificationsMapping(func):
             specs = func(kind)
             bad   = type(specs) is not list
             for s in specs:
-                if not isinstance(s, six.string_types):
+                if not isinstance(s, str):
                     bad = True
                     break
             if bad:
@@ -690,7 +689,7 @@ class AnsiColors:
             # ignore specials such as __class__ or __module__
             if not elem.startswith("__"):
                 color_fmt = cls.__dict__[elem]
-                if isinstance(color_fmt, six.string_types) and color_fmt != "BOLD" and color_fmt != "DIM" and \
+                if isinstance(color_fmt, str) and color_fmt != "BOLD" and color_fmt != "DIM" and \
                         color_fmt != "UNDER" and color_fmt != "INV":
                     print("\033[{fmt}AnsiColors.{name}\033[0m".format(fmt=color_fmt, name=elem))
 

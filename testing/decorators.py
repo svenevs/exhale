@@ -193,7 +193,7 @@ def no_cleanup(method):
 
        This decorator performs ``self.testroot = [self.testroot]`` as an internal bypass
        to the fixtures created in ``__new__`` for the metaclass.  Specifically, the
-       fixtures generated check ``if isinstance(self.testroot, six.string_types)``.
+       fixtures generated check ``if isinstance(self.testroot, str)``.
 
        As such, since ``self.testroot`` may be desired in the given ``@no_cleanup``
        function, you must acquire it with ``testroot = self.testroot[0]``.  This is a

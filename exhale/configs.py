@@ -41,7 +41,6 @@ follows:
 '''
 
 import os
-import six
 import textwrap
 from pathlib import Path
 
@@ -1335,7 +1334,7 @@ def apply_sphinx_configurations(app):
     breathe_default_project = app.config.breathe_default_project
     if not breathe_default_project:
         raise ConfigError("You must set the `breathe_default_project` in `conf.py`.")
-    elif not isinstance(breathe_default_project, six.string_types):
+    elif not isinstance(breathe_default_project, str):
         raise ConfigError("The type of `breathe_default_project` must be a string.")
 
     if breathe_default_project not in breathe_projects:
@@ -1349,7 +1348,7 @@ def apply_sphinx_configurations(app):
     # defer validation of existence until after potentially running Doxygen based on
     # the configs given to exhale
     doxy_xml_dir = breathe_projects[breathe_default_project]
-    if not isinstance(doxy_xml_dir, six.string_types):
+    if not isinstance(doxy_xml_dir, str):
         raise ConfigError(
             "The type of `breathe_projects[breathe_default_project]` from `conf.py` was not a string."
         )
@@ -1385,9 +1384,9 @@ def apply_sphinx_configurations(app):
     val_error = "The type of the value for key `{key}` must be `{exp}`, but was `{got}`."
 
     req_kv = [
-        ("containmentFolder",    six.string_types,  True),
-        ("rootFileName",         six.string_types, False),
-        ("doxygenStripFromPath", six.string_types,  True)
+        ("containmentFolder",    str,  True),
+        ("rootFileName",         str, False),
+        ("doxygenStripFromPath", str,  True)
     ]
     for key, expected_type, make_absolute in req_kv:
         # Used in error checking later
@@ -1470,43 +1469,43 @@ def apply_sphinx_configurations(app):
     ####################################################################################
     # TODO: `list` -> `(list, tuple)`, update docs too.
     opt_kv = [
-        ("rootFileTitle",                   six.string_types),
+        ("rootFileTitle",                                str),
         # Build Process Logging, Colors, and Debugging
         ("verboseBuild",                                bool),
         ("alwaysColorize",                              bool),
         ("generateBreatheFileDirectives",               bool),
         # Root API Document Customization and Treeview
-        ("afterTitleDescription",           six.string_types),
-        ("pageHierarchySubSectionTitle",    six.string_types),
-        ("afterHierarchyDescription",       six.string_types),
-        ("fullApiSubSectionTitle",          six.string_types),
-        ("afterBodySummary",                six.string_types),
+        ("afterTitleDescription",                        str),
+        ("pageHierarchySubSectionTitle",                 str),
+        ("afterHierarchyDescription",                    str),
+        ("fullApiSubSectionTitle",                       str),
+        ("afterBodySummary",                             str),
         ("fullToctreeMaxDepth",                          int),
         ("listingExclude",                              list),
         ("unabridgedOrphanKinds",                (list, set)),
         # Manual Indexing
-        ("classHierarchyFilename",          six.string_types),
-        ("fileHierarchyFilename",           six.string_types),
-        ("pageHierarchyFilename",           six.string_types),
-        ("unabridgedApiFilename",           six.string_types),
-        ("unabridgedOrphanFilename",        six.string_types),
+        ("classHierarchyFilename",                       str),
+        ("fileHierarchyFilename",                        str),
+        ("pageHierarchyFilename",                        str),
+        ("unabridgedApiFilename",                        str),
+        ("unabridgedOrphanFilename",                     str),
         # Clickable Hierarchies <3
         ("createTreeView",                              bool),
         ("minifyTreeView",                              bool),
         ("treeViewIsBootstrap",                         bool),
-        ("treeViewBootstrapTextSpanClass",  six.string_types),
-        ("treeViewBootstrapIconMimicColor", six.string_types),
-        ("treeViewBootstrapOnhoverColor",   six.string_types),
+        ("treeViewBootstrapTextSpanClass",               str),
+        ("treeViewBootstrapIconMimicColor",              str),
+        ("treeViewBootstrapOnhoverColor",                str),
         ("treeViewBootstrapUseBadgeTags",               bool),
-        ("treeViewBootstrapExpandIcon",     six.string_types),
-        ("treeViewBootstrapCollapseIcon",   six.string_types),
+        ("treeViewBootstrapExpandIcon",                  str),
+        ("treeViewBootstrapCollapseIcon",                str),
         ("treeViewBootstrapLevels",                      int),
         # Page Level Customization
         ("includeTemplateParamOrderList",               bool),
-        ("pageLevelConfigMeta",             six.string_types),
-        ("repoRedirectURL",                 six.string_types),
+        ("pageLevelConfigMeta",                          str),
+        ("repoRedirectURL",                              str),
         ("contentsDirectives",                          bool),
-        ("contentsTitle",                   six.string_types),
+        ("contentsTitle",                                str),
         ("contentsSpecifiers",                          list),
         ("kindsWithContentsDirectives",                 list),
         # Breathe Customization
@@ -1514,7 +1513,7 @@ def apply_sphinx_configurations(app):
         # Doxygen Execution and Customization
         ("exhaleExecutesDoxygen",                       bool),
         ("exhaleUseDoxyfile",                           bool),
-        ("exhaleDoxygenStdin",              six.string_types),
+        ("exhaleDoxygenStdin",                           str),
         ("exhaleSilentDoxygen",                         bool),
         # Programlisting Customization
         ("lexerMapping",                                 dict)
@@ -1544,7 +1543,7 @@ def apply_sphinx_configurations(app):
     # These two need to be lists of strings, check to make sure
     def _list_of_strings(lst, title):
         for spec in lst:
-            if not isinstance(spec, six.string_types):
+            if not isinstance(spec, str):
                 raise ConfigError(
                     "`{title}` must be a list of strings.  `{spec}` was of type `{spec_t}`".format(
                         title=title,
@@ -1588,7 +1587,7 @@ def apply_sphinx_configurations(app):
         for idx in range(len(exclusions)):
             # Gather the `pattern` and `flags` parameters for `re.compile`
             item = exclusions[idx]
-            if isinstance(item, six.string_types):
+            if isinstance(item, str):
                 pattern = item
                 flags   = 0
             else:
@@ -1622,7 +1621,7 @@ def apply_sphinx_configurations(app):
         for key in lexer_mapping:
             val = lexer_mapping[key]
             # Make sure both are strings
-            if not isinstance(key, six.string_types) or not isinstance(val, six.string_types):
+            if not isinstance(key, str) or not isinstance(val, str):
                 raise ConfigError("All keys and values in `lexerMapping` must be strings.")
             # Make sure the key is a valid regular expression
             try:
@@ -1764,7 +1763,7 @@ def apply_sphinx_configurations(app):
         # Sanity check #3: make sure the return values are all strings
         for key in customSpecificationsMapping:
             val_t = type(customSpecificationsMapping[key])
-            if not isinstance(key, six.string_types):
+            if not isinstance(key, str):
                 raise ConfigError(
                     "`customSpecificationsMapping` key `{key}` gave value type `{val_t}` (need `str`).".format(
                         key=key, val_t=val_t
