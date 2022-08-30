@@ -30,7 +30,7 @@ from . import TEST_PROJECTS_ROOT, get_exhale_root
 from .decorators import default_confoverrides
 
 
-def make_default_config(project):
+def make_default_config(project: str):
     """
     Return a default configuration for exhale.
 
@@ -45,6 +45,9 @@ def make_default_config(project):
             with ``@pytest.mark.sphinx``, these are values that would ordinarily be
             written in a ``conf.py``.
     """
+    doxygen_stdin = "INPUT = ../include"
+    if project == "cpp_long_names":
+        doxygen_stdin += "\nSHORT_NAMES = YES"  # Prevent path length issues from delibrately long names.
     return {
         "breathe_projects": {
             project: "./_doxygen/xml"
@@ -53,12 +56,12 @@ def make_default_config(project):
         "exhale_args": {
             # required arguments
             "containmentFolder": "./api",
-            "rootFileName": "{0}_root.rst".format(project),
-            "rootFileTitle": "``{0}`` Test Project".format(project),
+            "rootFileName": f"{project}_root.rst",
+            "rootFileTitle": f"``{project}`` Test Project",
             "doxygenStripFromPath": "..",
             # additional arguments
             "exhaleExecutesDoxygen": True,
-            "exhaleDoxygenStdin": "INPUT = ../include"
+            "exhaleDoxygenStdin": doxygen_stdin
         }
     }
 
