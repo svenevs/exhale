@@ -31,8 +31,6 @@ Unsorted Misc
 
 .. autoclass:: exhale.utils.AnsiColors
 
-.. autofunction:: exhale.utils.indent
-
 .. autofunction:: exhale.utils.prefix
 
 .. autofunction:: exhale.utils.exclaim
