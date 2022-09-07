@@ -696,7 +696,7 @@ class AnsiColors:
 
 def prefix(token, msg):
     '''
-    Wrapper call to :func:`~exhale.utils.indent` with an always-true predicate so that
+    Wrapper call to :func:`~textwrap.indent` with an always-true predicate so that
     empty lines (e.g. `\\n`) still get indented by the ``token``.
 
     :Parameters:
