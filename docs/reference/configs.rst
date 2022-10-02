@@ -242,6 +242,55 @@ that you will link to from your documentation is laid out as follows:
 
 .. autodata:: exhale.configs.unabridgedOrphanKinds
 
+.. _manual_indexing:
+
+Manual Indexing
+****************************************************************************************
+
+To compose the different sections of the root document, exhale generates some additional
+files to ``.. include::`` them.  Depending on the compounds documented in doxygen as
+well as other settings different entries in the example below may or may not be
+generated.
+
+.. code-block:: rst
+
+    =======================
+    Some Title You Provided
+    =======================
+
+    .. include:: page_index.rst.include
+
+    .. include:: page_view_hierarchy.rst.include
+
+    .. include:: class_view_hierarchy.rst.include
+
+    .. include:: file_view_hierarchy.rst.include
+
+    .. include:: unabridged_api.rst.include
+
+These should **not** use a file extension found in :confval:`sphinx:source_suffix`,
+since the file ``class_view_hierarchy.rst`` for example will also be processed into
+html.  This results in warnings between duplicate labels being found in both the root
+document and the document being included (`more information here`__).
+
+__ https://github.com/sphinx-doc/sphinx/issues/1668
+
+To manually index through the generated exhale documents, you can set
+:data:`~exhale.configs.rootFileName` to ``"EXCLUDE"``.  With the root file out of the
+picture, you may seek to ``.. include::`` (or add to a ``.. toctree::``) one of the
+documents above.  In the ``.. toctree::`` scenario, you will want the file extension to
+be ``.rst`` so that sphinx will process it.
+
+.. autodata:: exhale.configs.classHierarchyFilename
+
+.. autodata:: exhale.configs.fileHierarchyFilename
+
+.. autodata:: exhale.configs.pageHierarchyFilename
+
+.. autodata:: exhale.configs.unabridgedApiFilename
+
+.. autodata:: exhale.configs.unabridgedOrphanFilename
+
 Clickable Hierarchies
 ****************************************************************************************
 

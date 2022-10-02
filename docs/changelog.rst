@@ -5,6 +5,12 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.6
+----------------------------------------------------------------------------------------
+
+- Enable the root document to be excluded, and additional manual indexing control
+  (:issue:`176`, :pr:`177`).
+
 v0.3.5
 ----------------------------------------------------------------------------------------
 
