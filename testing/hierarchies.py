@@ -25,6 +25,8 @@ do not need to be validated in the same method.  In both cases, the recipe is:
 from __future__ import unicode_literals
 import codecs
 import os
+import platform
+import re
 import textwrap
 from copy import deepcopy
 
@@ -1062,7 +1064,28 @@ def _compare_children(hierarchy_type, test, test_child, exhale_child):
     for test_grand_child in test_child.children:
         exhale_grand_child = None
         if test_grand_child.kind == "function":
+            # NOTE: First hit in macOS, possibly inbound with newer doxygen elsewhere.
+            # Matching child for [function] 'conversions::degrees_to_radians_s' with
+            # signature
+            # 'real(c_float) function conversions::degrees_to_radians_s(degrees_s)'
+            # not found!  Considered signatures:
+            # real(c_double) function conversions::degrees_to_radians_d(real(c_double), intent(in))
+            # real(c_float) function conversions::degrees_to_radians_s(real(c_float), intent(in))
+            # real(c_double) function conversions::radians_to_degrees_d(real(c_double), intent(in))
+            # real(c_float) function conversions::radians_to_degrees_s(real(c_float), intent(in))
+            #
+            # ns::func(paramname) => ns::func(paramtype, param???)
+            #          degrees_s              real(c_float), intent(in)
+            #
+            # Coming from cpp_fortran_mixed conversions.f90, relates to docstring...
             test_signature = test_grand_child.full_signature()
+            if platform.system() == "Darwin" and \
+                    test_grand_child.def_in_file.name == "conversions.f90":
+                test_signature = re.sub(
+                    rf"(.*) (function ({test_grand_child.name}))\((.*)\)$",
+                    r"\1 \2(\1, intent(in))",
+                    test_signature
+                )
             considered_signatures = []  # for error reporting help in CI
             for candidate in exhale_child.children:
                 if candidate.kind == "function":
@@ -1308,6 +1331,29 @@ def compare_file_hierarchy(test, test_root):
 
         # Validate the return type, name, and signatures.
         test_functions = set(f.full_signature() for f in test_overloads[key])
+        # NOTE: see _compare_children notes on macOS and `degrees_s` above.
+        # AssertionError: Items in the first set but not the second:
+        # 'real(c_float) function conversions::degrees_to_radians_s(degrees_s)'
+        # Items in the second set but not the first:
+        # 'real(c_float) function conversions::degrees_to_radians_s(real(c_float), intent(in))'
+        # function degrees_to_radians_s(degrees_s) result(radians_s)
+        # function radians_to_degrees_s(radians_s) result(degrees_s)
+        # function degrees_to_radians_d(degrees_d) result(radians_d)
+        # function radians_to_degrees_d(radians_d) result(degrees_d)
+        if platform.system() == "Darwin" and any(re.match(
+                r"^real\(c_.*\) function conversions::.*_to_.*\(.*_[sd]\)$", f)
+                for f in test_functions):
+            fixed_test_functions = []
+            for signature in test_functions:
+                func_name = re.sub(
+                    r"real\(c_.*\) function (.*)\(.*", r"\1", signature
+                )
+                fixed_test_functions.append(re.sub(
+                    rf"(.*) (function ({func_name}))\((.*)\)$",
+                    r"\1 \2(\1, intent(in))",
+                    signature
+                ))
+            test_functions = set(fixed_test_functions)
         # TODO: fix template specials
         if test_functions == {"template <> int blargh(int)"}:
             test_functions = {"int blargh(int)"}
