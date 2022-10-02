@@ -104,6 +104,11 @@ rootFileName = None
     documents.  Do **not** include the ``containmentFolder`` path in this file name,
     Exhale will create the file ``"{contaimentFolder}/{rootFileName}"`` for you.
 
+    .. note::
+
+        If the value provided is exactly ``"EXCLUDE"`` then the root file will not be
+        generated.  See :ref:`manual_indexing` for more information.
+
 **Value in** ``exhale_args`` (str)
     The value of key ``"rootFileName"`` should be a string representing the name of
     the file you will be including in your top-level ``toctree`` directive.  In order
@@ -489,6 +494,40 @@ unabridgedOrphanKinds = {"dir", "file", "page"}
         ``unabridgedOrphanKinds`` then **both** will be excluded.  The unabridged API
         will present classes and structs together.
 """
+
+########################################################################################
+# Manual Indexing                                                                      #
+########################################################################################
+classHierarchyFilename = "class_view_hierarchy.rst.include"
+'''
+The name of the file the class hierarchy is generated in saved to
+``{containmentFolder}/{classHierarchyFilename}``.
+'''
+
+fileHierarchyFilename = "file_view_hierarchy.rst.include"
+'''
+The name of the file the class hierarchy is generated in saved to
+``{containmentFolder}/{fileHierarchyFilename}``.
+'''
+
+pageHierarchyFilename = "page_view_hierarchy.rst.include"
+'''
+The name of the file the class hierarchy is generated in saved to
+``{containmentFolder}/{pageHierarchyFilename}``.
+'''
+
+unabridgedApiFilename = "unabridged_api.rst.include"
+'''
+The name of the file the class hierarchy is generated in saved to
+``{containmentFolder}/{unabridgedApiFilename}``.
+'''
+
+unabridgedOrphanFilename = "unabridged_orphan.rst"
+'''
+The name of the file the class hierarchy is generated in saved to
+``{containmentFolder}/{unabridgedOrphanFilename}``.  See also:
+:data:`~exhale.configs.unabridgedOrphanKinds`.
+'''
 
 ########################################################################################
 # Clickable Hierarchies <3                                                             #
@@ -1412,11 +1451,11 @@ def apply_sphinx_configurations(app):
     # We *ONLY* generate reStructuredText, make sure Sphinx is expecting this as well as
     # the to-be-generated library root file is correctly suffixed.
     if not rootFileName.endswith(".rst"):
-        raise ConfigError(
-            "The given `rootFileName` ({0}) did not end with '.rst'; Exhale is reStructuredText only.".format(
-                rootFileName
+        if rootFileName != "EXCLUDE":
+            raise ConfigError(
+                f"The given `rootFileName` ({rootFileName}) did not end with '.rst'; "
+                "Exhale is reStructuredText only."
             )
-        )
     if ".rst" not in app.config.source_suffix:
         raise ConfigError(
             "Exhale is reStructuredText only, but '.rst' was not found in `source_suffix` list of `conf.py`."
@@ -1447,6 +1486,12 @@ def apply_sphinx_configurations(app):
         ("fullToctreeMaxDepth",                          int),
         ("listingExclude",                              list),
         ("unabridgedOrphanKinds",                (list, set)),
+        # Manual Indexing
+        ("classHierarchyFilename",          six.string_types),
+        ("fileHierarchyFilename",           six.string_types),
+        ("pageHierarchyFilename",           six.string_types),
+        ("unabridgedApiFilename",           six.string_types),
+        ("unabridgedOrphanFilename",        six.string_types),
         # Clickable Hierarchies <3
         ("createTreeView",                              bool),
         ("minifyTreeView",                              bool),

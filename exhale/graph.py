@@ -1061,24 +1061,12 @@ class ExhaleRoot(object):
         self.root_directory         = configs.containmentFolder
         self.root_file_name         = configs.rootFileName
         self.full_root_file_path    = os.path.join(self.root_directory, self.root_file_name)
-        # The {page,class,file}_view_hierarchy files are all `.. include::`ed in the
-        # root library document.  Though we are generating rst, we will want to use a
-        # file extension `.rst.include` to bypass the fact that the sphinx builder will
-        # process them separately if we leave them as .rst (via the source_suffix
-        # configuration of the sphinx app).  If users are getting warnings about it
-        # then we can actually check for `.include` in app.config.source_suffix, but
-        # it is very unlikely this is going to be a problem.
-        # See https://github.com/sphinx-doc/sphinx/issues/1668
-        self.page_hierarchy_file    = os.path.join(self.root_directory, "page_view_hierarchy.rst.include")
-        self.class_hierarchy_file   = os.path.join(self.root_directory, "class_view_hierarchy.rst.include")
-        self.file_hierarchy_file    = os.path.join(self.root_directory, "file_view_hierarchy.rst.include")
-        self.unabridged_api_file    = os.path.join(self.root_directory, "unabridged_api.rst.include")
-        # NOTE: do *NOT* do .rst.include for the unabridged orphan kinds, the purpose of
-        # that document is to have it be processed by sphinx with its corresponding
-        # .. toctree:: calls to kinds that the user has asked to be excluded.  Sphinx
-        # processing this document directly is desired (it is also marked :orphan: to
-        # avoid a warning on the fact that it is *NOT* included in any exhale toctree).
-        self.unabridged_orphan_file = os.path.join(self.root_directory, "unabridged_orphan.rst")
+        # These documents are all included in the root file document.
+        self.page_hierarchy_file    = os.path.join(self.root_directory, configs.pageHierarchyFilename)
+        self.class_hierarchy_file   = os.path.join(self.root_directory, configs.classHierarchyFilename)
+        self.file_hierarchy_file    = os.path.join(self.root_directory, configs.fileHierarchyFilename)
+        self.unabridged_api_file    = os.path.join(self.root_directory, configs.unabridgedApiFilename)
+        self.unabridged_orphan_file = os.path.join(self.root_directory, configs.unabridgedOrphanFilename)
 
         # whether or not we should generate the raw html tree view
         self.use_tree_view = configs.createTreeView
@@ -2287,18 +2275,6 @@ class ExhaleRoot(object):
         2. :func:`~exhale.graph.ExhaleRoot.generateNodeDocuments`
         3. :func:`~exhale.graph.ExhaleRoot.generateAPIRootBody`
         '''
-        self.generateAPIRootHeader()
-        self.generateNodeDocuments()
-        self.generateAPIRootBody()
-
-    def generateAPIRootHeader(self):
-        '''
-        This method creates the root library api file that will include all of the
-        different hierarchy views and full api listing.  If ``self.root_directory`` is
-        not a current directory, it is created first.  Afterward, the root API file is
-        created and its title is written, as well as the value of
-        ``configs.afterTitleDescription``.
-        '''
         try:
             # TODO: update to pathlib everywhere...
             root_directory_path = Path(self.root_directory)
@@ -2307,6 +2283,26 @@ class ExhaleRoot(object):
             utils.fancyError(
                 "Cannot create the directory {0} {1}".format(self.root_directory, e)
             )
+        # TODO: API root body does not need to be separate, but it does need to happen
+        # after node documents are generated due to bad design (link names and other
+        # items get initialized).  Or at least that's what I remember.
+        skip_root = self.root_file_name == "EXCLUDE"
+        if not skip_root:
+            self.generateAPIRootHeader()
+        self.generateNodeDocuments()
+        self.gerrymanderNodeFilenames()
+        self.generateViewHierarchies()
+        self.generateUnabridgedAPI()
+        if not skip_root:
+            self.generateAPIRootBody()
+
+    def generateAPIRootHeader(self):
+        '''
+        This method creates the root library api file that will include all of the
+        different hierarchy views and full api listing.  The root API file is created
+        and its title is written, as well as the value of
+        ``configs.afterTitleDescription``.
+        '''
         try:
             with codecs.open(self.full_root_file_path, "w", "utf-8") as generated_index:
                 # Add the metadata if they requested it
@@ -3613,9 +3609,7 @@ class ExhaleRoot(object):
         conditionally use a ``toctree`` if you really need it.
         '''
         try:
-            self.gerrymanderNodeFilenames()
-            self.generateViewHierarchies()
-            self.generateUnabridgedAPI()
+
             with codecs.open(self.full_root_file_path, "a", "utf-8") as generated_index:
                 # Include index page, if present
                 for page in self.pages:
