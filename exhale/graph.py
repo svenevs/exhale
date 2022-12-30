@@ -2196,7 +2196,10 @@ class ExhaleRoot(object):
                 # 2. The function parameter list.
                 parameters = []
                 for param in memberdef.find_all("param", recursive=False):
-                    parameters.append(param.type.text)
+                    if param.array:
+                        parameters.append(param.type.text + param.array.text)
+                    else:
+                        parameters.append(param.type.text)
                 func.parameters = utils.sanitize_all(parameters)
                 # 3. The template parameter list.
                 templateparamlist = memberdef.templateparamlist
