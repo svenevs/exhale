@@ -65,7 +65,7 @@ jobs:
         env:
           # NOTE: in the future, we may want to use a larger matrix with more
           # combinations of sphinx and breathe, but for now it is not necessary.
-          SPHINX_VERSION: '>=4<6'
+          SPHINX_VERSION: '>=4<7'
         run: |
           tox -e py -- --cov-report xml:coverage.xml --cov
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 4.x
