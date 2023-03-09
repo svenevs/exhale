@@ -840,6 +840,23 @@ includeTemplateParamOrderList = False
    other items being documented **only** work in HTML.
 '''
 
+fullyQualifiedTitles = False
+'''
+**Optional**
+    For Classes, Structs, Enum, Variables, Typedefs, Unions: everything except Functions.
+    Exhale can generate a fully qualified title on the item page, that is, it will
+    include the namespace as a prefix to the function. This will thus be reflected
+    in the table of contents.
+
+**Value in** ``exhale_args`` (bool)
+    This feature can be useful when you have different items with the same name but
+    in different namespace, e.g. ``server_side::error`` and ``client_side::error``.
+    By default, Exhale will generate a page title with the item name only (e.g.
+    ``error``), which might look confusing as there would be multiple entries with the
+    same name. By setting this to ``True``, all titles and ToC entries will be
+    qualified with the corresponding namespace.
+'''
+
 pageLevelConfigMeta = None
 '''
 **Optional**
@@ -1505,6 +1522,7 @@ def apply_sphinx_configurations(app):
         ("treeViewBootstrapLevels",                      int),
         # Page Level Customization
         ("includeTemplateParamOrderList",               bool),
+        ("fullyQualifiedTitles",                        bool),
         ("pageLevelConfigMeta",             six.string_types),
         ("repoRedirectURL",                 six.string_types),
         ("contentsDirectives",                          bool),
