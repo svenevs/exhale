@@ -87,7 +87,7 @@ but:
     Where you would store custom jinja2 templates to override settings in your chosen
     :confval:`sphinx:html_theme`.  The templates are read from
     :confval:`sphinx:templates_path` which defaults to ``_templates``.  See also:
-    `Sphinx Templating <https://www.sphinx-doc.org/en/master/templating.html>`_.
+    `Sphinx Templating <https://www.sphinx-doc.org/en/master/development/templating.html>`_.
 
 
 Finishing the ``sphinx-quickstart`` command output, we enter the relevant metadata about
