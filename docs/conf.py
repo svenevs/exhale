@@ -69,8 +69,8 @@ issues_github_path = "svenevs/exhale"
 
 # -- Intersphinx Extension Configuration -----------------------------------------------
 intersphinx_mapping = {
-    "python": ("http://docs.python.org/", None),
-    "sphinx": ("http://www.sphinx-doc.org/en/master", None),
+    "python": ("https://docs.python.org/", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master", None),
     "pytest": ("https://docs.pytest.org/en/latest/", None),
     # See _intersphinx/README.md
     "bs4": (

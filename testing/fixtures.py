@@ -18,7 +18,7 @@ def no_run():
     """
     Disable :func:`exhale.deploy.explode` using a class-level ``pytest`` `fixture`__.
 
-    __ https://docs.pytest.org/en/latest/fixture.html
+    __ https://docs.pytest.org/en/latest/explanation/fixtures.html
 
     The fixture will temporarily assign ``lambda: None`` to ``deploy.explode``,
     restoring the original function after the test case has completed.  A class-scoped

@@ -2637,7 +2637,7 @@ class ExhaleRoot(object):
 
                 if needs_parameters:
                     # Must escape asterisks in heading else they get treated as refs:
-                    # http://docutils.sourceforge.net/docs/user/rst/quickstart.html#text-styles
+                    # https://docutils.sourceforge.net/docs/user/rst/quickstart.html#text-styles
                     suffix = func.breathe_identifier().replace("*", r"\*")
                 else:
                     suffix = func.name
@@ -3202,7 +3202,7 @@ class ExhaleRoot(object):
                 for pgf_line in f.program_listing:
                     fixed_whitespace = re.sub(r'<sp/>', ' ', pgf_line)
                     # for our purposes, this is good enough:
-                    #     http://stackoverflow.com/a/4869782/3814202
+                    #     https://stackoverflow.com/a/4869782/3814202
                     no_xml_tags  = re.sub(r'<[^<]+?>', '', fixed_whitespace)
                     revive_lt    = re.sub(r'&lt;', '<', no_xml_tags)
                     revive_gt    = re.sub(r'&gt;', '>', revive_lt)

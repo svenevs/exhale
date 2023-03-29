@@ -310,7 +310,7 @@ theme.  Basically
 
    __ https://ryan-roemer.github.io/sphinx-bootstrap-theme
 
-   .. _collapsibleLists: http://code.iamkate.com/javascript/collapsible-lists/
+   .. _collapsibleLists: https://iamkate.com/code/tree-views/
 
 2. When using either the ``sphinx-bootstrap-theme``, or any other theme that
    incorporates Bootstrap, you will need to make sure to **also** set
@@ -523,7 +523,7 @@ it is not specifying a list of documents to include next, it is simply informing
 reStructuredText parser (Sphinx in our case) that you would like a table of contents
 displayed where this directive appears.
 
-__ http://docutils.sourceforge.net/docs/ref/rst/directives.html#table-of-contents
+__ https://docutils.sourceforge.io/docs/ref/rst/directives.html#table-of-contents
 
 By default, Exhale includes a ``.. contents::`` directive on all File and Namespace
 pages.  This is particularly useful for making the Namespace and File pages navigable by
@@ -632,7 +632,7 @@ where the defaults being overridden are to include ``:protected-members:`` as we
 in your documentation, or override the `default settings for other Breathe directives`__
 to control what is displayed.
 
-__ http://breathe.readthedocs.io/en/latest/directives.html
+__ https://breathe.readthedocs.io/en/latest/directives.html
 
 In order to override these settings, a layer of indirection has to be added.  Because
 Exhale is a Sphinx Extension, it needs to be possible to do something called "Pickle".

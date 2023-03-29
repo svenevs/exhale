@@ -18,7 +18,7 @@ to this FAQ.
 Make sure you set the :data:`~exhale.configs.verboseBuild` to ``True``, there may be some
 useful information being printed there.
 
-.. _companion: http://my-favorite-documentation-test.readthedocs.io/en/latest/
+.. _companion: https://my-favorite-documentation-test.readthedocs.io/en/latest/
 
 Can I use the formidable Intersphinx extension?
 ----------------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ Heck yes!  This has almost nothing to do with Exhale, and everything to do with 
 I've prepared a crash-course on how to get it up and running on the companion site's
 `Using Intersphinx <using_intersphinx_>`_ page.
 
-.. _using_intersphinx: http://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
+.. _using_intersphinx: https://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
 
 Why does it build locally, but not on Read the Docs?
 ----------------------------------------------------------------------------------------

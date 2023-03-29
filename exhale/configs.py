@@ -570,7 +570,7 @@ treeViewIsBootstrap = False
     If the generated html website is using ``bootstrap``, make sure to set this to
     ``True``.  The `Bootstrap Treeview`__ library will be used.
 
-    __ http://jonmiles.github.io/bootstrap-treeview/
+    __ https://jonmiles.github.io/bootstrap-treeview/
 
 **Value in** ``exhale_args`` (bool)
     When set to ``True``, the clickable hierarchies will be generated using a Bootstrap
@@ -692,7 +692,7 @@ treeViewBootstrapUseBadgeTags = True
     children, no badge will be added.  This is simply because a ``0`` badge is likely
     more confusing than helpful.
 
-    __ http://jonmiles.github.io/bootstrap-treeview/
+    __ https://jonmiles.github.io/bootstrap-treeview/
 '''
 
 treeViewBootstrapExpandIcon = "glyphicon glyphicon-plus"
@@ -1140,7 +1140,7 @@ r'''
     used to check with :func:`python:re.match`, noting that the primary difference
     between :func:`python:re.match` and :func:`python:re.search` that you should be
     aware of is that ``match`` searches from the **beginning** of the string.  Each
-    value should be a **valid** `Pygments lexer <http://pygments.org/docs/lexers/>`_.
+    value should be a **valid** `Pygments lexer <https://pygments.org/docs/lexers/>`_.
 
     Example usage:
 
@@ -1270,7 +1270,7 @@ for more information.
 
 Dear Windows, did you know it is the 21st century?
 
-__ https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
+__ https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#maximum-path-length-limitation
 '''
 
 _the_app = None

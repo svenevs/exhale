@@ -346,7 +346,7 @@ From the Doxygen documentation on `EXTENSION_MAPPING <ext_map_>`_:
     fixed or free formatted code, this is the default for Fortran type files), VHDL.
 
 We need to take each one of those, and map them to their corresponding
-`Pygments Lexer <http://pygments.org/docs/lexers/>`_.
+`Pygments Lexer <https://pygments.org/docs/lexers/>`_.
 
 .. _ext_map: https://www.doxygen.nl/manual/config.html#cfg_extension_mapping
 
@@ -549,7 +549,7 @@ def specificationsForKind(kind):
     because many of the directives do not need anything added.  For a full listing of
     what your specifier options are, refer to the breathe documentation:
 
-        http://breathe.readthedocs.io/en/latest/directives.html
+        https://breathe.readthedocs.io/en/latest/directives.html
 
     :Parameters:
         ``kind`` (str)
@@ -583,7 +583,7 @@ class AnsiColors:
     A simple wrapper class for convenience definitions of common ANSI formats to enable
     colorizing output in various formats.  The definitions below only affect the
     foreground color of the text, but you can easily change the background color too.
-    See `ANSI color codes <http://misc.flogisoft.com/bash/tip_colors_and_formatting>`_
+    See `ANSI color codes <https://misc.flogisoft.com/bash/tip_colors_and_formatting>`_
     for a concise overview of how to use the ANSI color codes.
     '''
     BOLD          = "1m"
