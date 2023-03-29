@@ -45,8 +45,13 @@ jobs:
           $url = "https://www.doxygen.nl/files/doxygen-1.9.6.windows.x64.bin.zip"
           Start-DownloadWithRetry -Url $url -Name "doxygen.zip" -DownloadPath "C:\"
           Extract-7Zip -Path  "C:\doxygen.zip" -DestinationPath "C:\Program Files\doxygen"
-          dir "C:\Program Files\doxygen"
-          echo "C:\Program Files\doxygen\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # Extracts to C:\Program Files\doxygen
+          #   - doxygen.exe
+          #   - doxyindexer.exe
+          #   - doxysearch.cgi.exe
+          #   - doxywizard.exe
+          #   - libclang.dll
+          echo "C:\Program Files\doxygen" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       ##################################################################################
       - name: Doxygen Version Dump
         run: doxygen --version
