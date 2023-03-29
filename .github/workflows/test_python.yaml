@@ -8,15 +8,6 @@ on:
     branches:
       - master
 
-# Don't let code coverage utilities share anything, force clean it all.
-cleanup: &cleanup
-  - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
-    run: |
-      mv .gitignore nolongerignored
-      git clean -n
-      git clean -f
-      git reset --hard
-
 jobs:
   build:
     # NOTE: runner strategy is to split across os and python version, but test multiple
@@ -65,8 +56,13 @@ jobs:
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx==3.0.0
         run: |
           codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx3.0.0"
-      - # cleanup
-        <<: *cleanup
+      # Don't let code coverage utilities share anything, force clean it all.
+      - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
+        run: |
+          mv .gitignore nolongerignored
+          git clean -n
+          git clean -f
+          git reset --hard
       # Sphinx 4.x #####################################################################
       - name: Test Python ${{ matrix.python-version }} / sphinx 4.x
         env:
@@ -77,8 +73,13 @@ jobs:
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 4.x
         run: |
           codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx4.x"
-      - # cleanup
-        <<: *cleanup
+      # Don't let code coverage utilities share anything, force clean it all.
+      - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
+        run: |
+          mv .gitignore nolongerignored
+          git clean -n
+          git clean -f
+          git reset --hard
       # Sphinx 5.x #####################################################################
       - name: Test Python ${{ matrix.python-version }} / sphinx 5.x
         env:
@@ -89,8 +90,13 @@ jobs:
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 4.x
         run: |
           codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx5.x"
-      - # cleanup
-        <<: *cleanup
+      # Don't let code coverage utilities share anything, force clean it all.
+      - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
+        run: |
+          mv .gitignore nolongerignored
+          git clean -n
+          git clean -f
+          git reset --hard
       # Sphinx 6.x #####################################################################
       - name: Test Python ${{ matrix.python-version }} / sphinx 6.x
         env:
@@ -101,5 +107,3 @@ jobs:
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 6.x
         run: |
           codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx6.x"
-      - # cleanup
-        <<: *cleanup
