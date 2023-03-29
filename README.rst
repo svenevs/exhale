@@ -51,7 +51,7 @@ everything started.
 **Why not use it?**
     It may be more involved than you need.  Check out the ``breathe-apidoc`` tool that
     comes with your installation of ``breathe``.  It is quite similar to the
-    `Sphinx API doc tool <http://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html>`_,
+    `Sphinx API doc tool <https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html>`_,
     and that may be all you are looking for to get your documentation displayed.
 
     If you are working with a small enough framework, you may also be satisfied with
@@ -92,18 +92,18 @@ HTML Theme choices:
 
 .. _companion:  https://github.com/svenevs/exhale-companion
 
-.. _rtd:       http://sphinx-rtd-theme.readthedocs.io/en/latest/
+.. _rtd:       https://sphinx-rtd-theme.readthedocs.io/en/latest/
 .. _bstrap:    https://ryan-roemer.github.io/sphinx-bootstrap-theme/
-.. _alabaster: http://alabaster.readthedocs.io/en/latest/
+.. _alabaster: https://alabaster.readthedocs.io/en/latest
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=latest
-   :target: http://my-favorite-documentation-test.readthedocs.io/en/latest/
+   :target: https://my-favorite-documentation-test.readthedocs.io/en/latest/
 
 .. |bootstrap-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=bootstrap
-   :target: http://my-favorite-documentation-test.readthedocs.io/en/bootstrap
+   :target: https://my-favorite-documentation-test.readthedocs.io/en/bootstrap
 
 .. |alabaster-docs| image:: https://readthedocs.org/projects/my-favorite-documentation-test/badge/?version=alabaster
-   :target: http://my-favorite-documentation-test.readthedocs.io/en/alabaster
+   :target: https://my-favorite-documentation-test.readthedocs.io/en/alabaster
 
 
 Installation
@@ -115,10 +115,10 @@ generated Doxygen XML documentation.  Exhale is `hosted on PyPI
 <https://pypi.org/project/exhale/>`_, meaning you can install it through the normal
 mechanisms, e.g.,
 
-__ http://www.sphinx-doc.org/en/stable/extensions.html
+__ https://www.sphinx-doc.org/en/master/usage/extensions/index.html
 
 .. _BeautifulSoup: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-.. _lxml: http://lxml.de/
+.. _lxml: https://lxml.de/
 .. _Breathe: https://breathe.readthedocs.io/en/latest/
 
 .. code-block:: console
@@ -177,7 +177,7 @@ license:
 
 1. For non-bootstrap, I used Kate Morley's excellent and lightweight collapsibleLists_
    including the sample CSS / images on that post.  She includes a generous
-   `CC0 1.0 license <http://code.iamkate.com/>`_ for these files, as well as the rest of
+   `CC0 1.0 license <https://iamkate.com/code/>`_ for these files, as well as the rest of
    her website.
 
    For every HTML Theme I have tried, except for ones using bootstrap, this library
@@ -195,7 +195,7 @@ license:
 Both of these libraries and copies of their licenses can be found in the
 `data folder of the source code <https://github.com/svenevs/exhale/tree/master/exhale/data>`_.
 
-.. _collapsibleLists: http://code.iamkate.com/javascript/collapsible-lists/
+.. _collapsibleLists: https://iamkate.com/code/tree-views/
 
 __ https://github.com/jonmiles/bootstrap-treeview
 

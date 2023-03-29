@@ -100,7 +100,7 @@ __ https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#cpp-
    (e.g., how to link to a ``define`` or macro) is provided in the companion website's
    `Using Intersphinx`__ guide.
 
-   __ http://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
+   __ https://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
 
 
 .. _using_exhale_internal_links:
@@ -392,4 +392,4 @@ section.
 
 .. _cross: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#cross-referencing-syntax
 
-.. _intersphinx: http://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html
+.. _intersphinx: https://my-favorite-documentation-test.readthedocs.io/en/latest/using_intersphinx.html

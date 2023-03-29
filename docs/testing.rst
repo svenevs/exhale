@@ -7,7 +7,7 @@ Testing Suite
    :end-before:  end_badges
 
 Exhale uses `pytest <https://docs.pytest.org/en/latest/>`_ for its testing suite.  To
-run the tests, Exhale uses `tox <https://tox.readthedocs.io/en/latest/>`_.
+run the tests, Exhale uses `tox <https://tox.wiki/en/latest/>`_.
 
 .. code-block:: console
 
@@ -25,7 +25,7 @@ Running Specific Tests
 ----------------------------------------------------------------------------------------
 
 By default, ``tox`` will run the python tests and linting checks with
-`flake8 <http://flake8.pycqa.org/en/latest/>`_.  More formally, the default environment
+`flake8 <https://flake8.pycqa.org/en/latest/>`_.  More formally, the default environment
 list is defined as:
 
 .. code-block:: ini
@@ -52,7 +52,7 @@ you installed ``tox`` for.  To run a specific test:
 .. tip::
 
    If you need to debug a test case to discern why it is failing, the vibrantly colorful
-   `ipdb <https://pypi.python.org/pypi/ipdb>`_ debugger is already installed in the
+   `ipdb <https://pypi.org/project/ipdb/>`_ debugger is already installed in the
    environment running the tests.  It is nearly identical to ``pdb``, and although it
    is designed for IPython, it works just as well in "regular" code.  Just like with
    ``pdb``, set a trace in the test case you are debugging:

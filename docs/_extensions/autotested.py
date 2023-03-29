@@ -7,7 +7,7 @@
 # attribution.  The CC0 1.0 license is chosen in the event that you need a license.    #
 #                                                                                      #
 # Note that this code is basically just a bad modification of the Sphinx tutorial:     #
-# http://www.sphinx-doc.org/en/latest/extdev/tutorial.html                             #
+# https://www.sphinx-doc.org/en/latest/extdev/tutorial.html                            #
 ########################################################################################
 import re
 import textwrap

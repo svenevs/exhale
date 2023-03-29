@@ -14,7 +14,7 @@ Use the tool `sphobjinv` to do this (`pip install sphobjinv`).
 
 - [Explanation of syntax][syntax].
 
-[syntax]: http://sphinx-objectsinv-encoderdecoder.readthedocs.io/en/latest/syntax.html
+[syntax]: https://sphinx-objectsinv-encoderdecoder.readthedocs.io/en/latest/syntax.html
 
 ## How to Reproduce
 

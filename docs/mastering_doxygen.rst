@@ -20,7 +20,7 @@ What is Doxygen, and How do I Approach it?
 `Doxygen`__ is a documentation (doxy) generation (gen) system.  You should approach it
 with fear, awe, and humility.  And remember to never look it in the eyes.
 
-__ http://www.doxygen.nl/
+__ https://www.doxygen.nl/
 
 Doxygen on its own is a fascinating tool.  It's stupendously flexible, and immensely
 powerful.  I mean let's think about what it's actually doing: it's parsing and
@@ -68,7 +68,7 @@ overwhelming) approach of just reading the entire generated ``Doxyfile``.  You c
 acquire a shiny new ``Doxyfile`` by executing ``doxygen -g`` in your terminal in a
 directory where there is no ``Doxyfile`` present.
 
-__ http://www.doxygen.nl/manual/index.html
+__ https://www.doxygen.nl/manual/index.html
 
 .. tip::
 
@@ -268,7 +268,7 @@ Additional Variables with Important Impacts
       PREDEFINED += NAMESPACE_BEGIN(nanogui)="namespace nanogui {"
       PREDEFINED += NAMESPACE_END(nanogui)="}"
 
-   __ http://nanogui.readthedocs.io/en/latest/
+   __ https://nanogui.readthedocs.io/en/latest/
 
 Adding Documentation to the Code
 ****************************************************************************************
@@ -321,7 +321,7 @@ documenting specific aspects:
 | ``\c``          | Teletype a single word (e.g. ``\c computeroutput``).               |
 +-----------------+--------------------------------------------------------------------+
 
-__ http://www.doxygen.nl/manual/docblocks.html
+__ https://www.doxygen.nl/manual/docblocks.html
 
 Doxygen Documentation Pitfalls
 ----------------------------------------------------------------------------------------
@@ -342,7 +342,7 @@ documentation is empty)!  From the Doxygen documentation reiteration_:
     (functions, typedefs, enum, macros, etc), you must document the file in which they
     are defined.
 
-.. _reiteration: http://www.doxygen.nl/manual/docblocks.html
+.. _reiteration: https://www.doxygen.nl/manual/docblocks.html
 
 .. _file_associations:
 
@@ -383,7 +383,7 @@ might look like:
         thing() {}
      };
 
-.. _FAQ: http://www.doxygen.nl/manual/faq.html#faq_code_inc
+.. _FAQ: https://www.doxygen.nl/manual/faq.html#faq_code_inc
 
 Features Available by Using Sphinx / Breathe / Exhale by way of reStructuredText
 ----------------------------------------------------------------------------------------
@@ -420,7 +420,7 @@ Listings
 
 See the `official documentation`__.
 
-__ http://docutils.sourceforge.net/docs/user/rst/quickref.html#bullet-lists
+__ https://docutils.sourceforge.io/docs/user/rst/quickref.html#bullet-lists
 
 Tables
 ****************************************************************************************
@@ -432,7 +432,7 @@ Tables
 
 Use `grid tables`__!!!
 
-__ http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#grid-tables
+__ https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#grid-tables
 
 Hyperlinks
 ****************************************************************************************
@@ -440,7 +440,7 @@ Hyperlinks
 I'll confess that reStructuredText hyperlinks are probably the most confusing.  Best to
 leave the explaining to the `official documentation`__.
 
-__ http://docutils.sourceforge.net/docs/user/rst/quickref.html#hyperlink-targets
+__ https://docutils.sourceforge.io/docs/user/rst/quickref.html#hyperlink-targets
 
 Useful Directives
 ****************************************************************************************

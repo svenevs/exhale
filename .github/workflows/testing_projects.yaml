@@ -8,6 +8,11 @@ on:
     branches:
       - master
 
+# Cancel previous CI runs when new commits are added to a PR.
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}-projects
+  cancel-in-progress: true
+
 jobs:
   build_linux:
     name: Linux

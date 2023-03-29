@@ -42,9 +42,9 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
     - ``computeroutput`` (e.g., using `c`_)
     - ``bold`` (e.g., using `b`_)
 
-    .. _em: http://www.doxygen.nl/manual/commands.html#cmdem
-    .. _c:  http://www.doxygen.nl/manual/commands.html#cmdc
-    .. _b:  http://www.doxygen.nl/manual/commands.html#cmdb
+    .. _em: https://www.doxygen.nl/manual/commands.html#cmdem
+    .. _c:  https://www.doxygen.nl/manual/commands.html#cmdc
+    .. _b:  https://www.doxygen.nl/manual/commands.html#cmdb
 
     The goal of this method is to "explode" input ``xml`` data into raw reStructuredText
     to put at the top of the file pages.  Wielding beautiful soup, this essentially

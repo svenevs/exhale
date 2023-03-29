@@ -5,7 +5,7 @@
 
 bs4.BeautifulSoup           py:class  1 index.html#beautifulsoup -
 bs4.BeautifulSoup.get_text  py:method 1 index.html#get-text      -
-bs4.element.Tag             py:class  1 index.html#tag           -
+bs4.element.Tag             py:class  1 index.html#bs4.Tag           -
 
 
 
