@@ -117,12 +117,13 @@ jobs:
       # Sphinx 6.x #####################################################################
       - name: Test Python ${{ matrix.python-version }} / sphinx 6.x
         # sphinx 6.x requires python 3.8+
-        if: ${{ matrix.python-version }} != '3.7'
+        if: ${{ matrix.python-version != '3.7' }}
         env:
           # Test sphinx 6.x.
           SPHINX_VERSION: '>=6,<7'
         run: |
           tox -e py -- --cov-report xml:coverage.xml --cov
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 6.x
+        if: ${{ matrix.python-version != '3.7' }}
         run: |
           codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx6.x"
