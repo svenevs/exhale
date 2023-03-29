@@ -116,6 +116,8 @@ jobs:
           git reset --hard
       # Sphinx 6.x #####################################################################
       - name: Test Python ${{ matrix.python-version }} / sphinx 6.x
+        # sphinx 6.x requires python 3.8+
+        if: ${{ matrix.python-version }} != '3.7'
         env:
           # Test sphinx 6.x.
           SPHINX_VERSION: '>=6,<7'
