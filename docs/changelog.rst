@@ -5,6 +5,12 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.7
+----------------------------------------------------------------------------------------
+- Add :data:`~exhale.configs.fullyQualifiedTitles` option so that pages like
+  ``device1::error`` and ``device2::error`` render as unique names (:issue:`187`,
+  :pr:`188`).
+
 v0.3.6
 ----------------------------------------------------------------------------------------
 
