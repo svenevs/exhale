@@ -565,7 +565,7 @@ class ExhaleNode(object):
         indent = "  " * level
         utils.verbose_log("{indent}- [{kind}]: {name}".format(
             indent=indent,
-            kind=utils._use_color(self.kind, fmt_spec[self.kind], sys.stderr),
+            kind=utils._use_color(self.kind, fmt_spec.get(self.kind, utils.AnsiColors.BOLD_RED), sys.stderr),
             name=self.name
         ))
         # files are children of directories, the file section will print those children
