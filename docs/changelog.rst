@@ -5,6 +5,12 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.7
+----------------------------------------------------------------------------------------
+
+- Fix a bug where an unknown node kind, such as concepts, would cause a crash due to a
+  missing color in the console (:issue:`195`, :pr:`196`).
+
 v0.3.6
 ----------------------------------------------------------------------------------------
 
