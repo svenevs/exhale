@@ -468,7 +468,7 @@ unabridgedOrphanKinds = {"dir", "file", "page"}
 **Value in** ``exhale_args`` (list or set of strings)
     The list of kinds (see :data:`~exhale.utils.AVAILABLE_KINDS`) that will **not** be
     included in the unabridged API listing.  The default is to exclude pages (which are
-    already in the page hierarhcy), directories and files (which are already in the file
+    already in the page hierarchy), directories and files (which are already in the file
     hierarchy).  Note that if this variable is provided, it will overwrite the default
     ``{"dir", "file", "page"}``, meaning if you want to exclude something in addition
     you need to include ``"page"``,  ``"dir"``, and ``"file"``:

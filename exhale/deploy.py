@@ -235,7 +235,7 @@ def generateDoxygenXML():
 
                       {default}
 
-                - The output path specfied (`breathe_projects[breathe_default_project]`):
+                - The output path specified (`breathe_projects[breathe_default_project]`):
 
                       {path}
 

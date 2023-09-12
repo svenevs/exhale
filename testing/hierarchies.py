@@ -164,7 +164,7 @@ class define(node):  # noqa: N801
     **Parameters**
 
         ``name`` (:class:`python:str`)
-            The name of the define / macro being representated
+            The name of the define / macro being represented
 
     .. todo:: Do macros (with parameters) need special treatment?
     """

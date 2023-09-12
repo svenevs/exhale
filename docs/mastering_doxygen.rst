@@ -292,7 +292,7 @@ documenting specific aspects:
 +-----------------+--------------------------------------------------------------------+
 | ``\return``     | Add documentation for the return value.                            |
 +-----------------+--------------------------------------------------------------------+
-| Explicit Control Over Contstructs (e.g., Adding Documentation Apart from Definition )|
+| Explicit Control Over Constructs (e.g., Adding Documentation Apart from Definition ) |
 +-----------------+--------------------------------------------------------------------+
 | ``\struct``     | To document a ``struct``.                                          |
 +-----------------+--------------------------------------------------------------------+

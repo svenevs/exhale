@@ -352,7 +352,7 @@ We need to take each one of those, and map them to their corresponding
 
 .. note::
 
-   Feel free to make a pull request adding more lanugages here.  For example, the
+   Feel free to make a pull request adding more languages here.  For example, the
    ``Verilog`` support comes from
    `doxygen-verilog <https://github.com/avelure/doxygen-verilog>`_.
 '''
@@ -913,7 +913,7 @@ def tokenize_template(node_name: str) -> list[Union[list, str]]:
             # up the KEEP clauses.
             if mo.lastgroup == "COMMA":
                 continue
-            # If the result of trimming whitespace is the emptry string, then this is
+            # If the result of trimming whitespace is the empty string, then this is
             # not a novel template parameter and should be skipped.  We normalize the
             # remainder of the name so that e.g., foo< int > gives just ["foo", ["int"]]
             # rather than having funky whitespace everywhere.

@@ -314,7 +314,7 @@ class UnabridgedOrphanKindsTests(ExhaleTestCase):
 
     @confoverrides(exhale_args={"unabridgedOrphanKinds": []})
     def test_no_exclusion(self):
-        """Verify empty list means no exlusions from full API."""
+        """Verify empty list means no exclusions from full API."""
         full_names, orphan_names = self.checkAllFilesIncluded()
         root = get_exhale_root(self)
         total = self.total(root)

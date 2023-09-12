@@ -33,7 +33,7 @@ list is defined as:
    [testenv]
    envlist = py, flake8
 
-This means that the version of python the tests are run with are the interpretor that
+This means that the version of python the tests are run with are the interpreter that
 you installed ``tox`` for.  To run a specific test:
 
 ``tox -e py``
