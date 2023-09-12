@@ -25,7 +25,7 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       ##################################################################################
       - name: Install Doxygen (macOS)
         if: contains(matrix.os, 'macos')
@@ -57,7 +57,7 @@ jobs:
         run: doxygen --version
       ##################################################################################
       - name: Use Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
