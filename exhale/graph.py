@@ -226,7 +226,7 @@ class ExhaleNode(object):
                     return False
 
                 # NOTE: kind of wasteful, but ordered_refs has ALL pages
-                # but realistically, there wont be *that* many pages. right? ;)
+                # but realistically, there won't be *that* many pages. right? ;)
                 ordered_refs = [
                     p.refid for p in self.root_owner.index_xml_page_ordering
                 ]
@@ -1042,7 +1042,7 @@ class ExhaleRoot(object):
             The full list of ExhaleNodes of kind ``file``.
 
         ``groups`` (list)
-            The full list of ExhaleNodes of kind ``group``.  Pupulated, not used.
+            The full list of ExhaleNodes of kind ``group``.  Populated, not used.
 
         ``namespaces`` (list)
             The full list of ExhaleNodes of kind ``namespace``.
@@ -2352,7 +2352,7 @@ class ExhaleRoot(object):
         resulting list then has all of ``self.class_like``, as well as any nested
         classes and structs found.  With ``enum`` and ``union``, these would have been
         reparented to a **class** or **struct** if it was removed from the relevant
-        ``self.<breathe_kind>`` list.  Meaning we must make sure that we genererate the
+        ``self.<breathe_kind>`` list.  Meaning we must make sure that we generate the
         single node RST documents for everything by finding the nested enums and unions
         from ``self.class_like``, as well as everything in ``self.enums`` and
         ``self.unions``.
@@ -2514,7 +2514,7 @@ class ExhaleRoot(object):
                     child=title
                 )
 
-        # `unique_id` and `title` should be set approriately for all nodes by this point
+        # `unique_id` and `title` should be set appropriately for all nodes by this point
         if node.kind in SPECIAL_CASES:
             node.link_name = "{kind}_{id}".format(kind=node.kind, id=unique_id)
             node.file_name = "{link_name}.rst".format(link_name=node.link_name)
@@ -3775,7 +3775,7 @@ class ExhaleRoot(object):
         :func:`~exhale.graph.ExhaleRoot.generatePageView`,
         :func:`~exhale.graph.ExhaleRoot.generateClassView`, and
         :func:`~exhale.graph.ExhaleRoot.generateDirectoryView` --- if you want to implement
-        additional hierarchies, implement the additionaly hierarchy method and call it
+        additional hierarchies, implement the additionally hierarchy method and call it
         from here.  Then make sure to ``include`` it in
         :func:`~exhale.graph.ExhaleRoot.generateAPIRootBody`.
         '''
@@ -3815,12 +3815,12 @@ class ExhaleRoot(object):
             # 1. The interior of an HTML <ul> ... </ul> (collapsible lists)
             # 2. A json array for returning from a javascript function (bootstrap)
             #
-            # In either case, the data is currently well-formatted, no "suprise"
+            # In either case, the data is currently well-formatted, no "surprise"
             # newlines should appear, etc.  So we can just split the lines and strip
             # the leading indentation.
             if configs.minifyTreeView:
                 data = "".join([line.strip() for line in data.splitlines()])
-                # For the bootstrap version we can also further elminate some extra
+                # For the bootstrap version we can also further eliminate some extra
                 # spaces between colons and their mapped value, and delete some
                 # erroneous commas that don't hurt but don't help ;)
                 if configs.treeViewIsBootstrap:
@@ -4022,7 +4022,7 @@ class ExhaleRoot(object):
 
         2. The configurations of Doxygen.  For example, see the warning in
            :func:`~exhale.graph.ExhaleRoot.fileRefDiscovery`.  Items whose parents cannot
-           be rediscovered withouth the programlisting will still be documented, their
+           be rediscovered without the programlisting will still be documented, their
            link appearing in the unabridged API listing.
 
         Currently, the API is generated in the following (somewhat arbitrary) order:

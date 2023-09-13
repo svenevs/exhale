@@ -69,13 +69,13 @@ but it is not overwhelmingly significant.
 
 The main thing to understand is that where Exhale is concerned, **all relative paths
 specified in any configuration variables are relative to wherever** ``conf.py``
-**lives**.  The ``build artfiacts go here`` section is to just explain that if you do
+**lives**.  The ``build artifacts go here`` section is to just explain that if you do
 ``make html``, then in the ``n`` case a folder ``docs/_build/html`` will be created, and
 in the ``y`` case it will be in ``docs/build/html``.  Repeat for ``make linkcheck``.
 In either case, you will definitely want to add ``docs/_build`` or ``docs/build`` to
 your ``.gitignore`` or related version control ignore file.
 
-The only other thing worth pointing out here is that by default sphinx reates the
+The only other thing worth pointing out here is that by default sphinx creates the
 ``_static`` and ``_templates`` directories for you.  At first start, you don't use those
 but:
 

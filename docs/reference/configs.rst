@@ -476,7 +476,7 @@ something like this, where special treatment is given to File pages specifically
         set :data:`~exhale.configs.generateBreatheFileDirectives` to ``True`` **as a
         debugging feature**.
 
-        Please refer to the :ref:`doxygen_documentaion_specifics` section for potential
+        Please refer to the :ref:`doxygen_documentation_specifics` section for potential
         causes, in particular the subsection describing
         :ref:`file_and_namespace_level_documentation_in_exhale`.
 
@@ -647,7 +647,7 @@ possible inputs and outputs in a dictionary.  Details aside, it's easier than it
 
    .. code-block:: py
 
-      # somewhere in `conf.py`, *BERORE* declaring `exhale_args`
+      # somewhere in `conf.py`, *BEFORE* declaring `exhale_args`
       def specificationsForKind(kind):
           '''
           For a given input ``kind``, return the list of reStructuredText specifications

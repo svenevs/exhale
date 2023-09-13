@@ -200,7 +200,7 @@ class CPPPimpl(ExhaleTestCase):
 
     def expected_class_hierarchy(self, exclusions):
         """
-        Return expected rst class hiearchy listing based on specified ``exclusions``.
+        Return expected rst class hierarchy listing based on specified ``exclusions``.
 
         Helper method for :func:`validate_class_hierarchy`.
 

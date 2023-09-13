@@ -54,7 +54,7 @@ namespace pimpl {
         class JupiterImpl;
     }
 
-    /// A class that represnts the planet Jupiter (version 2).
+    /// A class that represents the planet Jupiter (version 2).
     class Jupiter_v2 : public Planet {
     public:
         Jupiter_v2();                       ///< Constructs an Jupiter_v2.

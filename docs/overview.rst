@@ -47,7 +47,7 @@ build is producing warnings, this is why Exhale is not creating what you expect.
 
    Doxygen is a complex and advanced tool!  In particular, you will likely need to
    finesse the Doxygen preprocessor for everything to work out as expected.  Refer to
-   the :ref:`doxygen_documentaion_specifics` section for more information.
+   the :ref:`doxygen_documentation_specifics` section for more information.
 
 From there, Exhale needs the following information, all provided in ``conf.py``:
 

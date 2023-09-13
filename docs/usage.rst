@@ -6,7 +6,7 @@ how familiar you are with things like Sphinx, Breathe, Doxygen, etc.  At the top
 what you need is:
 
 1. Your C++ code you want to document, with "proper" Doxygen documentation.  Please
-   read the :ref:`doxygen_documentaion_specifics` for common documentation pitfalls,
+   read the :ref:`doxygen_documentation_specifics` for common documentation pitfalls,
    as well as features previously unavailable in standard Doxygen.
 2. A sphinx documentation project ready to go.  See the
    `Sphinx Getting Started <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_
@@ -348,7 +348,7 @@ Executing Doxygen Independently
 This is another option, just make sure that Doxygen is run **before** Exhale is.  See
 the note at the bottom of the :ref:`quickstart_guide`.
 
-.. _doxygen_documentaion_specifics:
+.. _doxygen_documentation_specifics:
 
 Doxygen Documentation Specifics
 ----------------------------------------------------------------------------------------
