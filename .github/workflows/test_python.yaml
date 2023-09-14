@@ -63,23 +63,6 @@ jobs:
       - name: Install Python Tools
         run: |
           pip install -U pip tox codecov coverage
-      # Sphinx 3.0.0 ###################################################################
-      - name: Test Python ${{ matrix.python-version }} / sphinx==3.0.0
-        env:
-          # NOTE: this is the current minimum supported.
-          SPHINX_VERSION: '==3.0.0'
-        run: |
-          tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx==3.0.0
-        run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx3.0.0"
-      # Don't let code coverage utilities share anything, force clean it all.
-      - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
-        run: |
-          mv .gitignore nolongerignored
-          git clean -n
-          git clean -f
-          git reset --hard
       # Sphinx 4.x #####################################################################
       - name: Test Python ${{ matrix.python-version }} / sphinx 4.x
         env:
@@ -125,5 +108,25 @@ jobs:
           tox -e py -- --cov-report xml:coverage.xml --cov
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 6.x
         if: ${{ matrix.python-version != '3.7' }}
+        run: |
+          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx6.x"
+      # Don't let code coverage utilities share anything, force clean it all.
+      - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
+        run: |
+          mv .gitignore nolongerignored
+          git clean -n
+          git clean -f
+          git reset --hard
+      # Sphinx 7.x #####################################################################
+      - name: Test Python ${{ matrix.python-version }} / sphinx 7.x
+        # sphinx 7.x requires python 3.9+
+        if: ${{ matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
+        env:
+          # Test sphinx <7.2.
+          SPHINX_VERSION: '>=7,<7.2'
+        run: |
+          tox -e py -- --cov-report xml:coverage.xml --cov
+      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 7.x
+        if: ${{ matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
         run: |
           codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx6.x"
