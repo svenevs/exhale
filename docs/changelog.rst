@@ -5,6 +5,19 @@ Changelog
    :local:
    :backlinks: none
 
+v0.3.7
+----------------------------------------------------------------------------------------
+
+- Update packaging requirements (:pr:`204`).  Exhale will be less restrictive in its
+  dependency requirements:
+
+    - Python 3.8+ (3.7 is EOSL).
+    - Breathe>=4.33.1.
+    - Sphinx>=4.3.2.
+    - See :issue:`191` for more information.
+- Miscellaneous packaging and CI fixes courtesy of
+  `@Rotzbua <https://github.com/Rotzbua>`_ -- thanks for poking me on this project!
+
 v0.3.6
 ----------------------------------------------------------------------------------------
 
