@@ -108,7 +108,7 @@ class CPPFortranMixed(ExhaleTestCase):
                         lexer = lexer_match.groups()[0]
                         self.assertTrue(
                             lexer == expected_lexer,
-                            "{0}: expected '{1}' but got '{2}' language lexer.".format(
+                            "{}: expected '{}' but got '{}' language lexer.".format(
                                 file_node.location, expected_lexer, lexer
                             )
                         )
@@ -118,7 +118,7 @@ class CPPFortranMixed(ExhaleTestCase):
             # Make sure we actually ran a check for this file.
             self.assertTrue(
                 lexer_was_asserted,
-                "Did not find '.. code-block:: xxxx' in [{0}]".format(program_listing_file_path)
+                "Did not find '.. code-block:: xxxx' in [{}]".format(program_listing_file_path)
             )
 
     def get_hpp_and_f90_nodes(self, exhale_root):
