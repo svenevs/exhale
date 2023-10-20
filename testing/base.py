@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2023, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -171,7 +170,6 @@ class ExhaleTestCaseMetaclass(type):
                 # Sphinx demands a `conf.py` is present
                 with open(os.path.join(testroot, "conf.py"), "w") as conf_py:
                     conf_py.write(textwrap.dedent('''\
-                        # -*- coding: utf-8 -*-
                         project = "{test_project}"
                         extensions = ["breathe", "exhale"]
                         master_doc = "index"
