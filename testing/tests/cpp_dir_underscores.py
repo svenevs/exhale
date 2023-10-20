@@ -8,7 +8,6 @@
 Tests for the ``cpp_dir_underscores`` project.
 """
 
-from __future__ import unicode_literals
 import os
 
 from testing.base import ExhaleTestCase

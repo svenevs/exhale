@@ -7,7 +7,6 @@
 """
 Tests specifically focused on the various tree view configurations.
 """
-from __future__ import unicode_literals
 
 import os
 import re

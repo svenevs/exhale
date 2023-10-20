@@ -8,7 +8,6 @@
 Utility functionality for the testing suite.
 """
 
-from __future__ import unicode_literals
 try:
     from collections.abc import Mapping
 except ImportError:

@@ -5,7 +5,6 @@
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 
-from __future__ import unicode_literals
 
 from . import configs
 from . import parse

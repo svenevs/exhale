@@ -7,7 +7,6 @@
 """
 Tests for validating error handling with configs set in ``conf.py``.
 """
-from __future__ import unicode_literals
 import re
 import textwrap
 from pathlib import Path

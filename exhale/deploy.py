@@ -12,7 +12,6 @@ The deploy module is responsible for two primary actions:
 2. Launching the full API generation via the :func:`~exhale.deploy.explode` function.
 '''
 
-from __future__ import unicode_literals
 
 from . import configs
 from . import utils

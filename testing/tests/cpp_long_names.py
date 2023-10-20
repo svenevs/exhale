@@ -8,7 +8,6 @@
 Tests for the ``cpp_long_names`` project.
 """
 
-from __future__ import unicode_literals
 import hashlib
 import os
 import platform

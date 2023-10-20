@@ -21,7 +21,6 @@ do not need to be validated in the same method.  In both cases, the recipe is:
    :func:`~testing.hierarchies.compare_file_hierarchy`.
 """
 
-from __future__ import unicode_literals
 import codecs
 import os
 import platform

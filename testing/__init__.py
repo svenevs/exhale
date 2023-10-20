@@ -8,7 +8,6 @@
 The testing package for Exhale.
 """
 
-from __future__ import unicode_literals
 import os
 
 

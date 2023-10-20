@@ -8,7 +8,6 @@
 Tests for the ``cpp_nesting`` project.
 """
 
-from __future__ import unicode_literals
 
 import os
 import re

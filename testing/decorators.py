@@ -8,7 +8,6 @@
 The decorators module defines useful class / function decorators for test cases.
 """
 
-from __future__ import unicode_literals
 from copy import deepcopy
 from inspect import isclass
 

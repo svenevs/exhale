@@ -12,7 +12,6 @@ See ``pytest`` documentation on `Package/Directory-level fixtures (setups)`__.
 __ https://docs.pytest.org/en/latest/example/simple.html#package-directory-level-fixtures-setups
 """
 
-from __future__ import unicode_literals
 
 pytest_plugins = [
     "sphinx.testing.fixtures",
