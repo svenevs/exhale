@@ -23,13 +23,7 @@ import platform
 import textwrap
 
 from bs4 import BeautifulSoup
-
-try:
-    # Python 2 StringIO
-    from cStringIO import StringIO
-except ImportError:
-    # Python 3 StringIO
-    from io import StringIO
+from io import StringIO
 
 __all__       = ["ExhaleRoot", "ExhaleNode"]
 

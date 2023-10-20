@@ -51,12 +51,7 @@ from sphinx.errors import ConfigError, ExtensionError
 from sphinx.util import logging
 from types import FunctionType, ModuleType
 
-try:
-    # Python 2 StringIO
-    from cStringIO import StringIO
-except ImportError:
-    # Python 3 StringIO
-    from io import StringIO
+from io import StringIO
 
 
 logger = logging.getLogger(__name__)
