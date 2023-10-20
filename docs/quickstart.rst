@@ -17,7 +17,7 @@ Getting Started with Sphinx
 ----------------------------------------------------------------------------------------
 
 To get a project started with Sphinx, we will want to run the ``sphinx-quickstart``
-utility.  Assuming you are already working in a git repsoitory, the canonical location
+utility.  Assuming you are already working in a git repository, the canonical location
 to do this in would be ``{repo_root}/docs``.  So let's go ahead and make that folder
 and get our Sphinx project started:
 
