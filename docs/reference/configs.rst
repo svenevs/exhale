@@ -500,6 +500,8 @@ something like this, where special treatment is given to File pages specifically
 
 .. autodata:: exhale.configs.includeTemplateParamOrderList
 
+.. autodata:: exhale.configs.fullyQualifiedTitles
+
 .. autodata:: exhale.configs.pageLevelConfigMeta
 
 .. autodata:: exhale.configs.repoRedirectURL

@@ -2495,24 +2495,28 @@ class ExhaleRoot(object):
                         utils.fancyError(
                             f"Exhale does not know how to process {node.name}, "
                             f"tokenized to {template_tokens}.  Please report this bug.")
-                class_name = class_name.split("::")[-1]
+                if not configs.fullyQualifiedTitles:
+                    class_name = class_name.split("::")[-1]
 
                 # Join up the final class name and any potentially skipped templates.
                 title = utils.join_template_tokens([class_name] + skipped)
-            else:
+            elif not configs.fullyQualifiedTitles:
                 title = node.name.split("::")[-1]
+            else:
+                title = node.name
 
             # additionally, I feel that nested classes should have their fully qualified
-            # name without namespaces for clarity
-            prepend_parent = False
-            if node.kind in ["class", "struct", "enum", "union"]:
-                if node.parent is not None and node.parent.kind in ["class", "struct"]:
-                    prepend_parent = True
-            if prepend_parent:
-                title = "{parent}::{child}".format(
-                    parent=node.parent.name.split("::")[-1],
-                    child=title
-                )
+            # name without namespaces for clarity even if the titles are not fully qualified
+            if not configs.fullyQualifiedTitles:
+                prepend_parent = False
+                if node.kind in ["class", "struct", "enum", "union"]:
+                    if node.parent is not None and node.parent.kind in ["class", "struct"]:
+                        prepend_parent = True
+                if prepend_parent:
+                    title = "{parent}::{child}".format(
+                        parent=node.parent.name.split("::")[-1],
+                        child=title
+                    )
 
         # `unique_id` and `title` should be set appropriately for all nodes by this point
         if node.kind in SPECIAL_CASES:
