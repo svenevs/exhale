@@ -22,7 +22,6 @@ do not need to be validated in the same method.  In both cases, the recipe is:
    :func:`~testing.hierarchies.compare_file_hierarchy`.
 """
 
-from __future__ import unicode_literals
 import codecs
 import os
 import platform
@@ -74,7 +73,7 @@ class node(ExhaleNode):  # noqa: N801
     """
 
     def __init__(self, name, kind):
-        super(node, self).__init__(name, kind, "")  # no Doxygen refid available
+        super().__init__(name, kind, "")  # no Doxygen refid available
 
     def __repr__(self):
         """
@@ -136,7 +135,7 @@ class clike(node):  # noqa: N801
     """
 
     def __init__(self, kind, name, template=[]):
-        super(clike, self).__init__(name, kind)
+        super().__init__(name, kind)
         self.template = template
 
 
@@ -154,7 +153,7 @@ class directory(node):  # noqa: N801
     """
 
     def __init__(self, name):
-        super(directory, self).__init__(name, "dir")
+        super().__init__(name, "dir")
 
 
 class define(node):  # noqa: N801
@@ -170,7 +169,7 @@ class define(node):  # noqa: N801
     """
 
     def __init__(self, name):
-        super(define, self).__init__(name, "define")
+        super().__init__(name, "define")
 
 
 class enum(node):  # noqa: N801
@@ -187,7 +186,7 @@ class enum(node):  # noqa: N801
     """
 
     def __init__(self, name, values=None):
-        super(enum, self).__init__(name, "enum")
+        super().__init__(name, "enum")
         self.values = values
 
 
@@ -205,7 +204,7 @@ class file(node):  # noqa: N801
     """
 
     def __init__(self, name):
-        super(file, self).__init__(name, "file")
+        super().__init__(name, "file")
         self.location = None  # TODO: these should not be needed anymore
         self.namespaces_used = []
 
@@ -244,7 +243,7 @@ class function(node):  # noqa: N801
     """
 
     def __init__(self, return_type, name, template=None):
-        super(function, self).__init__(name, "function")
+        super().__init__(name, "function")
         self.return_type = return_type
         self.parameters = []  # set later, required to let functions be keys in dict
         self.template = template
@@ -289,7 +288,7 @@ class page(node):  # noqa: N801
     """
 
     def __init__(self, name):
-        super(page, self).__init__(name, "page")
+        super().__init__(name, "page")
         self.location = None
 
 
@@ -358,7 +357,7 @@ class namespace(node):  # noqa: N801
     """
 
     def __init__(self, name):
-        super(namespace, self).__init__(name, "namespace")
+        super().__init__(name, "namespace")
 
 
 class typedef(node):  # noqa: N801
@@ -379,7 +378,7 @@ class typedef(node):  # noqa: N801
     """
 
     def __init__(self, new_name, old_name, template=None):
-        super(typedef, self).__init__(new_name, "typedef")
+        super().__init__(new_name, "typedef")
         self.old_name = old_name
         self.template = template
 
@@ -396,7 +395,7 @@ class union(node):  # noqa: N801
     """
 
     def __init__(self, name):
-        super(union, self).__init__(name, "union")
+        super().__init__(name, "union")
 
 
 class variable(node):  # noqa: N801
@@ -414,7 +413,7 @@ class variable(node):  # noqa: N801
     """
 
     def __init__(self, _type, name):
-        super(variable, self).__init__(name, "variable")
+        super().__init__(name, "variable")
         self.type = _type
 
 
@@ -733,7 +732,7 @@ class class_hierarchy(root):  # noqa: N801
     """
 
     def __init__(self, hierarchy):
-        super(class_hierarchy, self).__init__("class", hierarchy)
+        super().__init__("class", hierarchy)
 
 
 class file_hierarchy(root):  # noqa: N801
@@ -805,7 +804,7 @@ class file_hierarchy(root):  # noqa: N801
     """
 
     def __init__(self, hierarchy):
-        super(file_hierarchy, self).__init__("file", hierarchy)
+        super().__init__("file", hierarchy)
 
 
 ########################################################################################

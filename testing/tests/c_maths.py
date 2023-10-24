@@ -9,7 +9,6 @@
 Tests for the ``c_maths`` project.
 """
 
-from __future__ import unicode_literals
 import os
 
 from testing.base import ExhaleTestCase

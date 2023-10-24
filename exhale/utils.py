@@ -6,7 +6,7 @@
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 
-from __future__ import unicode_literals, annotations
+from __future__ import annotations
 from typing import TextIO, Union
 
 from . import configs
@@ -18,7 +18,6 @@ from io import StringIO
 import os
 import re
 import sys
-import six
 import textwrap
 import time
 import traceback
@@ -227,7 +226,7 @@ def makeCustomSpecificationsMapping(func):
             specs = func(kind)
             bad   = type(specs) is not list
             for s in specs:
-                if not isinstance(s, six.string_types):
+                if not isinstance(s, str):
                     bad = True
                     break
             if bad:
@@ -690,37 +689,14 @@ class AnsiColors:
             # ignore specials such as __class__ or __module__
             if not elem.startswith("__"):
                 color_fmt = cls.__dict__[elem]
-                if isinstance(color_fmt, six.string_types) and color_fmt != "BOLD" and color_fmt != "DIM" and \
+                if isinstance(color_fmt, str) and color_fmt != "BOLD" and color_fmt != "DIM" and \
                         color_fmt != "UNDER" and color_fmt != "INV":
                     print("\033[{fmt}AnsiColors.{name}\033[0m".format(fmt=color_fmt, name=elem))
 
 
-def indent(text, prefix, predicate=None):
-    '''
-    This is a direct copy of ``textwrap.indent`` for availability in Python 2.
-
-    Their documentation:
-
-    Adds 'prefix' to the beginning of selected lines in 'text'.
-    If 'predicate' is provided, 'prefix' will only be added to the lines
-    where 'predicate(line)' is True. If 'predicate' is not provided,
-    it will default to adding 'prefix' to all non-empty lines that do not
-    consist solely of whitespace characters.
-    '''
-    if predicate is None:
-        def predicate(line):
-            return line.strip()
-
-    def prefixed_lines():
-        for line in text.splitlines(True):
-            yield (prefix + line if predicate(line) else line)
-
-    return ''.join(prefixed_lines())
-
-
 def prefix(token, msg):
     '''
-    Wrapper call to :func:`~exhale.utils.indent` with an always-true predicate so that
+    Wrapper call to :func:`~textwrap.indent` with an always-true predicate so that
     empty lines (e.g. `\\n`) still get indented by the ``token``.
 
     :Parameters:
@@ -734,7 +710,7 @@ def prefix(token, msg):
         ``str``
             The message ``msg``, indented by the ``token``.
     '''
-    return indent(msg, token, predicate=lambda x: True)
+    return textwrap.indent(msg, token, predicate=lambda x: True)
 
 
 def exclaim(err_msg):
