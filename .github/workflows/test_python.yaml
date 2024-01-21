@@ -23,7 +23,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
       ##################################################################################
@@ -37,21 +37,9 @@ jobs:
           sudo apt-get install -y doxygen
       - name: Install Doxygen (Windows)
         if: contains(matrix.os, 'windows')
-        run: |
-          # This command has been failing with source forge mirror issues
-          # choco install doxygen.install --version 1.9.6
-          #
-          # https://github.com/actions/runner-images/issues/92#issuecomment-1172456433
-          $url = "https://www.doxygen.nl/files/doxygen-1.9.6.windows.x64.bin.zip"
-          Start-DownloadWithRetry -Url $url -Name "doxygen.zip" -DownloadPath "C:\"
-          Extract-7Zip -Path  "C:\doxygen.zip" -DestinationPath "C:\Program Files\doxygen"
-          # Extracts to C:\Program Files\doxygen
-          #   - doxygen.exe
-          #   - doxyindexer.exe
-          #   - doxysearch.cgi.exe
-          #   - doxywizard.exe
-          #   - libclang.dll
-          echo "C:\Program Files\doxygen" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        uses: ssciwr/doxygen-install@v1
+          with:
+          version: "1.9.6"
       ##################################################################################
       - name: Doxygen Version Dump
         run: doxygen --version
@@ -62,34 +50,17 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
         run: |
-          pip install -U pip tox codecov coverage
-      # Sphinx 3.0.0 ###################################################################
-      - name: Test Python ${{ matrix.python-version }} / sphinx==3.0.0
+          pip install tox codecov coverage
+      # Sphinx 4.3.2 ###################################################################
+      - name: Test Python ${{ matrix.python-version }} / sphinx==4.3.2
         env:
           # NOTE: this is the current minimum supported.
-          SPHINX_VERSION: '==3.0.0'
+          SPHINX_VERSION: '==4.3.2'
         run: |
           tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx==3.0.0
+      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx==4.3.2
         run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx3.0.0"
-      # Don't let code coverage utilities share anything, force clean it all.
-      - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
-        run: |
-          mv .gitignore nolongerignored
-          git clean -n
-          git clean -f
-          git reset --hard
-      # Sphinx 4.x #####################################################################
-      - name: Test Python ${{ matrix.python-version }} / sphinx 4.x
-        env:
-          # Test sphinx 4.x.
-          SPHINX_VERSION: '>=4,<5'
-        run: |
-          tox -e py -- --cov-report xml:coverage.xml --cov
-      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 4.x
-        run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx4.x"
+          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx4.3.2"
       # Don't let code coverage utilities share anything, force clean it all.
       - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
         run: |
@@ -116,14 +87,24 @@ jobs:
           git reset --hard
       # Sphinx 6.x #####################################################################
       - name: Test Python ${{ matrix.python-version }} / sphinx 6.x
-        # sphinx 6.x requires python 3.8+
-        if: ${{ matrix.python-version != '3.7' }}
         env:
           # Test sphinx 6.x.
           SPHINX_VERSION: '>=6,<7'
         run: |
           tox -e py -- --cov-report xml:coverage.xml --cov
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 6.x
-        if: ${{ matrix.python-version != '3.7' }}
         run: |
           codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx6.x"
+      # Sphinx 7.x #####################################################################
+      - name: Test Python ${{ matrix.python-version }} / sphinx 7.x
+        env:
+          # Test sphinx 7.x.
+          # TODO: breathe does not currently support later sphinx.
+          # https://github.com/svenevs/exhale/issues/203#issuecomment-1773060684
+          SPHINX_VERSION: '>=7,<7.2'
+        run: |
+          tox -e py -- --cov-report xml:coverage.xml --cov
+      - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx 7.x
+        run: |
+          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx7.x"
+
