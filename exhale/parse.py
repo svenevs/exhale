@@ -111,13 +111,13 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
     if currentTag.name == "orderedlist":
         idx = 1
         for child in children:
-            walk(textRoot, child, level + 1, "\n{0}{1}. ".format(indent, idx), None, True)
+            walk(textRoot, child, level + 1, "\n{}{}. ".format(indent, idx), None, True)
             idx += 1
             child.unwrap()
         currentTag.unwrap()
     elif currentTag.name == "itemizedlist":
         for child in children:
-            walk(textRoot, child, level + 1, "\n{0}- ".format(indent), None, True)
+            walk(textRoot, child, level + 1, "\n{}- ".format(indent), None, True)
             child.unwrap()
         currentTag.unwrap()
     elif currentTag.name == "verbatim":
@@ -129,36 +129,36 @@ def walk(textRoot, currentTag, level, prefix=None, postfix=None, unwrapUntilPara
             cont = textwrap.dedent(cont.replace("\n*", "\n"))
             currentTag.string = cont
     elif currentTag.name == "formula":
-        currentTag.string = ":math:`{0}`".format(currentTag.string[1:-1])
+        currentTag.string = ":math:`{}`".format(currentTag.string[1:-1])
     elif currentTag.name == "ref":
         signal = None
         if "refid" not in currentTag.attrs:
-            signal = "No 'refid' in `ref` tag attributes of file documentation. Attributes were: {0}".format(
+            signal = "No 'refid' in `ref` tag attributes of file documentation. Attributes were: {}".format(
                 currentTag.attrs
             )
         else:
             refid = currentTag.attrs["refid"]
             if refid not in textRoot.node_by_refid:
-                signal = "Found unknown 'refid' of [{0}] in file level documentation.".format(refid)
+                signal = "Found unknown 'refid' of [{}] in file level documentation.".format(refid)
             else:
-                currentTag.string = ":ref:`{0}`".format(textRoot.node_by_refid[refid].link_name)
+                currentTag.string = ":ref:`{}`".format(textRoot.node_by_refid[refid].link_name)
 
         if signal:
             # << verboseBuild
             utils.verbose_log(signal, utils.AnsiColors.BOLD_YELLOW)
     elif currentTag.name == "emphasis":
-        currentTag.string = "*{0}*".format(currentTag.string)
+        currentTag.string = "*{}*".format(currentTag.string)
     elif currentTag.name == "computeroutput":
-        currentTag.string = "``{0}``".format(currentTag.string)
+        currentTag.string = "``{}``".format(currentTag.string)
     elif currentTag.name == "bold":
-        currentTag.string = "**{0}**".format(currentTag.string)
+        currentTag.string = "**{}**".format(currentTag.string)
     else:
         ctr = 0
         for child in children:
             c_prefix = None
             c_postfix = None
             if ctr > 0 and child.name == "para":
-                c_prefix = "\n{0}".format(indent)
+                c_prefix = "\n{}".format(indent)
 
             walk(textRoot, child, level, c_prefix, c_postfix)
 
@@ -191,7 +191,7 @@ def convertDescriptionToRST(textRoot, node, soupTag, heading):
                 configs.SUB_SECTION_HEADING_CHAR
             )
         ))
-        return "{0}{1}".format(start, contents)
+        return "{}{}".format(start, contents)
     else:
         return ""
 
@@ -211,7 +211,7 @@ def getBriefAndDetailedRST(textRoot, node):
     try:
         node_soup = BeautifulSoup(node_xml_contents, "lxml-xml")
     except:
-        utils.fancyError("Unable to parse [{0}] xml using BeautifulSoup".format(node.name))
+        utils.fancyError("Unable to parse [{}] xml using BeautifulSoup".format(node.name))
 
     try:
         # In the file xml definitions, things such as enums or defines are listed inside

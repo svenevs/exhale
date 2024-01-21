@@ -73,21 +73,21 @@ def time_string(start, end):
                 elif hours == 1:
                     hours_str = "1 hour, "
                 else:
-                    hours_str = "{0} hours, ".format(hours)
+                    hours_str = "{} hours, ".format(hours)
 
                 if mins == 0:
                     mins_str = ""
                 elif mins == 1:
                     mins_str = "1 minute, and "
                 else:
-                    mins_str = "{0} minutes, and ".format(mins)
+                    mins_str = "{} minutes, and ".format(mins)
 
                 if secs == 1.00:  # LOL I would love to see this happen
                     secs_str = "1.00 second"
                 else:
-                    secs_str = "{0} seconds".format(secs)
+                    secs_str = "{} seconds".format(secs)
 
-                time_str = "{0}{1}{2}".format(hours_str, mins_str, secs_str)
+                time_str = "{}{}{}".format(hours_str, mins_str, secs_str)
             except:
                 time_str = str(delta)
         else:
@@ -213,7 +213,7 @@ def makeCustomSpecificationsMapping(func):
     # Make sure they gave us a function
     if not isinstance(func, types.FunctionType):
         raise ValueError(
-            "The input to exhale.util.makeCustomSpecificationsMapping was *NOT* a function: {0}".format(
+            "The input to exhale.util.makeCustomSpecificationsMapping was *NOT* a function: {}".format(
                 type(func)
             )
         )
@@ -242,14 +242,14 @@ def makeCustomSpecificationsMapping(func):
                 '''.format(kind=kind)))
             ret[kind] = specs
     except Exception as e:
-        raise RuntimeError("Unable to create custom specifications:\n{0}".format(e))
+        raise RuntimeError("Unable to create custom specifications:\n{}".format(e))
 
     # Everything went according to plan, send it back to `conf.py` :)
     return ret
 
 
 def nodeCompoundXMLContents(node):
-    node_xml_path = os.path.join(configs._doxygen_xml_output_directory, "{0}.xml".format(node.refid))
+    node_xml_path = os.path.join(configs._doxygen_xml_output_directory, "{}.xml".format(node.refid))
     if os.path.isfile(node_xml_path):
         try:
             with codecs.open(node_xml_path, "r", "utf-8") as xml:
@@ -742,7 +742,7 @@ def exclaim(err_msg):
 
 
 def colorize(msg, ansi_fmt):
-    return "\033[{0}{1}\033[0m".format(ansi_fmt, msg)
+    return "\033[{}{}\033[0m".format(ansi_fmt, msg)
 
 
 def _use_color(msg, ansi_fmt, output_stream):
@@ -815,7 +815,7 @@ def fancyErrorString(lex):
         err = traceback.format_exc()
         # shenanigans = "During handling of the above exception, another exception occurred:"
         # err = err.split(shenanigans)[0]
-        return __fancy("{0}\n".format(err), lex, "console")
+        return __fancy("{}\n".format(err), lex, "console")
     except:
         return "CRITICAL: could not extract traceback.format_exc!"
 
@@ -834,7 +834,7 @@ def fancyError(critical_msg=None, lex="py3tb", singleton_hook=None):
             singleton_hook()
         except Exception as e:
             sys.stderr.write(critical(
-                "fancyError: `singleton_hook` caused exception: {0}".format(e)
+                "fancyError: `singleton_hook` caused exception: {}".format(e)
             ))
 
     os._exit(1)
