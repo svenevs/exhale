@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2024, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -22,7 +21,6 @@ do not need to be validated in the same method.  In both cases, the recipe is:
    :func:`~testing.hierarchies.compare_file_hierarchy`.
 """
 
-from __future__ import unicode_literals
 import codecs
 import os
 import platform

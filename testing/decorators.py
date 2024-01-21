@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2024, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -9,7 +8,6 @@
 The decorators module defines useful class / function decorators for test cases.
 """
 
-from __future__ import unicode_literals
 from copy import deepcopy
 from inspect import isclass
 

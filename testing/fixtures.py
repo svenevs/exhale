@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2024, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -8,7 +7,6 @@
 """
 Provides fixtures to be available for all test cases.
 """
-from __future__ import unicode_literals
 from exhale import deploy
 import pytest
 
