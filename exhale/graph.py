@@ -6,8 +6,6 @@
 #                https://github.com/svenevs/exhale/blob/master/LICENSE                 #
 ########################################################################################
 
-from __future__ import unicode_literals
-
 from . import configs
 from . import parse
 from . import utils
@@ -24,12 +22,7 @@ import textwrap
 
 from bs4 import BeautifulSoup
 
-try:
-    # Python 2 StringIO
-    from cStringIO import StringIO
-except ImportError:
-    # Python 3 StringIO
-    from io import StringIO
+from io import StringIO
 
 __all__       = ["ExhaleRoot", "ExhaleNode"]
 
@@ -4038,11 +4031,8 @@ class ExhaleRoot(object):
         - Directories
         - Files
         '''
-        try:
-            from collections.abc import MutableMapping
-        except ImportError:
-            # TODO: remove when dropping python 2.7
-            from collections import MutableMapping
+        from collections.abc import MutableMapping
+
         class UnabridgedDict(MutableMapping):
             def __init__(self):
                 self.items = {}

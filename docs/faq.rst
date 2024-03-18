@@ -51,43 +51,6 @@ them.
 
 Solution: see the :ref:`quickstart_clean_target` section of the Quickstart guide.
 
-Unicode support?
-----------------------------------------------------------------------------------------
-
-Every action Exhale performs with respect to strings is done using unicode strings.  Or
-at least I tried my very best to make sure unicode support works.
-
-1. At the top of every file:
-
-   .. code-block:: py
-
-      from __future__ import unicode_literals
-
-   This is why all of the documentation on this site for strings has a leading ``u``.
-
-2. Every file written to:
-
-   .. code-block:: py
-
-      with codecs.open(file_name, "w", "utf-8") as f:
-
-3. When using Python **3**, ``bytes`` conversion is done as:
-
-   .. code-block:: py
-
-      doxygen_input = bytes(doxygen_input, "utf-8")
-
-The last one may *potentially* cause problems, but in local testing it seems to be OK.
-E.g., if you only specify **ASCII** in your ``conf.py``, everything should work out
-in the end.
-
-.. note::
-
-   Sphinx / reStructuredText supports ``utf-8`` no problem.  The only potential concern
-   is communicating with Doxygen on stdin like this, but it's worked without issue
-   for me so I kept it.  Please speak up if you are experiencing encoding / decoding
-   specific issues in Exhale!
-
 Why does my documentation take so long to build?
 ----------------------------------------------------------------------------------------
 

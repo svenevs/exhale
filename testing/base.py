@@ -11,7 +11,6 @@ Defines the core sphinx project based test case utilities.
 All project based test cases should inherit from :class:`testing.base.ExhaleTestCase`.
 """
 
-from __future__ import unicode_literals
 import os
 import platform
 import re
@@ -22,8 +21,6 @@ from importlib import import_module
 
 import exhale
 import pytest
-import six
-from six import add_metaclass
 from sphinx.testing.path import path
 
 from . import TEST_PROJECTS_ROOT, get_exhale_root
@@ -98,7 +95,7 @@ class ExhaleTestCaseMetaclass(type):
             raise RuntimeError(
                 "ExhaleTestCase subclasses must define a 'test_project' attribute"
             )
-        if not isinstance(test_project, six.string_types):
+        if not isinstance(test_project, str):
             raise RuntimeError(
                 "'test_project' in class {0} must be a string!".format(name)
             )
@@ -122,7 +119,7 @@ class ExhaleTestCaseMetaclass(type):
                 yield  # the test runs
                 # @no_cleanup sets self.testroot to [self.testroot] as a flag that
                 # cleanup should not transpire
-                if isinstance(self.testroot, six.string_types):
+                if isinstance(self.testroot, str):
                     # This cleanup happens between each test case, do not delete docs/
                     # until all tests for this class are done!
                     containmentFolder = self.getAbsContainmentFolder()
@@ -207,7 +204,7 @@ class ExhaleTestCaseMetaclass(type):
                 # perform cleanup by deleting the docs dir
                 # @no_cleanup sets self.testroot to [self.testroot] as a flag that
                 # cleanup should not transpire
-                if isinstance(self.testroot, six.string_types) and os.path.isdir(self.testroot):
+                if isinstance(self.testroot, str) and os.path.isdir(self.testroot):
                     shutil.rmtree(self.testroot)
 
                 self.testroot = None
@@ -254,8 +251,7 @@ class ExhaleTestCaseMetaclass(type):
         )
 
 
-@add_metaclass(ExhaleTestCaseMetaclass)
-class ExhaleTestCase(unittest.TestCase):
+class ExhaleTestCase(unittest.TestCase, meta=ExhaleTestCaseMetaclass):
     """
     The primary project based test class to inherit from.
 
