@@ -251,7 +251,7 @@ class ExhaleTestCaseMetaclass(type):
         )
 
 
-class ExhaleTestCase(unittest.TestCase, meta=ExhaleTestCaseMetaclass):
+class ExhaleTestCase(unittest.TestCase, metaclass=ExhaleTestCaseMetaclass):
     """
     The primary project based test class to inherit from.
 
