@@ -9,7 +9,6 @@
 Tests for the ``cpp_fortran_mixed`` project.
 """
 
-from __future__ import unicode_literals
 import os
 import platform
 import re
