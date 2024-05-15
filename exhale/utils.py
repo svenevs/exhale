@@ -98,11 +98,7 @@ def time_string(start, end):
 
 
 def get_time():
-    if sys.version_info > (3, 3):
-        # monotonic introduced in 3.3
-        return time.monotonic()
-    else:
-        return time.time()
+    return time.monotonic()
 
 
 AVAILABLE_KINDS = [
