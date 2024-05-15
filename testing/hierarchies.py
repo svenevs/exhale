@@ -115,7 +115,7 @@ class node(ExhaleNode):  # noqa: N801
             ``level`` (:class:`python:int`)
                 The recursion level, used as ``"  " * level`` to indent children.
         """
-        print("{0}{1}".format("  " * level, self))
+        print("{}{}".format("  " * level, self))
         for child in self.children:
             child.toConsole(level + 1)
 
@@ -554,7 +554,7 @@ class root(object):  # noqa: N801
             self.unions.remove(u)
 
     def _track_node(self, node):
-        lst_name = "Mapping from node.kind={0} to internal list not found.".format(node.kind)
+        lst_name = "Mapping from node.kind={} to internal list not found.".format(node.kind)
         kind = node.kind
         if kind in ["class", "struct"]:
             lst_name = "class_like"
@@ -580,7 +580,7 @@ class root(object):  # noqa: N801
             lst_name = "variables"
 
         if lst_name not in self.__dict__.keys():
-            raise ValueError("Invalid internal list name: {0}".format(lst_name))
+            raise ValueError("Invalid internal list name: {}".format(lst_name))
 
         if node not in self.__dict__[lst_name]:
             self.__dict__[lst_name].append(node)
@@ -594,14 +594,14 @@ class root(object):  # noqa: N801
             if isinstance(parent, function):
                 if not isinstance(child_spec, parameters):
                     raise ValueError(
-                        "Specification of 'function' [{0}] must be of type 'parameters'".format(parent.name)
+                        "Specification of 'function' [{}] must be of type 'parameters'".format(parent.name)
                     )
                 else:
                     parent.setParameters(child_spec)
                     return
             else:
                 raise ValueError(
-                    "Specification of '{0}' [{1}] must be a dictionary.".format(parent.kind, parent.name)
+                    "Specification of '{}' [{}] must be a dictionary.".format(parent.kind, parent.name)
                 )
 
         for child in child_spec:
@@ -653,7 +653,7 @@ class root(object):  # noqa: N801
                     child.name = os.path.join(parent.name, child.name)
             # simulate how Doxygen will present fully qualified names
             if parent.kind in ["class", "struct", "namespace"]:
-                child.name = "{0}::{1}".format(parent.name, child.name)
+                child.name = "{}::{}".format(parent.name, child.name)
                 if self.hierarchy_type == "file":
                     child.def_in_file = parent.def_in_file
                     if child.kind == "namespace":
@@ -1185,7 +1185,7 @@ def compare_class_hierarchy(test, test_root):
         if exhale_obj is None:
             test.assertTrue(
                 False,
-                msg="Did not find match for [{0}] {1}".format(test_obj.kind, test_obj.name)
+                msg="Did not find match for [{}] {}".format(test_obj.kind, test_obj.name)
             )
 
         _compare_children("class", test, test_obj, exhale_obj)
@@ -1240,7 +1240,7 @@ def compare_file_hierarchy(test, test_root):
                     break
 
         if exhale_obj is None:
-            raise RuntimeError("Did not find match for [{0}] {1}".format(
+            raise RuntimeError("Did not find match for [{}] {}".format(
                 test_obj.kind, test_obj.name
             ))
         _compare_children("file", test, test_obj, exhale_obj)
@@ -1321,10 +1321,10 @@ def compare_file_hierarchy(test, test_root):
             "Function overload group [{group}]:\nTest:\n{test_ids}\n\nExhale:\n{exhale_ids}\n".format(
                 group=key,
                 test_ids="".join(
-                    "\n - {0}".format(f.full_signature()) for f in test_overloads[key]
+                    "\n - {}".format(f.full_signature()) for f in test_overloads[key]
                 ),
                 exhale_ids="".join(
-                    "\n - {0}".format(f.full_signature()) for f in exhale_overloads[key]
+                    "\n - {}".format(f.full_signature()) for f in exhale_overloads[key]
                 )
             )
         )

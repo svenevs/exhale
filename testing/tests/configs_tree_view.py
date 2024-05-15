@@ -160,9 +160,9 @@ class TreeViewHierarchyTests(ExhaleTestCase):
 
         self.assertTrue(
             len(mismatches) == 0,
-            "Mismatches in line_compare:\n\n{0}".format(
+            "Mismatches in line_compare:\n\n{}".format(
                 "\n".join(
-                    "- expected: '{0}'\n  got:      '{1}'".format(*item)
+                    "- expected: '{}'\n  got:      '{}'".format(*item)
                     for item in mismatches
                 )
             )

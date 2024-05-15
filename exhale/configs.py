@@ -1342,7 +1342,7 @@ def apply_sphinx_configurations(app):
 
     if breathe_default_project not in breathe_projects:
         raise ConfigError(
-            "The given breathe_default_project='{0}' was not a valid key in `breathe_projects`:\n{1}".format(
+            "The given breathe_default_project='{}' was not a valid key in `breathe_projects`:\n{}".format(
                 breathe_default_project, breathe_projects
             )
         )
@@ -1405,7 +1405,7 @@ def apply_sphinx_configurations(app):
             raise ConfigError(val_error.format(key=key, exp=expected_type, got=val_t))
         # Make sure that a value was provided (e.g. no empty strings)
         if not val:
-            raise ConfigError("Non-empty value for key [{0}] required.".format(key))
+            raise ConfigError("Non-empty value for key [{}] required.".format(key))
         # If the string represents a path, make it absolute
         if make_absolute:
             # Directories are made absolute relative to app.confdir (where conf.py is)
@@ -1417,7 +1417,7 @@ def apply_sphinx_configurations(app):
             keys_processed.append(key)
         except Exception as e:
             raise ExtensionError(
-                "Critical error: unable to set `global {0}` to `{1}` in exhale.configs:\n{2}".format(
+                "Critical error: unable to set `global {}` to `{}` in exhale.configs:\n{}".format(
                     key, val, e
                 )
             )
@@ -1440,7 +1440,7 @@ def apply_sphinx_configurations(app):
             raise ValueError
     except:
         raise ConfigError(
-            "The given `containmentFolder` [{0}] must be a *SUBDIRECTORY* of [{1}].".format(
+            "The given `containmentFolder` [{}] must be a *SUBDIRECTORY* of [{}].".format(
                 containmentFolder, app.srcdir
             )
         )
@@ -1464,7 +1464,7 @@ def apply_sphinx_configurations(app):
     # Make sure the doxygen strip path is an exclude-able path
     if not os.path.exists(doxygenStripFromPath):
         raise ConfigError(
-            "The path given as `doxygenStripFromPath` ({0}) does not exist!".format(doxygenStripFromPath)
+            "The path given as `doxygenStripFromPath` ({}) does not exist!".format(doxygenStripFromPath)
         )
 
     ####################################################################################
@@ -1538,7 +1538,7 @@ def apply_sphinx_configurations(app):
                 keys_processed.append(key)
             except Exception as e:
                 raise ExtensionError(
-                    "Critical error: unable to set `global {0}` to `{1}` in exhale.configs:\n{2}".format(
+                    "Critical error: unable to set `global {}` to `{}` in exhale.configs:\n{}".format(
                         key, val, e
                     )
                 )
@@ -1598,7 +1598,7 @@ def apply_sphinx_configurations(app):
                     pattern, flags = item
                 except Exception as e:
                     raise ConfigError(
-                        "listingExclude item {0} cannot be unpacked as `pattern, flags = item`:\n{1}".format(
+                        "listingExclude item {} cannot be unpacked as `pattern, flags = item`:\n{}".format(
                             item_or_index(item, idx), e
                         )
                     )
@@ -1607,7 +1607,7 @@ def apply_sphinx_configurations(app):
                 regex = re.compile(pattern, flags)
             except Exception as e:
                 raise ConfigError(
-                    "Unable to compile specified listingExclude {0}:\n{1}".format(
+                    "Unable to compile specified listingExclude {}:\n{}".format(
                         item_or_index(item, idx), e
                     )
                 )
@@ -1631,14 +1631,14 @@ def apply_sphinx_configurations(app):
                 regex = re.compile(key)
             except Exception as e:
                 raise ConfigError(
-                    "The `lexerMapping` key [{0}] is not a valid regular expression: {1}".format(key, e)
+                    "The `lexerMapping` key [{}] is not a valid regular expression: {}".format(key, e)
                 )
             # Make sure the provided lexer is available
             try:
                 lex = lexers.find_lexer_class_by_name(val)
             except Exception as e:
                 raise ConfigError(
-                    "The `lexerMapping` value of [{0}] for key [{1}] is not a valid Pygments lexer.".format(
+                    "The `lexerMapping` value of [{}] for key [{}] is not a valid Pygments lexer.".format(
                         val, key
                     )
                 )
@@ -1676,19 +1676,19 @@ def apply_sphinx_configurations(app):
 
         '''))
         for key in keys_expected:
-            err.write("- {0}\n".format(key))
+            err.write("- {}\n".format(key))
         err.write(textwrap.dedent('''
             Available keys:
 
         '''))
         for key in keys_available:
-            err.write("- {0}\n".format(key))
+            err.write("- {}\n".format(key))
         err.write(textwrap.dedent('''
             The Mismatch(es):
 
         '''))
         for key in (keys_available ^ keys_expected):
-            err.write("- {0}\n".format(key))
+            err.write("- {}\n".format(key))
 
         err_msg = err.getvalue()
         err.close()
@@ -1717,7 +1717,7 @@ def apply_sphinx_configurations(app):
         extra_error = StringIO()
         extra_error.write("Exhale found unexpected keys in `exhale_args`:\n")
         for key in extras:
-            extra_error.write("  - Extra key: {0}\n".format(key))
+            extra_error.write("  - Extra key: {}\n".format(key))
             potentials = []
             for mate in potential_keys_lower:
                 similarity = similar(key, mate)
@@ -1727,7 +1727,7 @@ def apply_sphinx_configurations(app):
             if potentials:
                 potentials = reversed(sorted(potentials))
                 for rank, mate in potentials:
-                    extra_error.write("    - {0:2.2f}% match with: {1}\n".format(rank, mate))
+                    extra_error.write("    - {:2.2f}% match with: {}\n".format(rank, mate))
 
         extra_error_str = extra_error.getvalue()
         extra_error.close()
@@ -1743,7 +1743,7 @@ def apply_sphinx_configurations(app):
     # fullToctreeMaxDepth > 5 may produce other sphinx issues unrelated to exhale
     if fullToctreeMaxDepth > 5:
         logger.warning(
-            "Exhale: `fullToctreeMaxDepth={0}` is greater than 5 and may build errors for non-html.".format(
+            "Exhale: `fullToctreeMaxDepth={}` is greater than 5 and may build errors for non-html.".format(
                 fullToctreeMaxDepth
             )
         )
@@ -1762,7 +1762,7 @@ def apply_sphinx_configurations(app):
         provided_keys = set(customSpecificationsMapping.keys())
         diff = provided_keys - expected_keys
         if diff:
-            raise ConfigError("Found extra keys in `customSpecificationsMapping`: {0}".format(diff))
+            raise ConfigError("Found extra keys in `customSpecificationsMapping`: {}".format(diff))
         # Sanity check #3: make sure the return values are all strings
         for key in customSpecificationsMapping:
             val_t = type(customSpecificationsMapping[key])
@@ -1792,7 +1792,7 @@ def apply_sphinx_configurations(app):
         if exhaleUseDoxyfile:
             doxyfile_path = os.path.abspath(os.path.join(app.confdir, "Doxyfile"))
             if not os.path.exists(doxyfile_path):
-                raise ConfigError("The file [{0}] does not exist".format(doxyfile_path))
+                raise ConfigError("The file [{}] does not exist".format(doxyfile_path))
 
         here = os.path.abspath(os.curdir)
         if here == app.confdir:
@@ -1805,7 +1805,7 @@ def apply_sphinx_configurations(app):
         start = utils.get_time()
         if returnPath:
             logger.info(utils.info(
-                "Exhale: changing directories to [{0}] to execute Doxygen.".format(app.confdir)
+                "Exhale: changing directories to [{}] to execute Doxygen.".format(app.confdir)
             ))
             os.chdir(app.confdir)
         logger.info(utils.info("Exhale: executing doxygen."))
@@ -1813,7 +1813,7 @@ def apply_sphinx_configurations(app):
         # Being overly-careful to put sphinx back where it was before potentially erroring out
         if returnPath:
             logger.info(utils.info(
-                "Exhale: changing directories back to [{0}] after Doxygen.".format(returnPath)
+                "Exhale: changing directories back to [{}] after Doxygen.".format(returnPath)
             ))
             os.chdir(returnPath)
         if status:
@@ -1821,7 +1821,7 @@ def apply_sphinx_configurations(app):
         else:
             end = utils.get_time()
             logger.info(utils.progress(
-                "Exhale: doxygen ran successfully in {0}.".format(utils.time_string(start, end))
+                "Exhale: doxygen ran successfully in {}.".format(utils.time_string(start, end))
             ))
     else:
         if exhaleUseDoxyfile:
@@ -1835,11 +1835,11 @@ def apply_sphinx_configurations(app):
     # Make sure that the files we need are actually there.
     if not os.path.isdir(doxy_xml_dir):
         raise ConfigError(
-            "Exhale: the specified folder [{0}] does not exist.  Has Doxygen been run?".format(doxy_xml_dir)
+            "Exhale: the specified folder [{}] does not exist.  Has Doxygen been run?".format(doxy_xml_dir)
         )
     index = os.path.join(doxy_xml_dir, "index.xml")
     if not os.path.isfile(index):
-        raise ConfigError("Exhale: the file [{0}] does not exist.  Has Doxygen been run?".format(index))
+        raise ConfigError("Exhale: the file [{}] does not exist.  Has Doxygen been run?".format(index))
 
     # Legacy / debugging feature, warn of its purpose
     if generateBreatheFileDirectives:
@@ -1881,7 +1881,7 @@ def apply_sphinx_configurations(app):
         collapse_data = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data", tree_data_static_base)
         if not os.path.isdir(collapse_data):
             raise ExtensionError(
-                "Exhale: the path to [{0}] was not found, possible installation error.".format(collapse_data)
+                "Exhale: the path to [{}] was not found, possible installation error.".format(collapse_data)
             )
         else:
             all_files = tree_data_css + tree_data_js + tree_data_ext
@@ -1892,7 +1892,7 @@ def apply_sphinx_configurations(app):
                     missing.append(path)
             if missing:
                 raise ExtensionError(
-                    "Exhale: the path(s) {0} were not found, possible installation error.".format(missing)
+                    "Exhale: the path(s) {} were not found, possible installation error.".format(missing)
                 )
 
         # We have all the files we need, the extra files will be copied automatically by

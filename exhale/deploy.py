@@ -169,9 +169,9 @@ def _generate_doxygen(doxygen_input):
         # Make sure we had a valid execution of doxygen
         exit_code = doxygen_proc.returncode
         if exit_code != 0:
-            raise RuntimeError("Non-zero return code of [{0}] from 'doxygen'...".format(exit_code))
+            raise RuntimeError("Non-zero return code of [{}] from 'doxygen'...".format(exit_code))
     except Exception as e:
-        return "Unable to execute 'doxygen': {0}".format(e)
+        return "Unable to execute 'doxygen': {}".format(e)
 
     # returning None signals _success_
     return None
@@ -386,21 +386,21 @@ def explode():
         utils.fancyError("Unable to create an `ExhaleRoot` object:")
 
     try:
-        sys.stdout.write("{0}\n".format(utils.info("Exhale: parsing Doxygen XML.")))
+        sys.stdout.write("{}\n".format(utils.info("Exhale: parsing Doxygen XML.")))
         start = utils.get_time()
 
         textRoot.parse()
 
         end = utils.get_time()
-        sys.stdout.write("{0}\n".format(
-            utils.progress("Exhale: finished parsing Doxygen XML in {0}.".format(
+        sys.stdout.write("{}\n".format(
+            utils.progress("Exhale: finished parsing Doxygen XML in {}.".format(
                 utils.time_string(start, end)
             ))
         ))
     except:
         utils.fancyError("Exception caught while parsing:")
     try:
-        sys.stdout.write("{0}\n".format(
+        sys.stdout.write("{}\n".format(
             utils.info("Exhale: generating reStructuredText documents.")
         ))
         start = utils.get_time()
@@ -408,8 +408,8 @@ def explode():
         textRoot.generateFullAPI()
 
         end = utils.get_time()
-        sys.stdout.write("{0}\n".format(
-            utils.progress("Exhale: generated reStructuredText documents in {0}.".format(
+        sys.stdout.write("{}\n".format(
+            utils.progress("Exhale: generated reStructuredText documents in {}.".format(
                 utils.time_string(start, end)
             ))
         ))

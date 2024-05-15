@@ -53,8 +53,8 @@ def make_default_config(project):
         "exhale_args": {
             # required arguments
             "containmentFolder": "./api",
-            "rootFileName": "{0}_root.rst".format(project),
-            "rootFileTitle": "``{0}`` Test Project".format(project),
+            "rootFileName": "{}_root.rst".format(project),
+            "rootFileTitle": "``{}`` Test Project".format(project),
             "doxygenStripFromPath": "..",
             # additional arguments
             "exhaleExecutesDoxygen": True,
@@ -100,7 +100,7 @@ class ExhaleTestCaseMetaclass(type):
             )
         if not isinstance(test_project, six.string_types):
             raise RuntimeError(
-                "'test_project' in class {0} must be a string!".format(name)
+                "'test_project' in class {} must be a string!".format(name)
             )
 
         # looking for test methods ("test_*")
@@ -154,7 +154,7 @@ class ExhaleTestCaseMetaclass(type):
                 testroot = os.path.join(
                     TEST_PROJECTS_ROOT,
                     self.test_project,
-                    "docs_{0}_{1}".format(self.__class__.__name__, self._testMethodName)
+                    "docs_{}_{}".format(self.__class__.__name__, self._testMethodName)
                 )
                 if os.path.isdir(testroot):
                     shutil.rmtree(testroot)
@@ -442,7 +442,7 @@ class ExhaleTestCase(unittest.TestCase):
         # validate that the title was included
         with open(os.path.join(containmentFolder, rootFileName), "r") as root:
             root_contents = root.read()
-        root_heading = "{0}\n{1}".format(
+        root_heading = "{}\n{}".format(
             rootFileTitle,
             exhale.utils.heading_mark(rootFileTitle, exhale.configs.SECTION_HEADING_CHAR)
         )

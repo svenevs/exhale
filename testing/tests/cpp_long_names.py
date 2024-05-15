@@ -62,7 +62,7 @@ def create_absurd_directory_structure():
                 '''))
         except Exception as e:
             raise RuntimeError(
-                "Could not make the absurd directory structure: {0}".format(e)
+                "Could not make the absurd directory structure: {}".format(e)
             )
 
 
@@ -83,7 +83,7 @@ def remove_absurd_directory_structure():
             if os.path.isdir(absurd_dir_root):
                 shutil.rmtree(absurd_dir_root)
         except Exception as e:
-            raise RuntimeError("Could not remove the directory [{0}]: {1}".format(
+            raise RuntimeError("Could not remove the directory [{}]: {}".format(
                 absurd_dir_root, e
             ))
 

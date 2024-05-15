@@ -170,7 +170,7 @@ class ConfigurationWarningTests(ExhaleTestCase):
         expected = "Exhale: `treeViewIsBootstrap=True` ignored since `createTreeView=False`"
         self.assertTrue(
             expected in sphinx_warnings,
-            "Sphinx Warnings did not contain '{0}'.".format(expected)
+            "Sphinx Warnings did not contain '{}'.".format(expected)
         )
 
 
