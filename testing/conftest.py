@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2024, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -13,7 +12,6 @@ See ``pytest`` documentation on `Package/Directory-level fixtures (setups)`__.
 __ https://docs.pytest.org/en/latest/example/simple.html#package-directory-level-fixtures-setups
 """
 
-from __future__ import unicode_literals
 
 pytest_plugins = [
     "sphinx.testing.fixtures",

@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 ########################################################################################
 # This file is part of exhale.  Copyright (c) 2017-2024, Stephen McDowell.             #
 # Full BSD 3-Clause license available here:                                            #
@@ -11,7 +10,6 @@ Defines the core sphinx project based test case utilities.
 All project based test cases should inherit from :class:`testing.base.ExhaleTestCase`.
 """
 
-from __future__ import unicode_literals
 import os
 import platform
 import re
@@ -171,7 +169,6 @@ class ExhaleTestCaseMetaclass(type):
                 # Sphinx demands a `conf.py` is present
                 with open(os.path.join(testroot, "conf.py"), "w") as conf_py:
                     conf_py.write(textwrap.dedent('''\
-                        # -*- coding: utf-8 -*-
                         project = "{test_project}"
                         extensions = ["breathe", "exhale"]
                         master_doc = "index"
