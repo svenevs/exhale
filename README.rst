@@ -1,6 +1,6 @@
 Exhale
 ========================================================================================
-|docs| |pypi| |coverage| |license|
+|docs| |pypi| |coverage| |license| |monthly downloads| 
 
 .. begin_badges
 
@@ -19,6 +19,10 @@ Exhale
 .. |license| image:: https://img.shields.io/github/license/svenevs/exhale.svg
    :alt: License BSD-3 Clause
    :target: https://github.com/svenevs/exhale/blob/master/LICENSE
+
+.. |monthly downloads| image:: https://assets.piptrends.com/get-last-month-downloads-badge/exhale.svg
+    :alt: exhale Downloads Last Month by pip Trends
+    :target: https://piptrends.com/package/exhale
 
 .. end_badges
 
