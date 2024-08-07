@@ -199,6 +199,9 @@ class ExhaleNode(object):
             self.parameters = [] # list of strings: ["int", "int"] for foo(int x, int y)
             self.template = None # list of strings
 
+        if self.kind == "concept":
+            self.template = None # list of strings
+
     def __lt__(self, other):
         '''
         The ``ExhaleRoot`` class stores a bunch of lists of ``ExhaleNode`` objects.
@@ -321,8 +324,13 @@ class ExhaleNode(object):
                 name=self.name,
                 parameters=", ".join(self.parameters)
             )
+        if self.kind == "concept":
+            return "{template} {name}".format(
+                template="template <{0}> ".format(", ".join(self.template)) if self.template is not None else "",
+                name=self.name)
+
         raise RuntimeError(
-            "full_signature may only be called for a 'function', but {name} is a '{kind}' node.".format(
+            "full_signature may only be called for a 'function' or 'concept', but {name} is a '{kind}' node.".format(
                 name=self.name, kind=self.kind
             )
         )
@@ -1020,6 +1028,9 @@ class ExhaleRoot(object):
             ExhaleNode it came from.  Storing it this way is convenient for when the
             Doxygen xml file is being parsed.
 
+        ``concepts`` (list)
+            The full list of ExhaleNodes of kind ``concept``
+
         ``class_like`` (list)
             The full list of ExhaleNodes of kind ``struct`` or ``class``
 
@@ -1084,6 +1095,8 @@ class ExhaleRoot(object):
         # doxygenindex     <-+-> IGNORE       |
         # autodoxygenindex <-+-> IGNORE       |
         # -------------------+----------------+
+        # doxygenconcept   <-+-> "concept"    |
+        self.concepts        = []           # |
         # doxygenclass     <-+-> "class"      |
         # doxygenstruct    <-+-> "struct"     |
         self.class_like      = []           # |
@@ -1668,6 +1681,8 @@ class ExhaleRoot(object):
             node.set_owner(self)
             self.all_nodes.append(node)
             self.node_by_refid[node.refid] = node
+            if node.kind == "concept":
+                self.concepts.append(node)
             if node.kind == "class" or node.kind == "struct":
                 self.class_like.append(node)
             elif node.kind == "namespace":
@@ -2218,6 +2233,7 @@ class ExhaleRoot(object):
         # have each node sort its children
         # leaf-like lists: no child sort
         self.defines.sort()
+        self.concepts.sort()
         self.enums.sort()
         self.enum_values.sort()
         self.functions.sort()
@@ -3092,6 +3108,7 @@ class ExhaleRoot(object):
         # sort the children
         nsp_namespaces        = []
         nsp_nested_class_like = []
+        nsp_concepts          = []
         nsp_enums             = []
         nsp_functions         = []
         nsp_typedefs          = []
@@ -3112,6 +3129,8 @@ class ExhaleRoot(object):
                 child.findNestedClassLike(nsp_nested_class_like)
                 child.findNestedEnums(nsp_enums)
                 child.findNestedUnions(nsp_unions)
+            elif child.kind == "concept":
+                nsp_concepts.append(child)
             elif child.kind == "enum":
                 nsp_enums.append(child)
             elif child.kind == "function":
@@ -3126,6 +3145,7 @@ class ExhaleRoot(object):
         # generate their headings if they exist (no Defines...that's not a C++ thing...)
         children_stream = StringIO()
         self.generateSortedChildListString(children_stream, "Namespaces", nsp_namespaces)
+        self.generateSortedChildListString(children_stream, "Concepts", nsp_concepts)
         self.generateSortedChildListString(children_stream, "Classes", nsp_nested_class_like)
         self.generateSortedChildListString(children_stream, "Enums", nsp_enums)
         self.generateSortedChildListString(children_stream, "Functions", nsp_functions)
@@ -3338,6 +3358,7 @@ class ExhaleRoot(object):
 
             # generate their headings if they exist --- DO NOT USE findNested*, these are included recursively
             file_structs    = []
+            file_concepts   = []
             file_classes    = []
             file_enums      = []
             file_functions  = []
@@ -3348,6 +3369,8 @@ class ExhaleRoot(object):
             for child in f.children:
                 if child.kind == "struct":
                     file_structs.append(child)
+                elif child.kind == "concept":
+                    file_concepts.append(child)
                 elif child.kind == "class":
                     file_classes.append(child)
                 elif child.kind == "enum":
@@ -3366,6 +3389,7 @@ class ExhaleRoot(object):
             # generate the listing of children referenced to from this file
             children_stream = StringIO()
             self.generateSortedChildListString(children_stream, "Namespaces", f.namespaces_used)
+            self.generateSortedChildListString(children_stream, "Concepts", file_concepts)
             self.generateSortedChildListString(children_stream, "Classes", file_structs + file_classes)
             self.generateSortedChildListString(children_stream, "Enums", file_enums)
             self.generateSortedChildListString(children_stream, "Functions", file_functions)
@@ -4028,6 +4052,7 @@ class ExhaleRoot(object):
         Currently, the API is generated in the following (somewhat arbitrary) order:
 
         - Namespaces
+        - Concepts
         - Classes and Structs
         - Enums
         - Unions
@@ -4105,6 +4130,7 @@ class ExhaleRoot(object):
 
             dump_order = [
                 ("Namespaces", "namespace"),
+                ("Concepts", "concept"),
                 ("Classes and Structs", "class"),  # NOTE: class/struct stored together!
                 ("Enums", "enum"),
                 ("Unions", "union"),
@@ -4197,6 +4223,7 @@ class ExhaleRoot(object):
         console.  Unused in the release, but is helpful for debugging ;)
         '''
         fmt_spec = {
+            "concept":   utils.AnsiColors.BOLD_MAGENTA,
             "class":     utils.AnsiColors.BOLD_MAGENTA,
             "struct":    utils.AnsiColors.BOLD_CYAN,
             "define":    utils.AnsiColors.BOLD_YELLOW,
@@ -4215,6 +4242,7 @@ class ExhaleRoot(object):
 
         self.consoleFormat(
             "{0} and {1}".format(
+                utils._use_color("Concepts", fmt_spec["concept"],  sys.stderr),
                 utils._use_color("Classes", fmt_spec["class"],  sys.stderr),
                 utils._use_color("Structs", fmt_spec["struct"], sys.stderr),
             ),

@@ -27,7 +27,7 @@ project(exhale-projects)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_BUILD_TYPE "Debug") # required for code coverage
@@ -116,6 +116,7 @@ endmacro()
 # List of projects to validate have code that actually compiles xD
 set(EXHALE_PROJECTS
   c_maths
+  cpp_concepts
   cpp_func_overloads
   cpp_long_names
   cpp_dir_underscores
