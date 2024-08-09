@@ -61,8 +61,13 @@ jobs:
         run: |
           tox -e py -- --cov-report xml:coverage.xml --cov
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx==${{ env.MINIMUM_SUPPORTED_SPHINX_VERSION }}
-        run: |
-          codecov --required -X gcov -f coverage.xml --name "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx${{ env.MINIMUM_SUPPORTED_SPHINX_VERSION }}"
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+          file: coverage.xml
+          name: "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx${{ env.MINIMUM_SUPPORTED_SPHINX_VERSION }}"
+          # this the inverted translation of `-X gcov`
+          plugins: pycoverage,xcode
       # Don't let code coverage utilities share anything, force clean it all.
       - name: Cleanup Python ${{ matrix.python-version }} Testing / Coverage Artifacts
         run: |
