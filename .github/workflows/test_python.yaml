@@ -63,6 +63,7 @@ jobs:
       - name: Upload Code Coverage for Python ${{ matrix.python-version }} / sphinx==${{ env.MINIMUM_SUPPORTED_SPHINX_VERSION }}
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           file: coverage.xml
           name: "[GHA] ${{ matrix.os }}-py${{ matrix.python-version }}-sphinx${{ env.MINIMUM_SUPPORTED_SPHINX_VERSION }}"
