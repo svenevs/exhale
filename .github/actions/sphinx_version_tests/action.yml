@@ -1,0 +1,49 @@
+# File: .github/actions/test-sphinx-8x/action.yml
+name: 'Sphinx versions'
+description: 'Run tests and upload code coverage for Sphinx 8.x'
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: true
+  os:
+    description: 'Operating system'
+    required: true
+  sphinx_version_range:
+    description: 'Sphinx version range to test'
+    required: true
+  codecov_token:
+    description: 'Codecov token'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install Python Tools
+      shell: bash
+      run: |
+        pip install tox codecov coverage
+    - name: Test Python ${{ inputs.python-version }} / sphinx ${{ inputs.sphinx_version_range }}
+      shell: bash
+      env:
+        SPHINX_VERSION: ${{ inputs.sphinx_version_range }}
+      run: |
+        tox -e py -- --cov-report xml:coverage.xml --cov
+    - name: Upload Code Coverage for Python ${{ inputs.python-version }} / sphinx ${{ inputs.sphinx_version_range }}
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ inputs.codecov_token }}
+        fail_ci_if_error: true
+        file: coverage.xml
+        name: "[GHA] ${{ inputs.os }}-py${{ inputs.python-version }}-sphinx8.x"
+        plugins: pycoverage,xcode
+    # Don't let code coverage utilities share anything, force clean it all.
+    - name: Cleanup Python ${{ inputs.python-version }} Testing / Coverage Artifacts
+      shell: bash
+      run: |
+        mv .gitignore nolongerignored
+        git clean -n
+        git clean -f
+        git reset --hard

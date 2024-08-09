@@ -55,7 +55,7 @@ jobs:
           cmake ..
           make -j
           make coverage-xml
-          codecov -X gcov -f .\coverage.xml --name linux_cxx
+          codecov -X gcov -f ./coverage.xml --name linux_cxx
 
   build_windows:
     name: Windows
